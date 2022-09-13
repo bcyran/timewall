@@ -34,10 +34,10 @@ pub fn get_apple_desktop_metadata_from_heif(image_ctx: &HeifContext) -> Result<A
 pub fn get_apple_desktop_metadata_from_xmp(xmp_metadata: String) -> Result<AppleDesktop> {
     let xmp_reader = EventReader::from_str(&xmp_metadata);
     let rdf_description = get_rdf_description_element(xmp_reader)?;
-    match rdf_description {
-        XmlEvent::StartElement { attributes, .. } => get_apple_desktop_attribute(attributes),
-        _ => Err(anyhow!("invalid rdf:Description element type")),
+    if let XmlEvent::StartElement { attributes, .. } = rdf_description {
+        return get_apple_desktop_attribute(attributes);
     }
+    panic!("unexpected XML event")
 }
 
 /// Extract XMP metadata string from HEIF image
@@ -82,21 +82,26 @@ fn get_rdf_description_element(mut reader: EventReader<&[u8]>) -> Result<XmlEven
 /// Find `apple_desktop:{h24,solar}` attribute in list of XML attributes
 fn get_apple_desktop_attribute(attributes: Vec<OwnedAttribute>) -> Result<AppleDesktop> {
     for attribute in attributes {
-        if attribute.name.prefix != Some(String::from("apple_desktop")) {
-            continue;
+        match attribute {
+            OwnedAttribute {
+                name:
+                    OwnedName {
+                        prefix: Some(prefix),
+                        local_name,
+                        ..
+                    },
+                value,
+            } if prefix == "apple_desktop" => {
+                debug!("apple_desktop:{} attribute found: {:?}", local_name, value);
+                return match local_name.as_str() {
+                    "solar" => Ok(AppleDesktop::Solar(value)),
+                    "h24" => Ok(AppleDesktop::H24(value)),
+                    _ => Err(anyhow!("invalid apple_desktop attribute")),
+                };
+            }
+            _ => continue,
         }
-        let attribute_value = String::from(&attribute.value);
-        debug!(
-            "apple_desktop:{} attribute found: {:?}",
-            attribute.name.local_name, attribute_value
-        );
-        return match attribute.name.local_name.as_str() {
-            "solar" => Ok(AppleDesktop::Solar(attribute_value)),
-            "h24" => Ok(AppleDesktop::H24(attribute_value)),
-            _ => Err(anyhow!("invalid apple_desktop attribute")),
-        };
     }
-
     Err(anyhow!("missing apple_desktop attribute"))
 }
 
@@ -118,25 +123,23 @@ mod tests {
     }
 
     #[test]
-    fn test_get_h24_metadata_from_xmp() -> Result<()> {
+    fn test_get_h24_metadata_from_xmp() {
         let expected_value = "dummy_h24_value";
         let xmp = build_xmp_metadata_string("apple_desktop:h24", expected_value);
 
-        let result = get_apple_desktop_metadata_from_xmp(xmp)?;
+        let result = get_apple_desktop_metadata_from_xmp(xmp).unwrap();
 
         assert_eq!(result, AppleDesktop::H24(expected_value.to_string()));
-        Ok(())
     }
 
     #[test]
-    fn test_get_solar_metadata_from_xmp() -> Result<()> {
+    fn test_get_solar_metadata_from_xmp() {
         let expected_value = "dummy_h24_value";
         let xmp = build_xmp_metadata_string("apple_desktop:solar", expected_value);
 
-        let result = get_apple_desktop_metadata_from_xmp(xmp)?;
+        let result = get_apple_desktop_metadata_from_xmp(xmp).unwrap();
 
         assert_eq!(result, AppleDesktop::Solar(expected_value.to_string()));
-        Ok(())
     }
 
     #[test]
