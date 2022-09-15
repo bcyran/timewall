@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use plist;
-use serde::Deserialize;
+use serde::{de::DeserializeOwned, Deserialize};
 
 /// Property List for the time based wallpaper.
 #[derive(Deserialize, PartialEq, Debug)]
@@ -60,25 +60,17 @@ pub struct SolarItem {
     pub azimuth: f32,
 }
 
-impl WallpaperPlistH24 {
+pub trait Plist: DeserializeOwned {
     /// Parse base64 encoded `plist`.
-    pub fn from_base64(base64_value: String) -> Result<WallpaperPlistH24> {
-        plist::from_bytes(&decode_base64(base64_value)?)
-            .with_context(|| format!("could not parse plist bytes"))
+    fn from_base64(base64_value: String) -> Result<Self> {
+        let decoded = base64::decode(base64_value)
+            .with_context(|| format!("could not decode plist base64"))?;
+        plist::from_bytes(&decoded).with_context(|| format!("could not parse plist bytes"))
     }
 }
 
-impl WallpaperPlistSolar {
-    /// Parse base64 encoded `plist`.
-    pub fn from_base64(base64_value: String) -> Result<WallpaperPlistSolar> {
-        plist::from_bytes(&decode_base64(base64_value)?)
-            .with_context(|| format!("could not parse plist bytes"))
-    }
-}
-
-fn decode_base64(base64_value: String) -> Result<Vec<u8>> {
-    base64::decode(base64_value).with_context(|| format!("could not decode plist base64"))
-}
+impl Plist for WallpaperPlistH24 {}
+impl Plist for WallpaperPlistSolar {}
 
 #[cfg(test)]
 mod tests {

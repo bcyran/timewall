@@ -7,7 +7,7 @@ use clap::Parser;
 mod metadata;
 mod properties;
 use metadata::AppleDesktop;
-use properties::{WallpaperPlistH24, WallpaperPlistSolar};
+use properties::{Plist, WallpaperPlistH24, WallpaperPlistSolar};
 
 /// Read Apple dynamic wallpaper metadata from HEIC files
 #[derive(Parser, Debug)]
