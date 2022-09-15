@@ -5,8 +5,11 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.64"
+base64 = "0.13.0"
 clap = { version = "3.2.20", features = ["derive"] }
 env_logger = "0.9.0"
 libheif-rs = "0.15.0"
 log = "0.4.17"
+plist = "1.3.1"
+serde = { version = "1.0.144", features = ["derive"] }
 xml-rs = "0.8.4"

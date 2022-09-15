@@ -5,7 +5,9 @@ use std::path::PathBuf;
 use clap::Parser;
 
 mod metadata;
+mod wallpaper_plist;
 use metadata::AppleDesktop;
+use wallpaper_plist::{WallpaperPlistH24, WallpaperPlistSolar};
 
 /// Read Apple dynamic wallpaper metadata from HEIC files
 #[derive(Parser, Debug)]
@@ -25,7 +27,11 @@ fn main() -> Result<()> {
 
     let heif_ctx = HeifContext::read_from_file(args.file.to_str().unwrap())?;
     let meta = AppleDesktop::from_heif(&heif_ctx)?;
-    println!("{meta:?}");
+
+    match meta {
+        AppleDesktop::H24(value) => println!("{:?}", WallpaperPlistH24::from_base64(value)?),
+        AppleDesktop::Solar(value) => println!("{:?}", WallpaperPlistSolar::from_base64(value)?),
+    }
 
     Ok(())
 }
