@@ -2,49 +2,66 @@ use anyhow::{Context, Result};
 use plist;
 use serde::Deserialize;
 
+/// Property List for the time based wallpaper.
 #[derive(Deserialize, PartialEq, Debug)]
 pub struct WallpaperPlistH24 {
+    // Theme appearance details.
     #[serde(rename = "ap")]
     pub appearance: Appearance,
+    // Info about the image sequence.
     #[serde(rename = "ti")]
     pub time_info: Vec<TimeItem>,
 }
 
+/// Wallpaper appearance depending on the theme.
 #[derive(Deserialize, PartialEq, Debug)]
 pub struct Appearance {
+    // Index of the image to use for a dark theme.
     #[serde(rename = "d")]
     pub dark: i32,
+    // Index of the image to use for a light theme.
     #[serde(rename = "l")]
     pub light: i32,
 }
 
+/// Single image sequence item of the time based wallpaper.
 #[derive(Deserialize, PartialEq, Debug)]
 pub struct TimeItem {
-    #[serde(rename = "t")]
-    pub time: f32,
+    // Index of the image in the sequence.
     #[serde(rename = "i")]
     pub index: usize,
+    // Point in time.
+    #[serde(rename = "t")]
+    pub time: f32,
 }
 
+/// Property List for the sun based wallpaper.
 #[derive(Deserialize, PartialEq, Debug)]
 pub struct WallpaperPlistSolar {
+    // Theme appearance details.
     #[serde(rename = "ap")]
     pub appearance: Appearance,
+    // Info about the image sequence.
     #[serde(rename = "si")]
     pub solar_info: Vec<SolarItem>,
 }
 
+/// Single image sequence item of the sun based wallpaper.
 #[derive(Deserialize, PartialEq, Debug)]
 pub struct SolarItem {
-    #[serde(rename = "a")]
-    pub altitude: f32,
+    // Index of the image in the sequence.
     #[serde(rename = "i")]
     pub index: usize,
+    // Sun altitude.
+    #[serde(rename = "a")]
+    pub altitude: f32,
+    // Sun azimuth.
     #[serde(rename = "z")]
     pub azimuth: f32,
 }
 
 impl WallpaperPlistH24 {
+    /// Parse base64 encoded `plist`.
     pub fn from_base64(base64_value: String) -> Result<WallpaperPlistH24> {
         plist::from_bytes(&decode_base64(base64_value)?)
             .with_context(|| format!("could not parse plist bytes"))
@@ -52,6 +69,7 @@ impl WallpaperPlistH24 {
 }
 
 impl WallpaperPlistSolar {
+    /// Parse base64 encoded `plist`.
     pub fn from_base64(base64_value: String) -> Result<WallpaperPlistSolar> {
         plist::from_bytes(&decode_base64(base64_value)?)
             .with_context(|| format!("could not parse plist bytes"))
@@ -75,12 +93,12 @@ mod tests {
             appearance: Appearance { dark: 5, light: 2 },
             time_info: vec![
                 TimeItem {
-                    time: 0.29166666,
                     index: 0,
+                    time: 0.29166666,
                 },
                 TimeItem {
-                    time: 0.0,
                     index: 1,
+                    time: 0.0,
                 },
             ],
         };
@@ -96,13 +114,13 @@ mod tests {
             appearance: Appearance { dark: 1, light: 0 },
             solar_info: vec![
                 SolarItem {
-                    altitude: 15.0,
                     index: 0,
+                    altitude: 15.0,
                     azimuth: 130.0,
                 },
                 SolarItem {
-                    altitude: -70.0,
                     index: 1,
+                    altitude: -70.0,
                     azimuth: 54.0,
                 },
             ],

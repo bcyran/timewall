@@ -7,30 +7,30 @@ use xml::{
     reader::{EventReader, XmlEvent},
 };
 
+/// AppleDesktop XMP metadata attribute.
 #[derive(PartialEq, Debug)]
-/// AppleDesktop XMP metadata attribute
 pub enum AppleDesktop {
-    /// H24 variant - time based wallpaper
+    /// H24 variant - time based wallpaper.
     H24(String),
-    // Solar variant - sun position baed wallpaper
+    // Solar variant - sun position baed wallpaper.
     Solar(String),
 }
 
 impl AppleDesktop {
-    /// Extract attribute from HEIF image
+    /// Extract attribute from HEIF image.
     pub fn from_heif(image_ctx: &HeifContext) -> Result<AppleDesktop> {
         return get_apple_desktop_metadata_from_heif(image_ctx);
     }
 }
 
-/// Extract apple_desktop attribute from HEIF image
+/// Extract apple_desktop attribute from HEIF image.
 pub fn get_apple_desktop_metadata_from_heif(image_ctx: &HeifContext) -> Result<AppleDesktop> {
     let mut xmp_metadata = get_xmp_metadata(image_ctx)?;
     xmp_metadata.pop();
     get_apple_desktop_metadata_from_xmp(xmp_metadata)
 }
 
-/// Extract apple_desktop attribute from XMP metadata string
+/// Extract apple_desktop attribute from XMP metadata string.
 pub fn get_apple_desktop_metadata_from_xmp(xmp_metadata: String) -> Result<AppleDesktop> {
     let xmp_reader = EventReader::from_str(&xmp_metadata);
     let rdf_description = get_rdf_description_element(xmp_reader)?;
@@ -40,7 +40,7 @@ pub fn get_apple_desktop_metadata_from_xmp(xmp_metadata: String) -> Result<Apple
     panic!("unexpected XML event")
 }
 
-/// Extract XMP metadata string from HEIF image
+/// Extract XMP metadata string from HEIF image.
 fn get_xmp_metadata(image_ctx: &HeifContext) -> Result<String> {
     let primary_image_handle = image_ctx.primary_image_handle()?;
 
@@ -56,7 +56,7 @@ fn get_xmp_metadata(image_ctx: &HeifContext) -> Result<String> {
     Ok(metadata_string)
 }
 
-/// Find `<rdf:Description ... />` element using XML event reader
+/// Find `<rdf:Description ... />` element using XML event reader.
 fn get_rdf_description_element(mut reader: EventReader<&[u8]>) -> Result<XmlEvent> {
     while let Ok(element) = reader.next() {
         match element {
@@ -79,7 +79,7 @@ fn get_rdf_description_element(mut reader: EventReader<&[u8]>) -> Result<XmlEven
     Err(anyhow!("missing rdf:Description element"))
 }
 
-/// Find `apple_desktop:{h24,solar}` attribute in list of XML attributes
+/// Find `apple_desktop:{h24,solar}` attribute in list of XML attributes.
 fn get_apple_desktop_attribute(attributes: Vec<OwnedAttribute>) -> Result<AppleDesktop> {
     for attribute in attributes {
         match attribute {

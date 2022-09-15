@@ -5,9 +5,9 @@ use std::path::PathBuf;
 use clap::Parser;
 
 mod metadata;
-mod wallpaper_plist;
+mod properties;
 use metadata::AppleDesktop;
-use wallpaper_plist::{WallpaperPlistH24, WallpaperPlistSolar};
+use properties::{WallpaperPlistH24, WallpaperPlistSolar};
 
 /// Read Apple dynamic wallpaper metadata from HEIC files
 #[derive(Parser, Debug)]
