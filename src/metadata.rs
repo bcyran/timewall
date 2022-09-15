@@ -58,8 +58,7 @@ fn get_xmp_metadata(image_ctx: &HeifContext) -> Result<String> {
 
 /// Find `<rdf:Description ... />` element using XML event reader
 fn get_rdf_description_element(mut reader: EventReader<&[u8]>) -> Result<XmlEvent> {
-    loop {
-        let element = reader.next()?;
+    while let Ok(element) = reader.next() {
         match element {
             XmlEvent::StartElement {
                 name:
@@ -73,10 +72,11 @@ fn get_rdf_description_element(mut reader: EventReader<&[u8]>) -> Result<XmlEven
                 debug!("rdf:Description element found");
                 return Ok(element);
             }
-            XmlEvent::EndDocument => return Err(anyhow!("missing rdf:Description element")),
+            XmlEvent::EndDocument => break,
             _ => continue,
         }
     }
+    Err(anyhow!("missing rdf:Description element"))
 }
 
 /// Find `apple_desktop:{h24,solar}` attribute in list of XML attributes
