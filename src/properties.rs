@@ -2,9 +2,17 @@ use anyhow::{Context, Result};
 use plist;
 use serde::{de::DeserializeOwned, Deserialize};
 
+// Wallpaper properties describing either time-based or sun-based schedule
+pub enum WallpaperProperites {
+    // Time-based schedule
+    H24(WallpaperPropertiesH24),
+    // Sun-based schedule
+    Solar(WallpaperPropertiesSolar),
+}
+
 /// Property List for the time based wallpaper.
 #[derive(Deserialize, PartialEq, Debug)]
-pub struct WallpaperPlistH24 {
+pub struct WallpaperPropertiesH24 {
     // Theme appearance details.
     #[serde(rename = "ap")]
     pub appearance: Appearance,
@@ -37,7 +45,7 @@ pub struct TimeItem {
 
 /// Property List for the sun based wallpaper.
 #[derive(Deserialize, PartialEq, Debug)]
-pub struct WallpaperPlistSolar {
+pub struct WallpaperPropertiesSolar {
     // Theme appearance details.
     #[serde(rename = "ap")]
     pub appearance: Appearance,
@@ -69,8 +77,8 @@ pub trait Plist: DeserializeOwned {
     }
 }
 
-impl Plist for WallpaperPlistH24 {}
-impl Plist for WallpaperPlistSolar {}
+impl Plist for WallpaperPropertiesH24 {}
+impl Plist for WallpaperPropertiesSolar {}
 
 #[cfg(test)]
 mod tests {
@@ -81,7 +89,7 @@ mod tests {
 
     #[test]
     fn test_wallpaper_plist_h24_from_base64() {
-        let expected = WallpaperPlistH24 {
+        let expected = WallpaperPropertiesH24 {
             appearance: Appearance { dark: 5, light: 2 },
             time_info: vec![
                 TimeItem {
@@ -95,14 +103,14 @@ mod tests {
             ],
         };
 
-        let result = WallpaperPlistH24::from_base64(H24_PLIST_BASE64.to_string()).unwrap();
+        let result = WallpaperPropertiesH24::from_base64(H24_PLIST_BASE64.to_string()).unwrap();
 
         assert_eq!(result, expected);
     }
 
     #[test]
     fn test_wallpaper_plist_solar_from_base64() {
-        let expected = WallpaperPlistSolar {
+        let expected = WallpaperPropertiesSolar {
             appearance: Appearance { dark: 1, light: 0 },
             solar_info: vec![
                 SolarItem {
@@ -118,7 +126,7 @@ mod tests {
             ],
         };
 
-        let result = WallpaperPlistSolar::from_base64(SOLAR_PLIST_BASE64.to_string()).unwrap();
+        let result = WallpaperPropertiesSolar::from_base64(SOLAR_PLIST_BASE64.to_string()).unwrap();
 
         assert_eq!(result, expected);
     }

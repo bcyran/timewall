@@ -7,7 +7,7 @@ use clap::Parser;
 mod metadata;
 mod properties;
 use metadata::AppleDesktop;
-use properties::{Plist, WallpaperPlistH24, WallpaperPlistSolar};
+use properties::{Plist, WallpaperPropertiesH24, WallpaperPropertiesSolar};
 
 /// Read Apple dynamic wallpaper metadata from HEIC files
 #[derive(Parser, Debug)]
@@ -29,8 +29,10 @@ fn main() -> Result<()> {
     let meta = AppleDesktop::from_heif(&heif_ctx)?;
 
     match meta {
-        AppleDesktop::H24(value) => println!("{:?}", WallpaperPlistH24::from_base64(value)?),
-        AppleDesktop::Solar(value) => println!("{:?}", WallpaperPlistSolar::from_base64(value)?),
+        AppleDesktop::H24(value) => println!("{:?}", WallpaperPropertiesH24::from_base64(value)?),
+        AppleDesktop::Solar(value) => {
+            println!("{:?}", WallpaperPropertiesSolar::from_base64(value)?)
+        }
     }
 
     Ok(())
