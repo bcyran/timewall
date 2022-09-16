@@ -1,6 +1,8 @@
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use plist;
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 // Wallpaper properties describing either time-based or sun-based schedule
 pub enum WallpaperProperites {
@@ -11,7 +13,7 @@ pub enum WallpaperProperites {
 }
 
 /// Property List for the time based wallpaper.
-#[derive(Deserialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Debug)]
 pub struct WallpaperPropertiesH24 {
     // Theme appearance details.
     #[serde(rename = "ap")]
@@ -22,7 +24,7 @@ pub struct WallpaperPropertiesH24 {
 }
 
 /// Wallpaper appearance depending on the theme.
-#[derive(Deserialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Debug)]
 pub struct Appearance {
     // Index of the image to use for a dark theme.
     #[serde(rename = "d")]
@@ -33,7 +35,7 @@ pub struct Appearance {
 }
 
 /// Single image sequence item of the time based wallpaper.
-#[derive(Deserialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Debug)]
 pub struct TimeItem {
     // Index of the image in the sequence.
     #[serde(rename = "i")]
@@ -44,7 +46,7 @@ pub struct TimeItem {
 }
 
 /// Property List for the sun based wallpaper.
-#[derive(Deserialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Debug)]
 pub struct WallpaperPropertiesSolar {
     // Theme appearance details.
     #[serde(rename = "ap")]
@@ -55,7 +57,7 @@ pub struct WallpaperPropertiesSolar {
 }
 
 /// Single image sequence item of the sun based wallpaper.
-#[derive(Deserialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Debug)]
 pub struct SolarItem {
     // Index of the image in the sequence.
     #[serde(rename = "i")]
@@ -68,12 +70,21 @@ pub struct SolarItem {
     pub azimuth: f32,
 }
 
-pub trait Plist: DeserializeOwned {
+pub trait Plist: DeserializeOwned + Serialize {
     /// Parse base64 encoded `plist`.
     fn from_base64(base64_value: String) -> Result<Self> {
         let decoded = base64::decode(base64_value)
             .with_context(|| format!("could not decode plist base64"))?;
         plist::from_bytes(&decoded).with_context(|| format!("could not parse plist bytes"))
+    }
+
+    fn from_xml_file<T: AsRef<Path>>(path: T) -> Result<Self> {
+        plist::from_file(path).with_context(|| format!("could not read plist from XML file"))
+    }
+
+    fn to_xml_file<T: AsRef<Path>>(self, path: T) -> Result<()> {
+        plist::to_file_xml(path, &self)
+            .with_context(|| format!("could not write plist to XML file"))
     }
 }
 
