@@ -25,23 +25,22 @@ impl AppleDesktop {
 
 /// Extract apple_desktop attribute from HEIF image.
 pub fn get_apple_desktop_metadata_from_heif(image_ctx: &HeifContext) -> Result<AppleDesktop> {
-    let mut xmp_metadata = get_xmp_metadata(image_ctx)?;
-    xmp_metadata.pop();
-    get_apple_desktop_metadata_from_xmp(xmp_metadata)
+    let xmp_metadata = get_xmp_metadata(image_ctx)?;
+    get_apple_desktop_metadata_from_xmp(&xmp_metadata)
 }
 
-/// Extract apple_desktop attribute from XMP metadata string.
-pub fn get_apple_desktop_metadata_from_xmp(xmp_metadata: String) -> Result<AppleDesktop> {
-    let xmp_reader = EventReader::from_str(&xmp_metadata);
-    let rdf_description = get_rdf_description_element(xmp_reader)?;
-    if let XmlEvent::StartElement { attributes, .. } = rdf_description {
+/// Extract apple_desktop attribute from XMP metadata bytes
+pub fn get_apple_desktop_metadata_from_xmp(xmp_metadata: &[u8]) -> Result<AppleDesktop> {
+    let mut xmp_reader = EventReader::new(xmp_metadata);
+    let rdf_description = get_rdf_description_element(&mut xmp_reader)?;
+    if let XmlEvent::StartElement { ref attributes, .. } = rdf_description {
         return get_apple_desktop_attribute(attributes);
     }
     panic!("unexpected XML event")
 }
 
-/// Extract XMP metadata string from HEIF image.
-fn get_xmp_metadata(image_ctx: &HeifContext) -> Result<String> {
+/// Extract XMP metadata bytes from HEIF image.
+fn get_xmp_metadata(image_ctx: &HeifContext) -> Result<Box<[u8]>> {
     let primary_image_handle = image_ctx.primary_image_handle()?;
 
     let mut metadata_ids: [ItemId; 1] = [0];
@@ -49,15 +48,14 @@ fn get_xmp_metadata(image_ctx: &HeifContext) -> Result<String> {
     let xmp_metadata_id = metadata_ids[0];
     debug!("XMP metadata ID: {xmp_metadata_id}");
 
-    let raw_metadata = primary_image_handle.metadata(xmp_metadata_id)?;
-    let metadata_string = String::from_utf8_lossy(&raw_metadata).into_owned();
+    let xmp_metadata = primary_image_handle.metadata(xmp_metadata_id)?;
 
     debug!("XMP metadata read");
-    Ok(metadata_string)
+    Ok(xmp_metadata.into_boxed_slice())
 }
 
 /// Find `<rdf:Description ... />` element using XML event reader.
-fn get_rdf_description_element(mut reader: EventReader<&[u8]>) -> Result<XmlEvent> {
+fn get_rdf_description_element(reader: &mut EventReader<&[u8]>) -> Result<XmlEvent> {
     while let Ok(element) = reader.next() {
         match element {
             XmlEvent::StartElement {
@@ -68,7 +66,7 @@ fn get_rdf_description_element(mut reader: EventReader<&[u8]>) -> Result<XmlEven
                         ..
                     },
                 ..
-            } if prefix.as_str() == "rdf" && local_name.as_str() == "Description" => {
+            } if prefix == "rdf" && local_name == "Description" => {
                 debug!("rdf:Description element found");
                 return Ok(element);
             }
@@ -80,7 +78,7 @@ fn get_rdf_description_element(mut reader: EventReader<&[u8]>) -> Result<XmlEven
 }
 
 /// Find `apple_desktop:{h24,solar}` attribute in list of XML attributes.
-fn get_apple_desktop_attribute(attributes: Vec<OwnedAttribute>) -> Result<AppleDesktop> {
+fn get_apple_desktop_attribute(attributes: &[OwnedAttribute]) -> Result<AppleDesktop> {
     for attribute in attributes {
         match attribute {
             OwnedAttribute {
@@ -94,8 +92,8 @@ fn get_apple_desktop_attribute(attributes: Vec<OwnedAttribute>) -> Result<AppleD
             } if prefix == "apple_desktop" => {
                 debug!("apple_desktop:{} attribute found: {:?}", local_name, value);
                 return match local_name.as_str() {
-                    "solar" => Ok(AppleDesktop::Solar(value)),
-                    "h24" => Ok(AppleDesktop::H24(value)),
+                    "solar" => Ok(AppleDesktop::Solar(value.to_owned())),
+                    "h24" => Ok(AppleDesktop::H24(value.to_owned())),
                     _ => Err(anyhow!("invalid apple_desktop attribute")),
                 };
             }
@@ -124,29 +122,29 @@ mod tests {
 
     #[test]
     fn test_get_h24_metadata_from_xmp() {
-        let expected_value = "dummy_h24_value";
-        let xmp = build_xmp_metadata_string("apple_desktop:h24", expected_value);
+        let expected_value = String::from("dummy_h24_value");
+        let xmp = build_xmp_metadata_string("apple_desktop:h24", &expected_value);
 
-        let result = get_apple_desktop_metadata_from_xmp(xmp).unwrap();
+        let result = get_apple_desktop_metadata_from_xmp(xmp.as_bytes()).unwrap();
 
-        assert_eq!(result, AppleDesktop::H24(expected_value.to_string()));
+        assert_eq!(result, AppleDesktop::H24(expected_value));
     }
 
     #[test]
     fn test_get_solar_metadata_from_xmp() {
-        let expected_value = "dummy_h24_value";
-        let xmp = build_xmp_metadata_string("apple_desktop:solar", expected_value);
+        let expected_value = String::from("dummy_h24_value");
+        let xmp = build_xmp_metadata_string("apple_desktop:solar", &expected_value);
 
-        let result = get_apple_desktop_metadata_from_xmp(xmp).unwrap();
+        let result = get_apple_desktop_metadata_from_xmp(xmp.as_bytes()).unwrap();
 
-        assert_eq!(result, AppleDesktop::Solar(expected_value.to_string()));
+        assert_eq!(result, AppleDesktop::Solar(expected_value));
     }
 
     #[test]
     fn test_get_metadata_from_xmp_invalid_attribute() {
         let xmp = build_xmp_metadata_string("apple_desktop:invalid", "whatever");
 
-        let result = get_apple_desktop_metadata_from_xmp(xmp);
+        let result = get_apple_desktop_metadata_from_xmp(xmp.as_bytes());
 
         assert!(result.is_err())
     }
@@ -155,7 +153,7 @@ mod tests {
     fn test_get_metadata_from_xmp_missing_attribute() {
         let xmp = build_xmp_metadata_string("what", "is this");
 
-        let result = get_apple_desktop_metadata_from_xmp(xmp);
+        let result = get_apple_desktop_metadata_from_xmp(xmp.as_bytes());
 
         assert!(result.is_err())
     }
@@ -168,7 +166,7 @@ mod tests {
                 <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
                 </rdf:RDF>
             </x:xmpmeta><?xpacket end="w"?>"#
-            .to_string();
+            .as_bytes();
 
         let result = get_apple_desktop_metadata_from_xmp(xmp);
 
