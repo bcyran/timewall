@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::metadata::AppleDesktop;
@@ -9,8 +9,8 @@ use crate::metadata::AppleDesktop;
 #[derive(Deserialize, Serialize, PartialEq, Debug)]
 pub struct WallpaperPropertiesH24 {
     // Theme appearance details.
-    #[serde(rename = "ap")]
-    pub appearance: Appearance,
+    #[serde(rename = "ap", default)]
+    pub appearance: Option<Appearance>,
     // Info about the image sequence.
     #[serde(rename = "ti")]
     pub time_info: Vec<TimeItem>,
@@ -42,8 +42,8 @@ pub struct TimeItem {
 #[derive(Deserialize, Serialize, PartialEq, Debug)]
 pub struct WallpaperPropertiesSolar {
     // Theme appearance details.
-    #[serde(rename = "ap")]
-    pub appearance: Appearance,
+    #[serde(rename = "ap", default)]
+    pub appearance: Option<Appearance>,
     // Info about the image sequence.
     #[serde(rename = "si")]
     pub solar_info: Vec<SolarItem>,
@@ -87,6 +87,7 @@ impl Plist for WallpaperPropertiesH24 {}
 impl Plist for WallpaperPropertiesSolar {}
 
 // Wallpaper properties describing either time-based or sun-based schedule
+#[derive(Debug)]
 pub enum WallpaperProperties {
     // Time-based schedule
     H24(WallpaperPropertiesH24),
@@ -108,11 +109,33 @@ impl WallpaperProperties {
         Ok(properties)
     }
 
+    /// Load from XML file.
+    pub fn from_xml_file<P: AsRef<Path>>(path: P) -> Result<Self> {
+        if let Ok(properties_h24) = WallpaperPropertiesH24::from_xml_file(&path) {
+            return Ok(Self::H24(properties_h24));
+        }
+        if let Ok(properties_solar) = WallpaperPropertiesSolar::from_xml_file(&path) {
+            return Ok(Self::Solar(properties_solar));
+        }
+        Err(anyhow!(
+            "invalid properties file {}",
+            path.as_ref().display()
+        ))
+    }
+
     /// Save the properties as a XML file.
     pub fn to_xml_file<P: AsRef<Path>>(&self, dest_path: P) -> Result<()> {
         match self {
             WallpaperProperties::H24(properties) => properties.to_xml_file(dest_path),
             WallpaperProperties::Solar(properties) => properties.to_xml_file(dest_path),
+        }
+    }
+
+    /// Get number of images defined by those properties.
+    pub fn num_images(&self) -> usize {
+        match self {
+            WallpaperProperties::H24(properties) => properties.time_info.len(),
+            WallpaperProperties::Solar(properties) => properties.solar_info.len(),
         }
     }
 }
@@ -127,7 +150,7 @@ mod tests {
     #[test]
     fn test_wallpaper_plist_h24_from_base64() {
         let expected = WallpaperPropertiesH24 {
-            appearance: Appearance { dark: 5, light: 2 },
+            appearance: Some(Appearance { dark: 5, light: 2 }),
             time_info: vec![
                 TimeItem {
                     index: 0,
@@ -148,7 +171,7 @@ mod tests {
     #[test]
     fn test_wallpaper_plist_solar_from_base64() {
         let expected = WallpaperPropertiesSolar {
-            appearance: Appearance { dark: 1, light: 0 },
+            appearance: Some(Appearance { dark: 1, light: 0 }),
             solar_info: vec![
                 SolarItem {
                     index: 0,

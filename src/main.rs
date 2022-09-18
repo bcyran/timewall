@@ -24,7 +24,11 @@ fn main() -> Result<()> {
 
     println!("File: {}", args.file.display());
 
-    wallpaper::unpack_heic(&args.file, "local/test")?;
+    let test_path = "local/test";
+
+    wallpaper::unpack_heic(&args.file, test_path)?;
+    let wall = wallpaper::Wallpaper::load(test_path)?;
+    println!("{wall:?}");
 
     Ok(())
 }
