@@ -25,7 +25,7 @@ pub fn unpack_heic<IP: AsRef<Path>, DP: AsRef<Path>>(image_path: IP, dest_path: 
     for (i, image_handle) in image_handles.iter().enumerate() {
         let unpacked_image_path = dest_path.join(format!("{i}.png"));
         debug!("writing image to {}", unpacked_image_path.display());
-        heic::write_as_png(&image_handle, &unpacked_image_path)?;
+        heic::write_as_png(image_handle, &unpacked_image_path)?;
     }
 
     let properties_path = dest_path.join(format!("properties.xml"));

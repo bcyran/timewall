@@ -1,7 +1,6 @@
 use std::path::Path;
 
 use anyhow::{Context, Result};
-use plist;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::metadata::AppleDesktop;

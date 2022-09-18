@@ -17,8 +17,7 @@ pub fn get_image_handles(image_ctx: &HeifContext) -> Vec<ImageHandle> {
     image_ctx.top_level_image_ids(&mut image_ids);
     image_ids
         .iter()
-        .map(|image_id| image_ctx.image_handle(*image_id))
-        .flatten()
+        .flat_map(|image_id| image_ctx.image_handle(*image_id))
         .collect()
 }
 
@@ -58,7 +57,7 @@ fn write_image_data<W: Write>(
         // If stride is equal to line line length, then there's no padding.
         // We can just write everything.
         debug!("image lines not padded");
-        writer.write_all(&data)?;
+        writer.write_all(data)?;
     } else {
         // Otherwise, we have to write line by line, removing the padding in the process.
         debug!("image lines padded");

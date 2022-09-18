@@ -19,7 +19,7 @@ pub enum AppleDesktop {
 impl AppleDesktop {
     /// Extract attribute from HEIF image.
     pub fn from_heif(image_ctx: &HeifContext) -> Result<AppleDesktop> {
-        return get_apple_desktop_metadata_from_heif(image_ctx);
+        get_apple_desktop_metadata_from_heif(image_ctx)
     }
 }
 
