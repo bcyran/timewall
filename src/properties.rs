@@ -4,13 +4,7 @@ use anyhow::{Context, Result};
 use plist;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-// Wallpaper properties describing either time-based or sun-based schedule
-pub enum WallpaperProperites {
-    // Time-based schedule
-    H24(WallpaperPropertiesH24),
-    // Sun-based schedule
-    Solar(WallpaperPropertiesSolar),
-}
+use crate::metadata::AppleDesktop;
 
 /// Property List for the time based wallpaper.
 #[derive(Deserialize, Serialize, PartialEq, Debug)]
@@ -72,17 +66,19 @@ pub struct SolarItem {
 
 pub trait Plist: DeserializeOwned + Serialize {
     /// Parse base64 encoded `plist`.
-    fn from_base64(base64_value: String) -> Result<Self> {
+    fn from_base64(base64_value: &[u8]) -> Result<Self> {
         let decoded = base64::decode(base64_value)
             .with_context(|| format!("could not decode plist base64"))?;
         plist::from_bytes(&decoded).with_context(|| format!("could not parse plist bytes"))
     }
 
+    /// Deserialize `plist` from XML file.
     fn from_xml_file<T: AsRef<Path>>(path: T) -> Result<Self> {
         plist::from_file(path).with_context(|| format!("could not read plist from XML file"))
     }
 
-    fn to_xml_file<T: AsRef<Path>>(self, path: T) -> Result<()> {
+    /// Serialize `plist` as XML and write to a file.
+    fn to_xml_file<T: AsRef<Path>>(&self, path: T) -> Result<()> {
         plist::to_file_xml(path, &self)
             .with_context(|| format!("could not write plist to XML file"))
     }
@@ -90,6 +86,37 @@ pub trait Plist: DeserializeOwned + Serialize {
 
 impl Plist for WallpaperPropertiesH24 {}
 impl Plist for WallpaperPropertiesSolar {}
+
+// Wallpaper properties describing either time-based or sun-based schedule
+pub enum WallpaperProperties {
+    // Time-based schedule
+    H24(WallpaperPropertiesH24),
+    // Sun-based schedule
+    Solar(WallpaperPropertiesSolar),
+}
+
+impl WallpaperProperties {
+    /// Create an instance from apple desktop metadata.
+    pub fn from_apple_desktop(apple_desktop: &AppleDesktop) -> Result<Self> {
+        let properties = match apple_desktop {
+            AppleDesktop::H24(value) => {
+                WallpaperProperties::H24(WallpaperPropertiesH24::from_base64(value.as_bytes())?)
+            }
+            AppleDesktop::Solar(value) => {
+                WallpaperProperties::Solar(WallpaperPropertiesSolar::from_base64(value.as_bytes())?)
+            }
+        };
+        Ok(properties)
+    }
+
+    /// Save the properties as a XML file.
+    pub fn to_xml_file<P: AsRef<Path>>(&self, dest_path: P) -> Result<()> {
+        match self {
+            WallpaperProperties::H24(properties) => properties.to_xml_file(dest_path),
+            WallpaperProperties::Solar(properties) => properties.to_xml_file(dest_path),
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -114,7 +141,7 @@ mod tests {
             ],
         };
 
-        let result = WallpaperPropertiesH24::from_base64(H24_PLIST_BASE64.to_string()).unwrap();
+        let result = WallpaperPropertiesH24::from_base64(H24_PLIST_BASE64.as_bytes()).unwrap();
 
         assert_eq!(result, expected);
     }
@@ -137,7 +164,7 @@ mod tests {
             ],
         };
 
-        let result = WallpaperPropertiesSolar::from_base64(SOLAR_PLIST_BASE64.to_string()).unwrap();
+        let result = WallpaperPropertiesSolar::from_base64(SOLAR_PLIST_BASE64.as_bytes()).unwrap();
 
         assert_eq!(result, expected);
     }

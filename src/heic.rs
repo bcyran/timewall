@@ -5,10 +5,22 @@ use std::{
 };
 
 use anyhow::Result;
-use libheif_rs::{ColorSpace, ImageHandle, RgbChroma};
+use libheif_rs::{ColorSpace, HeifContext, ImageHandle, ItemId, RgbChroma};
 use log::debug;
 
 const CHANNELS: usize = 3;
+
+/// Get all available top level image handles from HEIC.
+pub fn get_image_handles(image_ctx: &HeifContext) -> Vec<ImageHandle> {
+    let number_of_images = image_ctx.number_of_top_level_images();
+    let mut image_ids = vec![0 as ItemId; number_of_images];
+    image_ctx.top_level_image_ids(&mut image_ids);
+    image_ids
+        .iter()
+        .map(|image_id| image_ctx.image_handle(*image_id))
+        .flatten()
+        .collect()
+}
 
 /// Write image from HEIC handle as PNG at the specified path.
 pub fn write_as_png<P: AsRef<Path>>(image_handle: &ImageHandle, path: P) -> Result<()> {
