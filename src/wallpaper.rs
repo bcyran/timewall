@@ -17,9 +17,9 @@ fn image_name(index: usize) -> String {
 #[derive(Debug)]
 pub struct Wallpaper {
     /// Paths of extracted images.
-    images: Vec<PathBuf>,
+    pub images: Vec<PathBuf>,
     /// Wallpaper properties.
-    properties: WallpaperProperties,
+    pub properties: WallpaperProperties,
 }
 
 impl Wallpaper {

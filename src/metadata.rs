@@ -1,3 +1,5 @@
+use std::{fmt::Display, path::Path};
+
 use anyhow::{anyhow, Result};
 use libheif_rs::{HeifContext, ItemId};
 use log::debug;
@@ -20,6 +22,46 @@ impl AppleDesktop {
     /// Extract attribute from HEIF image.
     pub fn from_heif(image_ctx: &HeifContext) -> Result<AppleDesktop> {
         get_apple_desktop_metadata_from_heif(image_ctx)
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub struct ImageInfo {
+    width: usize,
+    height: usize,
+    images: usize,
+    metadata: AppleDesktop,
+}
+
+impl ImageInfo {
+    pub fn from_image<P: AsRef<Path>>(image_path: P) -> Result<ImageInfo> {
+        let image_path = image_path.as_ref();
+        let heif_ctx = HeifContext::read_from_file(image_path.to_str().unwrap())?;
+
+        let images = heif_ctx.number_of_top_level_images();
+        let metadata = get_apple_desktop_metadata_from_heif(&heif_ctx)?;
+        let handle = heif_ctx.primary_image_handle()?;
+
+        Ok(ImageInfo {
+            width: handle.width() as usize,
+            height: handle.height() as usize,
+            images,
+            metadata,
+        })
+    }
+}
+
+impl Display for ImageInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let type_str = match self.metadata {
+            AppleDesktop::H24 { .. } => "time",
+            AppleDesktop::Solar { .. } => "solar",
+        };
+        write!(
+            f,
+            "Size: {}x{}\nType: {}\nImages: {}",
+            self.width, self.height, type_str, self.images
+        )
     }
 }
 
