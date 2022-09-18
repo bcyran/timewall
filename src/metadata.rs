@@ -1,4 +1,8 @@
-use std::{fmt::Display, path::Path};
+use std::{
+    fmt::Display,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use anyhow::{anyhow, Result};
 use libheif_rs::{HeifContext, ItemId};
@@ -27,8 +31,10 @@ impl AppleDesktop {
 
 #[derive(PartialEq, Debug)]
 pub struct ImageInfo {
-    width: usize,
-    height: usize,
+    file: PathBuf,
+    size: u64,
+    width: u32,
+    height: u32,
     images: usize,
     metadata: AppleDesktop,
 }
@@ -37,16 +43,15 @@ impl ImageInfo {
     pub fn from_image<P: AsRef<Path>>(image_path: P) -> Result<ImageInfo> {
         let image_path = image_path.as_ref();
         let heif_ctx = HeifContext::read_from_file(image_path.to_str().unwrap())?;
-
-        let images = heif_ctx.number_of_top_level_images();
-        let metadata = get_apple_desktop_metadata_from_heif(&heif_ctx)?;
-        let handle = heif_ctx.primary_image_handle()?;
+        let primary_handle = heif_ctx.primary_image_handle()?;
 
         Ok(ImageInfo {
-            width: handle.width() as usize,
-            height: handle.height() as usize,
-            images,
-            metadata,
+            file: image_path.canonicalize()?,
+            size: fs::metadata(image_path)?.len(),
+            width: primary_handle.width(),
+            height: primary_handle.height(),
+            images: heif_ctx.number_of_top_level_images(),
+            metadata: get_apple_desktop_metadata_from_heif(&heif_ctx)?,
         })
     }
 }
@@ -59,8 +64,13 @@ impl Display for ImageInfo {
         };
         write!(
             f,
-            "Size: {}x{}\nType: {}\nImages: {}",
-            self.width, self.height, type_str, self.images
+            "File: {}\nSize: {}B\nDimensions: {}x{}\nType: {}\nImages: {}",
+            self.file.display(),
+            self.size,
+            self.width,
+            self.height,
+            type_str,
+            self.images
         )
     }
 }
