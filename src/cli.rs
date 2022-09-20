@@ -28,4 +28,10 @@ pub enum Action {
         #[clap(parse(from_os_str))]
         output: PathBuf,
     },
+    /// Set the wallpaper
+    Set {
+        /// Path to HEIC file
+        #[clap(parse(from_os_str))]
+        file: PathBuf,
+    },
 }
