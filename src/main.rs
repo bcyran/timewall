@@ -1,12 +1,12 @@
 use anyhow::{Ok, Result};
-use cache::Cache;
 use clap::Parser;
+use loader::WallpaperLoader;
 use std::path::Path;
 
 mod cache;
 mod cli;
 mod heic;
-mod helpers;
+mod loader;
 mod metadata;
 mod properties;
 mod wallpaper;
@@ -28,11 +28,11 @@ fn main() -> Result<()> {
     }
 }
 
-pub fn set<P: AsRef<Path>>(file: P) -> Result<()> {
-    let mut cache = Cache::find()?;
-    println!("{cache:?}");
-    let cache_dir = cache.entry_dir(file)?;
-    println!("{}", cache_dir.display());
+pub fn set<P: AsRef<Path>>(path: P) -> Result<()> {
+    let mut loader = WallpaperLoader::new();
+    println!("{loader:?}");
+    let wallpaper = loader.load(path);
+    println!("{wallpaper:?}");
 
     Ok(())
 }

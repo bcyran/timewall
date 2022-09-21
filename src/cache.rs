@@ -1,5 +1,3 @@
-use crate::helpers::hash_file;
-use anyhow::{anyhow, Context, Result};
 use directories::ProjectDirs;
 use std::{
     collections::HashSet,
@@ -10,6 +8,8 @@ use std::{
 const APP_QUALIFIER: &str = "dev.cyran";
 const APP_NAME: &str = "timewall";
 
+/// Abstraction over a cache directory. Manges multiple cache subdirectories accessed by
+/// a string key.
 #[derive(Debug)]
 pub struct Cache {
     base_dir: PathBuf,
@@ -17,51 +17,57 @@ pub struct Cache {
 }
 
 impl Cache {
-    /// Find user's cache directory and load or create cache in it.
-    pub fn find() -> Result<Self> {
+    /// Find user's cache directory and and create or load a cache of given name in it.
+    ///
+    /// E.g. `Cache::find("wallpapers")` will create 'wallpapers' directory in timewall
+    /// directory in user's main cache directory.
+    pub fn find(name: &str) -> Self {
         match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
-            Some(app_dirs) => Cache::load(app_dirs.cache_dir()),
-            None => Err(anyhow!("couldn't determine user's home directory")),
+            Some(app_dirs) => Cache::ensure(app_dirs.cache_dir().join(name)),
+            None => panic!("couldn't determine user's home directory"),
         }
     }
 
-    /// Load cache from a given base directory. Create it if it doesn't exist.
-    fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
+    /// Load cache from a given directory. Create it if it doesn't exist.
+    fn ensure<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
+
         if !path.exists() {
-            fs::create_dir_all(path).with_context(|| format!("couldn't create cache directory"))?;
+            fs::create_dir_all(path).expect("couldn't create cache directory");
         }
-        let entry_dirs = fs::read_dir(path)?
+        let entry_dirs = path
+            .read_dir()
+            .unwrap()
             .flatten()
             .filter(|e| e.file_type().unwrap().is_dir())
             .flat_map(|e| e.file_name().into_string())
             .collect();
-        Ok(Cache {
+
+        Cache {
             base_dir: path.to_path_buf(),
             entry_dirs,
-        })
-    }
-
-    /// Get path to entry dir. Create it if it doesn't exist.
-    pub fn entry_dir<P: AsRef<Path>>(&mut self, file: P) -> Result<PathBuf> {
-        let hash = hash_file(file)?;
-        if self.entry_dirs.contains(&hash) {
-            Ok(self.get_entry_dir(&hash))
-        } else {
-            self.add_entry_dir(&hash)
         }
     }
 
-    /// Create cache dir for a given file.
-    fn add_entry_dir(&mut self, hash: &str) -> Result<PathBuf> {
-        let entry_path = self.base_dir.join(&hash);
-        fs::create_dir(&entry_path)?;
-        self.entry_dirs.insert(hash.to_owned());
-        Ok(entry_path)
+    /// Get path to the dir for a given key. Create the dir if it doesn't exist.
+    pub fn entry_dir(&mut self, key: &String) -> PathBuf {
+        if self.entry_dirs.contains(key) {
+            self.get_entry_dir(key)
+        } else {
+            self.add_entry_dir(key)
+        }
     }
 
-    /// Get path to cache dir for a given file. Does not check whether the path exists or not!
-    fn get_entry_dir(&self, hash: &str) -> PathBuf {
-        self.base_dir.join(&hash)
+    /// Create cache dir for a given key. Panics if the dir already exists.
+    fn add_entry_dir(&mut self, key: &str) -> PathBuf {
+        let entry_path = self.base_dir.join(key);
+        fs::create_dir(&entry_path).expect("couldn't create cache entry directory");
+        self.entry_dirs.insert(key.to_owned());
+        entry_path
+    }
+
+    /// Construct path to cache dir for a given key. Does not check whether the dir exists or not!
+    fn get_entry_dir(&self, key: &str) -> PathBuf {
+        self.base_dir.join(key)
     }
 }
