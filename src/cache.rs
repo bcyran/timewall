@@ -13,7 +13,7 @@ const APP_NAME: &str = "timewall";
 #[derive(Debug)]
 pub struct Cache {
     base_dir: PathBuf,
-    entry_dirs: HashSet<String>,
+    entries: HashSet<String>,
 }
 
 impl Cache {
@@ -23,13 +23,13 @@ impl Cache {
     /// directory in user's main cache directory.
     pub fn find(name: &str) -> Self {
         match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
-            Some(app_dirs) => Cache::ensure(app_dirs.cache_dir().join(name)),
+            Some(app_dirs) => Cache::in_dir(app_dirs.cache_dir().join(name)),
             None => panic!("couldn't determine user's home directory"),
         }
     }
 
     /// Load cache from a given directory. Create it if it doesn't exist.
-    fn ensure<P: AsRef<Path>>(path: P) -> Self {
+    fn in_dir<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
 
         if !path.exists() {
@@ -45,29 +45,29 @@ impl Cache {
 
         Cache {
             base_dir: path.to_path_buf(),
-            entry_dirs,
+            entries: entry_dirs,
         }
     }
 
     /// Get path to the dir for a given key. Create the dir if it doesn't exist.
-    pub fn entry_dir(&mut self, key: &String) -> PathBuf {
-        if self.entry_dirs.contains(key) {
-            self.get_entry_dir(key)
+    pub fn entry(&mut self, key: &String) -> PathBuf {
+        if self.entries.contains(key) {
+            self.get_entry(key)
         } else {
-            self.add_entry_dir(key)
+            self.add_entry(key)
         }
     }
 
     /// Create cache dir for a given key. Panics if the dir already exists.
-    fn add_entry_dir(&mut self, key: &str) -> PathBuf {
+    fn add_entry(&mut self, key: &str) -> PathBuf {
         let entry_path = self.base_dir.join(key);
         fs::create_dir(&entry_path).expect("couldn't create cache entry directory");
-        self.entry_dirs.insert(key.to_owned());
+        self.entries.insert(key.to_owned());
         entry_path
     }
 
     /// Construct path to cache dir for a given key. Does not check whether the dir exists or not!
-    fn get_entry_dir(&self, key: &str) -> PathBuf {
+    fn get_entry(&self, key: &str) -> PathBuf {
         self.base_dir.join(key)
     }
 }

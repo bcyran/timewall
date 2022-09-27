@@ -21,7 +21,7 @@ impl WallpaperLoader {
     /// Each loaded file is persistently cached and will be loaded from cache if requested again.
     pub fn load<P: AsRef<Path>>(&mut self, path: P) -> Wallpaper {
         let hash = hash_file(&path).expect("wallpaper hashing failed");
-        let cache_dir = self.cache.entry_dir(&hash);
+        let cache_dir = self.cache.entry(&hash);
         if cache_dir.read_dir().unwrap().next().is_none() {
             unpack_heic(&path, &cache_dir).expect("wallpaper unpacking failed");
         }
