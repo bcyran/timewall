@@ -71,3 +71,69 @@ impl Cache {
         self.base_dir.join(key)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_fs::prelude::*;
+    use predicates::prelude::*;
+
+    use super::*;
+
+    #[test]
+    fn test_in_dir_not_exists() {
+        let tmp_dir = assert_fs::TempDir::new().unwrap();
+        let expected_dir = tmp_dir.child("random_dir");
+
+        Cache::in_dir(&expected_dir);
+
+        expected_dir.assert(predicate::path::is_dir());
+    }
+
+    #[test]
+    fn test_in_dir_exists() {
+        let tmp_dir = assert_fs::TempDir::new().unwrap();
+        let expected_entries = HashSet::from([String::from("first"), String::from("other")]);
+        for entry in &expected_entries {
+            tmp_dir.child(entry).create_dir_all().unwrap();
+        }
+
+        let cache = Cache::in_dir(&tmp_dir);
+
+        assert_eq!(cache.entries, expected_entries);
+    }
+
+    #[test]
+    fn test_entry_not_exists() {
+        let tmp_dir = assert_fs::TempDir::new().unwrap();
+        let entry_name = String::from("random-entry");
+        let expected_dir = tmp_dir.child(&entry_name);
+
+        let mut cache = Cache::in_dir(&tmp_dir);
+
+        assert_eq!(cache.entry(&entry_name), expected_dir.path());
+        expected_dir.assert(predicate::path::is_dir());
+    }
+
+    #[test]
+    fn test_entry_exists() {
+        let tmp_dir = assert_fs::TempDir::new().unwrap();
+        let entry_name = String::from("some_entry");
+        let expected_dir = tmp_dir.child(&entry_name);
+        expected_dir.create_dir_all().unwrap();
+
+        let mut cache = Cache::in_dir(&tmp_dir);
+
+        assert_eq!(cache.entry(&entry_name), expected_dir.path());
+        expected_dir.assert(predicate::path::is_dir());
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_entry_file_conflict() {
+        let tmp_dir = assert_fs::TempDir::new().unwrap();
+        let entry_name = String::from("some_entry");
+        tmp_dir.child(&entry_name).touch().unwrap();
+
+        Cache::in_dir(&tmp_dir).entry(&entry_name);
+    }
+}
