@@ -1,19 +1,11 @@
-use chrono::{DateTime, Local, Timelike};
+use chrono::{NaiveTime, Timelike};
+use sun::Position;
 
-use crate::properties::{WallpaperProperties, WallpaperPropertiesH24, WallpaperPropertiesSolar};
+use crate::properties::{WallpaperPropertiesH24, WallpaperPropertiesSolar};
 
 const SECONDS_IN_A_DAY: u32 = 24 * 60 * 60;
 
-/// Select image which should be set according to current time and return its index.
-pub fn select_image(properties: &WallpaperProperties) -> usize {
-    let now = Local::now();
-    match properties {
-        WallpaperProperties::H24(props) => select_image_h24(props, &now),
-        WallpaperProperties::Solar(props) => select_image_solar(props, &now),
-    }
-}
-
-fn select_image_h24(properties: &WallpaperPropertiesH24, time: &DateTime<Local>) -> usize {
+pub fn select_image_h24(properties: &WallpaperPropertiesH24, time: &NaiveTime) -> usize {
     let day_progress = time.num_seconds_from_midnight() as f32 / SECONDS_IN_A_DAY as f32;
     let mut sorted_time_items = properties.time_info.clone();
     sorted_time_items.sort_by(|a, b| a.time.partial_cmp(&b.time).unwrap());
@@ -28,7 +20,7 @@ fn select_image_h24(properties: &WallpaperPropertiesH24, time: &DateTime<Local>)
     curent_item.index
 }
 
-fn select_image_solar(properties: &WallpaperPropertiesSolar, time: &DateTime<Local>) -> usize {
+pub fn select_image_solar(properties: &WallpaperPropertiesSolar, sun_pos: &Position) -> usize {
     todo!()
 }
 
@@ -36,7 +28,6 @@ fn select_image_solar(properties: &WallpaperPropertiesSolar, time: &DateTime<Loc
 mod tests {
     use super::*;
     use crate::properties::TimeItem;
-    use chrono::prelude::*;
     use rstest::*;
 
     #[fixture]
@@ -62,18 +53,18 @@ mod tests {
     }
 
     #[rstest]
-    #[case(Local.ymd(2022, 9, 30).and_hms(0, 0, 0), 2)]
-    #[case(Local.ymd(2022, 9, 30).and_hms(0, 20, 0), 2)]
-    #[case(Local.ymd(2022, 9, 30).and_hms(5, 59, 59), 2)]
-    #[case(Local.ymd(2022, 9, 30).and_hms(6, 00, 00), 0)]
-    #[case(Local.ymd(2022, 9, 30).and_hms(11, 59, 00), 0)]
-    #[case(Local.ymd(2022, 9, 30).and_hms(12, 00, 00), 1)]
-    #[case(Local.ymd(2022, 9, 30).and_hms(15, 00, 00), 1)]
-    #[case(Local.ymd(2022, 9, 30).and_hms(18, 00, 00), 2)]
-    #[case(Local.ymd(2022, 9, 30).and_hms(23, 59, 59), 2)]
+    #[case(NaiveTime::from_hms(0, 0, 0), 2)]
+    #[case(NaiveTime::from_hms(0, 20, 0), 2)]
+    #[case(NaiveTime::from_hms(5, 59, 59), 2)]
+    #[case(NaiveTime::from_hms(6, 00, 00), 0)]
+    #[case(NaiveTime::from_hms(11, 59, 00), 0)]
+    #[case(NaiveTime::from_hms(12, 00, 00), 1)]
+    #[case(NaiveTime::from_hms(15, 00, 00), 1)]
+    #[case(NaiveTime::from_hms(18, 00, 00), 2)]
+    #[case(NaiveTime::from_hms(23, 59, 59), 2)]
     fn test_select_image_h24(
         props_24h: WallpaperPropertiesH24,
-        #[case] time: DateTime<Local>,
+        #[case] time: NaiveTime,
         #[case] expected_result: usize,
     ) {
         let result = select_image_h24(&props_24h, &time);
