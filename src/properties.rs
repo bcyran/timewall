@@ -28,7 +28,7 @@ pub struct Appearance {
 }
 
 /// Single image sequence item of the time based wallpaper.
-#[derive(Deserialize, Serialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Clone, Debug)]
 pub struct TimeItem {
     // Index of the image in the sequence.
     #[serde(rename = "i")]

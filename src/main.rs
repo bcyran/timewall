@@ -10,6 +10,7 @@ mod loader;
 mod metadata;
 mod properties;
 mod wallpaper;
+mod selection;
 
 use metadata::ImageInfo;
 
