@@ -51,22 +51,26 @@ fn select_image_solar_from_sun_pos(
     hemishphere: &Hemisphere,
 ) -> usize {
     let (rising_items, setting_items) = sort_solar_items(&properties.solar_info, hemishphere);
-    let current_item = if is_rising(sun_pos.azimuth, hemishphere) {
+    let maybe_current_item = if is_rising(sun_pos.azimuth, hemishphere) {
         // If the sun is currently rising, get last item with altitude lower than the current.
         // If there's no such items, fall back to the last one from setting items.
+        // If no setting items, fall back to the last of rising items.
         rising_items
             .iter()
             .rfind(|item| item.altitude <= sun_pos.altitude)
-            .unwrap_or(setting_items.last().unwrap())
+            .or(setting_items.last())
+            .or(rising_items.last())
     } else {
         // If the sun is currently setting, get last item with altitude higher than the current.
         // If there's no such items, fall back to the last one from rising items.
+        // If no rising items, fall back to the last of setting items.
         setting_items
             .iter()
             .rfind(|item| item.altitude >= sun_pos.altitude)
-            .unwrap_or(rising_items.last().unwrap())
+            .or(rising_items.last())
+            .or(setting_items.last())
     };
-    current_item.index
+    maybe_current_item.unwrap().index
 }
 
 /// Split collection of solar items (sun positions) into rising and setting items.
@@ -191,6 +195,53 @@ mod tests {
         #[case] expected_result: usize,
     ) {
         let result = select_image_solar_from_sun_pos(&props_solar, &sun_pos, &Hemisphere::Northern);
+        assert_eq!(result, expected_result);
+    }
+
+    /// No items for sun setting phase.
+    #[fixture]
+    fn props_solar_no_setting() -> WallpaperPropertiesSolar {
+        WallpaperPropertiesSolar {
+            appearance: None,
+            solar_info: vec![
+                // intentionally unordered
+                SolarItem {
+                    index: 1,
+                    azimuth: 100.0,
+                    altitude: 0.01,
+                },
+                SolarItem {
+                    index: 0,
+                    azimuth: 45.0,
+                    altitude: -0.58,
+                },
+                SolarItem {
+                    index: 2,
+                    azimuth: 170.0,
+                    altitude: 0.65,
+                },
+            ],
+        }
+    }
+
+    #[rstest]
+    #[case(Position { azimuth: 30.0, altitude: -0.68 }, 2)]
+    #[case(Position { azimuth: 50.0, altitude: -0.50 }, 0)]
+    #[case(Position { azimuth: 101.0, altitude: 0.02 }, 1)]
+    #[case(Position { azimuth: 171.0, altitude: 0.66 }, 2)]
+    #[case(Position { azimuth: 200.0, altitude: 0.55 }, 2)]
+    #[case(Position { azimuth: 251.0, altitude: 0.0 }, 2)]
+    #[case(Position { azimuth: 301.0, altitude: -0.50 }, 2)]
+    fn test_select_image_solar_from_sun_pos_no_setting(
+        props_solar_no_setting: WallpaperPropertiesSolar,
+        #[case] sun_pos: Position,
+        #[case] expected_result: usize,
+    ) {
+        let result = select_image_solar_from_sun_pos(
+            &props_solar_no_setting,
+            &sun_pos,
+            &Hemisphere::Northern,
+        );
         assert_eq!(result, expected_result);
     }
 }
