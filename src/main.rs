@@ -51,8 +51,8 @@ pub fn set<P: AsRef<Path>>(path: P) -> Result<()> {
     };
     let now = Local::now();
     let index = match wallpaper.properties {
-        WallpaperProperties::H24(props) => select_image_h24(&props, &now.time()),
-        WallpaperProperties::Solar(props) => select_image_solar(&props, &now, &coords),
+        WallpaperProperties::H24(props) => select_image_h24(&props.time_info, &now.time()),
+        WallpaperProperties::Solar(props) => select_image_solar(&props.solar_info, &now, &coords),
     };
 
     println!("image index: {}", index.unwrap());

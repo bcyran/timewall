@@ -6,16 +6,15 @@ use sun::Position;
 
 use crate::{
     geo::{Coords, Hemisphere},
-    properties::{SolarItem, WallpaperPropertiesH24, WallpaperPropertiesSolar},
+    properties::{SolarItem, TimeItem},
 };
 
 const SECONDS_IN_A_DAY: u32 = 24 * 60 * 60;
 
 /// Select index of image corresponding with the given time.
-pub fn select_image_h24(properties: &WallpaperPropertiesH24, time: &NaiveTime) -> Result<usize> {
+pub fn select_image_h24(time_items: &[TimeItem], time: &NaiveTime) -> Result<usize> {
     let day_progress = time.num_seconds_from_midnight() as f64 / SECONDS_IN_A_DAY as f64;
-    let sorted_time_items = properties
-        .time_info
+    let sorted_time_items = time_items
         .iter()
         .sorted_by_key(|item| item.time)
         .collect_vec();
@@ -34,7 +33,7 @@ pub fn select_image_h24(properties: &WallpaperPropertiesH24, time: &NaiveTime) -
 
 /// Select index of image corresponding with the sun position for given datetime and coordinates.
 pub fn select_image_solar(
-    properties: &WallpaperPropertiesSolar,
+    solar_items: &[SolarItem],
     datetime: &DateTime<Local>,
     coords: &Coords,
 ) -> Result<usize> {
@@ -45,16 +44,16 @@ pub fn select_image_solar(
         azimuth: sun_pos.azimuth.to_degrees(),
         altitude: sun_pos.altitude,
     };
-    select_image_solar_from_sun_pos(properties, &sun_pos, &coords.hemishphere())
+    select_image_solar_from_sun_pos(solar_items, &sun_pos, &coords.hemishphere())
 }
 
 /// Select index of image corresponding with sun position on the specified hemisphere.
 fn select_image_solar_from_sun_pos(
-    properties: &WallpaperPropertiesSolar,
+    solar_items: &[SolarItem],
     sun_pos: &Position,
     hemishphere: &Hemisphere,
 ) -> Result<usize> {
-    let (rising_items, setting_items) = sort_solar_items(&properties.solar_info, hemishphere);
+    let (rising_items, setting_items) = sort_solar_items(solar_items, hemishphere);
     let maybe_current_item = if is_rising(sun_pos.azimuth, hemishphere) {
         // If the sun is currently rising, get last item with altitude lower than the current.
         // If there's no such items, fall back to the last one from setting items.
@@ -83,7 +82,7 @@ fn select_image_solar_from_sun_pos(
 /// Sort both collections in the natural occurrence order.
 /// Sun altitude increases while it rises and decreases when it's setting.
 fn sort_solar_items<'i>(
-    items: &'i Vec<SolarItem>,
+    items: &'i [SolarItem],
     hemishphere: &Hemisphere,
 ) -> (Vec<&'i SolarItem>, Vec<&'i SolarItem>) {
     let (mut rising_items, mut setting_items): (Vec<_>, Vec<_>) = items
@@ -111,25 +110,41 @@ mod tests {
     use crate::properties::{SolarItem, TimeItem};
 
     #[fixture]
-    fn props_24h() -> WallpaperPropertiesH24 {
-        WallpaperPropertiesH24 {
-            appearance: None,
-            time_info: vec![
-                // intentionally unordered
-                TimeItem {
-                    index: 0,
-                    time: not_nan!(0.25),
-                },
-                TimeItem {
-                    index: 2,
-                    time: not_nan!(0.75),
-                },
-                TimeItem {
-                    index: 1,
-                    time: not_nan!(0.5),
-                },
-            ],
-        }
+    #[rustfmt::skip]
+    fn time_items() -> Vec<TimeItem> {
+        // intentionally unordered
+        vec![
+            TimeItem { index: 0, time: not_nan!(0.25) },
+            TimeItem { index: 2, time: not_nan!(0.75) },
+            TimeItem { index: 1, time: not_nan!(0.5) },
+        ]
+    }
+
+    #[fixture]
+    #[rustfmt::skip]
+    fn solar_items_rising() -> Vec<SolarItem> {
+        vec![
+            SolarItem { index: 1, azimuth: not_nan!(100.0), altitude: not_nan!(0.01) },
+            SolarItem { index: 0, azimuth: not_nan!(45.0), altitude: not_nan!(-0.58) },
+            SolarItem { index: 2, azimuth: not_nan!(170.0), altitude: not_nan!(0.65) },
+        ]
+    }
+
+    #[fixture]
+    #[rustfmt::skip]
+    fn solar_items_setting() -> Vec<SolarItem> {
+        vec![
+            SolarItem { index: 4, azimuth: not_nan!(300.0), altitude: not_nan!(-0.45) },
+            SolarItem { index: 3, azimuth: not_nan!(250.0), altitude: not_nan!(0.01) },
+        ]
+    }
+
+    #[fixture]
+    fn solar_items(
+        solar_items_rising: Vec<SolarItem>,
+        solar_items_setting: Vec<SolarItem>,
+    ) -> Vec<SolarItem> {
+        [solar_items_rising, solar_items_setting].concat()
     }
 
     #[rstest]
@@ -143,47 +158,12 @@ mod tests {
     #[case("18:00:00", 2)]
     #[case("23:59:59", 2)]
     fn test_select_image_h24(
-        props_24h: WallpaperPropertiesH24,
+        time_items: Vec<TimeItem>,
         #[case] time: NaiveTime,
         #[case] expected_result: usize,
     ) {
-        let result = select_image_h24(&props_24h, &time);
+        let result = select_image_h24(&time_items, &time);
         assert_eq!(result.unwrap(), expected_result);
-    }
-
-    #[fixture]
-    fn props_solar() -> WallpaperPropertiesSolar {
-        WallpaperPropertiesSolar {
-            appearance: None,
-            solar_info: vec![
-                // intentionally unordered
-                SolarItem {
-                    index: 0,
-                    azimuth: not_nan!(45.0),
-                    altitude: not_nan!(-0.58),
-                },
-                SolarItem {
-                    index: 4,
-                    azimuth: not_nan!(300.0),
-                    altitude: not_nan!(-0.45),
-                },
-                SolarItem {
-                    index: 1,
-                    azimuth: not_nan!(100.0),
-                    altitude: not_nan!(0.01),
-                },
-                SolarItem {
-                    index: 2,
-                    azimuth: not_nan!(170.0),
-                    altitude: not_nan!(0.65),
-                },
-                SolarItem {
-                    index: 3,
-                    azimuth: not_nan!(250.0),
-                    altitude: not_nan!(0.01),
-                },
-            ],
-        }
     }
 
     #[rstest]
@@ -196,38 +176,12 @@ mod tests {
     #[case(Position { azimuth: 251.0, altitude: 0.0 }, 3)]
     #[case(Position { azimuth: 301.0, altitude: -0.50 }, 4)]
     fn test_select_image_solar_from_sun_pos_northern_hemi(
-        props_solar: WallpaperPropertiesSolar,
+        solar_items: Vec<SolarItem>,
         #[case] sun_pos: Position,
         #[case] expected_result: usize,
     ) {
-        let result = select_image_solar_from_sun_pos(&props_solar, &sun_pos, &Hemisphere::Northern);
+        let result = select_image_solar_from_sun_pos(&solar_items, &sun_pos, &Hemisphere::Northern);
         assert_eq!(result.unwrap(), expected_result);
-    }
-
-    /// No items for sun setting phase.
-    #[fixture]
-    fn props_solar_no_setting() -> WallpaperPropertiesSolar {
-        WallpaperPropertiesSolar {
-            appearance: None,
-            solar_info: vec![
-                // intentionally unordered
-                SolarItem {
-                    index: 1,
-                    azimuth: not_nan!(100.0),
-                    altitude: not_nan!(0.01),
-                },
-                SolarItem {
-                    index: 0,
-                    azimuth: not_nan!(45.0),
-                    altitude: not_nan!(-0.58),
-                },
-                SolarItem {
-                    index: 2,
-                    azimuth: not_nan!(170.0),
-                    altitude: not_nan!(0.65),
-                },
-            ],
-        }
     }
 
     #[rstest]
@@ -239,15 +193,12 @@ mod tests {
     #[case(Position { azimuth: 251.0, altitude: 0.0 }, 2)]
     #[case(Position { azimuth: 301.0, altitude: -0.50 }, 2)]
     fn test_select_image_solar_from_sun_pos_no_setting(
-        props_solar_no_setting: WallpaperPropertiesSolar,
+        solar_items_rising: Vec<SolarItem>,
         #[case] sun_pos: Position,
         #[case] expected_result: usize,
     ) {
-        let result = select_image_solar_from_sun_pos(
-            &props_solar_no_setting,
-            &sun_pos,
-            &Hemisphere::Northern,
-        );
+        let result =
+            select_image_solar_from_sun_pos(&solar_items_rising, &sun_pos, &Hemisphere::Northern);
         assert_eq!(result.unwrap(), expected_result);
     }
 }
