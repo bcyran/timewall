@@ -1,4 +1,5 @@
 use chrono::{DateTime, Local, NaiveTime, Timelike};
+use itertools::Itertools;
 use sun::Position;
 
 use crate::{
@@ -11,17 +12,20 @@ const SECONDS_IN_A_DAY: u32 = 24 * 60 * 60;
 /// Select index of image corresponding with the given time.
 pub fn select_image_h24(properties: &WallpaperPropertiesH24, time: &NaiveTime) -> usize {
     let day_progress = time.num_seconds_from_midnight() as f64 / SECONDS_IN_A_DAY as f64;
-    let mut sorted_time_items = properties.time_info.clone();
-    sorted_time_items.sort_by(|a, b| a.time.partial_cmp(&b.time).unwrap());
-    // item with greatest time value lower than current day progress
-    let matching_today_item = sorted_time_items
+    let sorted_time_items = properties
+        .time_info
         .iter()
-        .filter(|item| item.time.partial_cmp(&day_progress).unwrap().is_le())
-        .last();
-    // if missing then get the item with greatest time value overall
-    // (last from the "previous" day)
-    let curent_item = matching_today_item.unwrap_or(sorted_time_items.last().unwrap());
-    curent_item.index
+        .sorted_by(|a, b| a.time.partial_cmp(&b.time).unwrap())
+        .collect_vec();
+    // Find the last item with time lower or equal to current.
+    // If no such item, fall back to the overall last item.
+    // This represents the situation when the first item doesn't have 00:00 timestamp,
+    // we want to use the last one from the "previous" day.
+    sorted_time_items
+        .iter()
+        .rfind(|item| item.time <= day_progress)
+        .unwrap_or(sorted_time_items.last().unwrap())
+        .index
 }
 
 /// Select index of image corresponding with the sun position for given datetime and coordinates.
@@ -41,28 +45,26 @@ fn select_image_solar_from_sun_pos(
     hemishphere: &Hemisphere,
 ) -> usize {
     let (rising_items, setting_items) = sort_solar_items(&properties.solar_info, hemishphere);
-    let matching_item = if is_rising(sun_pos.azimuth, hemishphere) {
-        // if the sun is currently rising get last item with altitude lower than the current
-        // if there's no such items, fall back to the last one from setting items
+    let current_item = if is_rising(sun_pos.azimuth, hemishphere) {
+        // If the sun is currently rising, get last item with altitude lower than the current.
+        // If there's no such items, fall back to the last one from setting items.
         rising_items
             .iter()
-            .filter(|item| item.altitude <= sun_pos.altitude)
-            .last()
+            .rfind(|item| item.altitude <= sun_pos.altitude)
             .unwrap_or(setting_items.last().unwrap())
     } else {
-        // if the sun is currently setting get last item with altitude higher than the current
-        // if there's no such items, fall back to the last one from rising items
+        // If the sun is currently setting, get last item with altitude higher than the current.
+        // If there's no such items, fall back to the last one from rising items.
         setting_items
             .iter()
-            .filter(|item| item.altitude >= sun_pos.altitude)
-            .last()
+            .rfind(|item| item.altitude >= sun_pos.altitude)
             .unwrap_or(rising_items.last().unwrap())
     };
-    matching_item.index
+    current_item.index
 }
 
-/// Split collection of solar items (sun positions) into rising and setting items,
-/// sort both collections in the natural occurrence order.
+/// Split collection of solar items (sun positions) into rising and setting items.
+/// Sort both collections in the natural occurrence order.
 /// Sun altitude increases while it rises and decreases when it's setting.
 fn sort_solar_items<'i>(
     items: &'i Vec<SolarItem>,
