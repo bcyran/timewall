@@ -127,15 +127,15 @@ mod tests {
     }
 
     #[rstest]
-    #[case(NaiveTime::from_hms(0, 0, 0), 2)]
-    #[case(NaiveTime::from_hms(0, 20, 0), 2)]
-    #[case(NaiveTime::from_hms(5, 59, 59), 2)]
-    #[case(NaiveTime::from_hms(6, 00, 00), 0)]
-    #[case(NaiveTime::from_hms(11, 59, 00), 0)]
-    #[case(NaiveTime::from_hms(12, 00, 00), 1)]
-    #[case(NaiveTime::from_hms(15, 00, 00), 1)]
-    #[case(NaiveTime::from_hms(18, 00, 00), 2)]
-    #[case(NaiveTime::from_hms(23, 59, 59), 2)]
+    #[case("00:00:00", 2)]
+    #[case("00:20:00", 2)]
+    #[case("05:59:59", 2)]
+    #[case("06:00:00", 0)]
+    #[case("11:59:00", 0)]
+    #[case("12:00:00", 1)]
+    #[case("15:00:00", 1)]
+    #[case("18:00:00", 2)]
+    #[case("23:59:59", 2)]
     fn test_select_image_h24(
         props_24h: WallpaperPropertiesH24,
         #[case] time: NaiveTime,
