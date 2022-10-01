@@ -35,7 +35,7 @@ pub struct TimeItem {
     pub index: usize,
     // Point in time.
     #[serde(rename = "t")]
-    pub time: f32,
+    pub time: f64,
 }
 
 /// Property List for the sun based wallpaper.
@@ -50,17 +50,17 @@ pub struct WallpaperPropertiesSolar {
 }
 
 /// Single image sequence item of the sun based wallpaper.
-#[derive(Deserialize, Serialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Clone, Debug)]
 pub struct SolarItem {
     // Index of the image in the sequence.
     #[serde(rename = "i")]
     pub index: usize,
     // Sun altitude.
     #[serde(rename = "a")]
-    pub altitude: f32,
+    pub altitude: f64,
     // Sun azimuth.
     #[serde(rename = "z")]
-    pub azimuth: f32,
+    pub azimuth: f64,
 }
 
 pub trait Plist: DeserializeOwned + Serialize {
@@ -154,7 +154,7 @@ mod tests {
             time_info: vec![
                 TimeItem {
                     index: 0,
-                    time: 0.29166666,
+                    time: 0.2916666567325592,
                 },
                 TimeItem {
                     index: 1,
