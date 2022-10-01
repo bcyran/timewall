@@ -24,7 +24,8 @@ pub fn select_image_h24(properties: &WallpaperPropertiesH24, time: &NaiveTime) -
     sorted_time_items
         .iter()
         .rfind(|item| item.time <= day_progress)
-        .unwrap_or(sorted_time_items.last().unwrap())
+        .or(sorted_time_items.last())
+        .unwrap()
         .index
 }
 
