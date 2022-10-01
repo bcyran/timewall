@@ -1,5 +1,7 @@
+use anyhow::{Context, Ok, Result};
 use chrono::{DateTime, Local, NaiveTime, Timelike};
 use itertools::Itertools;
+use std::cmp::Reverse;
 use sun::Position;
 
 use crate::{
@@ -10,23 +12,24 @@ use crate::{
 const SECONDS_IN_A_DAY: u32 = 24 * 60 * 60;
 
 /// Select index of image corresponding with the given time.
-pub fn select_image_h24(properties: &WallpaperPropertiesH24, time: &NaiveTime) -> usize {
+pub fn select_image_h24(properties: &WallpaperPropertiesH24, time: &NaiveTime) -> Result<usize> {
     let day_progress = time.num_seconds_from_midnight() as f64 / SECONDS_IN_A_DAY as f64;
     let sorted_time_items = properties
         .time_info
         .iter()
-        .sorted_by(|a, b| a.time.partial_cmp(&b.time).unwrap())
+        .sorted_by_key(|item| item.time)
         .collect_vec();
     // Find the last item with time lower or equal to current.
     // If no such item, fall back to the overall last item.
     // This represents the situation when the first item doesn't have 00:00 timestamp,
     // we want to use the last one from the "previous" day.
-    sorted_time_items
+    let maybe_current_item = sorted_time_items
         .iter()
-        .rfind(|item| item.time <= day_progress)
-        .or(sorted_time_items.last())
-        .unwrap()
-        .index
+        .rfind(|item| f64::from(item.time) <= day_progress)
+        .or(sorted_time_items.last());
+    let current_item =
+        maybe_current_item.with_context(|| format!("no time items to choose from"))?;
+    Ok(current_item.index)
 }
 
 /// Select index of image corresponding with the sun position for given datetime and coordinates.
@@ -34,7 +37,7 @@ pub fn select_image_solar(
     properties: &WallpaperPropertiesSolar,
     datetime: &DateTime<Local>,
     coords: &Coords,
-) -> usize {
+) -> Result<usize> {
     let sun_pos = sun::pos(datetime.timestamp_millis(), coords.lat, coords.lon);
     // Both values are supposed to be in radians but it looks like only azimuth actually is?
     // Let's ensure both are degrees before passing the position further.
@@ -50,7 +53,7 @@ fn select_image_solar_from_sun_pos(
     properties: &WallpaperPropertiesSolar,
     sun_pos: &Position,
     hemishphere: &Hemisphere,
-) -> usize {
+) -> Result<usize> {
     let (rising_items, setting_items) = sort_solar_items(&properties.solar_info, hemishphere);
     let maybe_current_item = if is_rising(sun_pos.azimuth, hemishphere) {
         // If the sun is currently rising, get last item with altitude lower than the current.
@@ -58,7 +61,7 @@ fn select_image_solar_from_sun_pos(
         // If no setting items, fall back to the last of rising items.
         rising_items
             .iter()
-            .rfind(|item| item.altitude <= sun_pos.altitude)
+            .rfind(|item| f64::from(item.altitude) <= sun_pos.altitude)
             .or(setting_items.last())
             .or(rising_items.last())
     } else {
@@ -67,11 +70,13 @@ fn select_image_solar_from_sun_pos(
         // If no rising items, fall back to the last of setting items.
         setting_items
             .iter()
-            .rfind(|item| item.altitude >= sun_pos.altitude)
+            .rfind(|item| f64::from(item.altitude) >= sun_pos.altitude)
             .or(rising_items.last())
             .or(setting_items.last())
     };
-    maybe_current_item.unwrap().index
+    let current_item =
+        maybe_current_item.with_context(|| format!("no solar items to choose from"))?;
+    Ok(current_item.index)
 }
 
 /// Split collection of solar items (sun positions) into rising and setting items.
@@ -83,9 +88,9 @@ fn sort_solar_items<'i>(
 ) -> (Vec<&'i SolarItem>, Vec<&'i SolarItem>) {
     let (mut rising_items, mut setting_items): (Vec<_>, Vec<_>) = items
         .iter()
-        .partition(|item| is_rising(item.azimuth, hemishphere));
-    rising_items.sort_by(|a, b| a.altitude.partial_cmp(&b.altitude).unwrap());
-    setting_items.sort_by(|a, b| a.altitude.partial_cmp(&b.altitude).unwrap().reverse());
+        .partition(|item| is_rising(f64::from(item.azimuth), hemishphere));
+    rising_items.sort_by_key(|item| item.altitude);
+    setting_items.sort_by_key(|item| Reverse(item.altitude));
     (rising_items, setting_items)
 }
 
@@ -113,15 +118,15 @@ mod tests {
                 // intentionally unordered
                 TimeItem {
                     index: 0,
-                    time: 0.25,
+                    time: not_nan!(0.25),
                 },
                 TimeItem {
                     index: 2,
-                    time: 0.75,
+                    time: not_nan!(0.75),
                 },
                 TimeItem {
                     index: 1,
-                    time: 0.5,
+                    time: not_nan!(0.5),
                 },
             ],
         }
@@ -143,7 +148,7 @@ mod tests {
         #[case] expected_result: usize,
     ) {
         let result = select_image_h24(&props_24h, &time);
-        assert_eq!(result, expected_result);
+        assert_eq!(result.unwrap(), expected_result);
     }
 
     #[fixture]
@@ -154,28 +159,28 @@ mod tests {
                 // intentionally unordered
                 SolarItem {
                     index: 0,
-                    azimuth: 45.0,
-                    altitude: -0.58,
+                    azimuth: not_nan!(45.0),
+                    altitude: not_nan!(-0.58),
                 },
                 SolarItem {
                     index: 4,
-                    azimuth: 300.0,
-                    altitude: -0.45,
+                    azimuth: not_nan!(300.0),
+                    altitude: not_nan!(-0.45),
                 },
                 SolarItem {
                     index: 1,
-                    azimuth: 100.0,
-                    altitude: 0.01,
+                    azimuth: not_nan!(100.0),
+                    altitude: not_nan!(0.01),
                 },
                 SolarItem {
                     index: 2,
-                    azimuth: 170.0,
-                    altitude: 0.65,
+                    azimuth: not_nan!(170.0),
+                    altitude: not_nan!(0.65),
                 },
                 SolarItem {
                     index: 3,
-                    azimuth: 250.0,
-                    altitude: 0.01,
+                    azimuth: not_nan!(250.0),
+                    altitude: not_nan!(0.01),
                 },
             ],
         }
@@ -196,7 +201,7 @@ mod tests {
         #[case] expected_result: usize,
     ) {
         let result = select_image_solar_from_sun_pos(&props_solar, &sun_pos, &Hemisphere::Northern);
-        assert_eq!(result, expected_result);
+        assert_eq!(result.unwrap(), expected_result);
     }
 
     /// No items for sun setting phase.
@@ -208,18 +213,18 @@ mod tests {
                 // intentionally unordered
                 SolarItem {
                     index: 1,
-                    azimuth: 100.0,
-                    altitude: 0.01,
+                    azimuth: not_nan!(100.0),
+                    altitude: not_nan!(0.01),
                 },
                 SolarItem {
                     index: 0,
-                    azimuth: 45.0,
-                    altitude: -0.58,
+                    azimuth: not_nan!(45.0),
+                    altitude: not_nan!(-0.58),
                 },
                 SolarItem {
                     index: 2,
-                    azimuth: 170.0,
-                    altitude: 0.65,
+                    azimuth: not_nan!(170.0),
+                    altitude: not_nan!(0.65),
                 },
             ],
         }
@@ -243,6 +248,6 @@ mod tests {
             &sun_pos,
             &Hemisphere::Northern,
         );
-        assert_eq!(result, expected_result);
+        assert_eq!(result.unwrap(), expected_result);
     }
 }

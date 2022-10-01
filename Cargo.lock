@@ -685,6 +685,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f7254b99e31cad77da24b08ebf628882739a608578bb1bcdfc1f9c21260d7c0"
 
 [[package]]
+name = "ordered-float"
+version = "3.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "129d36517b53c461acc6e1580aeb919c8ae6708a4b1eae61c4463a615d4f0411"
+dependencies = [
+ "num-traits",
+ "serde",
+]
+
+[[package]]
 name = "os_str_bytes"
 version = "6.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1060,6 +1070,7 @@ dependencies = [
  "itertools",
  "libheif-rs",
  "log",
+ "ordered-float",
  "plist",
  "png",
  "predicates",

@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use anyhow::{anyhow, Context, Result};
+use ordered_float::NotNan;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 use crate::metadata::AppleDesktop;
@@ -35,7 +36,7 @@ pub struct TimeItem {
     pub index: usize,
     // Point in time.
     #[serde(rename = "t")]
-    pub time: f64,
+    pub time: NotNan<f64>,
 }
 
 /// Property List for the sun based wallpaper.
@@ -57,10 +58,10 @@ pub struct SolarItem {
     pub index: usize,
     // Sun altitude.
     #[serde(rename = "a")]
-    pub altitude: f64,
+    pub altitude: NotNan<f64>,
     // Sun azimuth.
     #[serde(rename = "z")]
-    pub azimuth: f64,
+    pub azimuth: NotNan<f64>,
 }
 
 pub trait Plist: DeserializeOwned + Serialize {
@@ -154,11 +155,11 @@ mod tests {
             time_info: vec![
                 TimeItem {
                     index: 0,
-                    time: 0.2916666567325592,
+                    time: not_nan!(0.2916666567325592),
                 },
                 TimeItem {
                     index: 1,
-                    time: 0.0,
+                    time: not_nan!(0.0),
                 },
             ],
         };
@@ -175,13 +176,13 @@ mod tests {
             solar_info: vec![
                 SolarItem {
                     index: 0,
-                    altitude: 15.0,
-                    azimuth: 130.0,
+                    altitude: not_nan!(15.0),
+                    azimuth: not_nan!(130.0),
                 },
                 SolarItem {
                     index: 1,
-                    altitude: -70.0,
-                    azimuth: 54.0,
+                    altitude: not_nan!(-70.0),
+                    azimuth: not_nan!(54.0),
                 },
             ],
         };
