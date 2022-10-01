@@ -35,6 +35,12 @@ pub fn select_image_solar(
     coords: &Coords,
 ) -> usize {
     let sun_pos = sun::pos(datetime.timestamp_millis(), coords.lat, coords.lon);
+    // Both values are supposed to be in radians but it looks like only azimuth actually is?
+    // Let's ensure both are degrees before passing the position further.
+    let sun_pos = Position {
+        azimuth: sun_pos.azimuth.to_degrees(),
+        altitude: sun_pos.altitude,
+    };
     select_image_solar_from_sun_pos(properties, &sun_pos, &coords.hemishphere())
 }
 
