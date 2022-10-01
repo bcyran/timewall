@@ -1,11 +1,12 @@
 use std::path::{Path, PathBuf};
 
-use crate::heic;
-use crate::metadata::AppleDesktop;
-use crate::properties::WallpaperProperties;
 use anyhow::{anyhow, Result};
 use libheif_rs::HeifContext;
 use log::debug;
+
+use crate::heic;
+use crate::metadata::AppleDesktop;
+use crate::properties::WallpaperProperties;
 
 const PROPERTIES_NAME: &str = "properties.xml";
 

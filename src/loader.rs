@@ -1,7 +1,9 @@
+use std::{fs, io, path::Path};
+
+use anyhow::Result;
+
 use crate::wallpaper::Wallpaper;
 use crate::{cache::Cache, wallpaper::unpack_heic};
-use anyhow::Result;
-use std::{fs, io, path::Path};
 
 /// Unpacks HEIC files and loads them into `Wallpaper` structs, while transparently caching them.
 #[derive(Debug)]

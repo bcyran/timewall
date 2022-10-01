@@ -1,5 +1,6 @@
-use clap::{Parser, Subcommand};
 use std::path::PathBuf;
+
+use clap::{Parser, Subcommand};
 
 /// All-in-one tool for Apple dynamic HEIC wallpapers on GNU/Linux
 #[derive(Parser, Debug)]

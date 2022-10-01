@@ -89,9 +89,10 @@ fn is_rising(azimuth: f64, hemishphere: &Hemisphere) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use rstest::*;
+
     use super::*;
     use crate::properties::{SolarItem, TimeItem};
-    use rstest::*;
 
     #[fixture]
     fn props_24h() -> WallpaperPropertiesH24 {

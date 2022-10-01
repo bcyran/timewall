@@ -1,9 +1,10 @@
-use directories::ProjectDirs;
 use std::{
     collections::HashSet,
     fs,
     path::{Path, PathBuf},
 };
+
+use directories::ProjectDirs;
 
 const APP_QUALIFIER: &str = "dev.cyran";
 const APP_NAME: &str = "timewall";

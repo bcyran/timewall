@@ -1,20 +1,21 @@
-use anyhow::{Ok, Result};
-use clap::Parser;
-use loader::WallpaperLoader;
+use std::f64::consts::PI;
 use std::path::Path;
+
+use anyhow::{Ok, Result};
 use chrono::prelude::*;
 use chrono::Duration;
-use std::f64::consts::PI;
+use clap::Parser;
+use loader::WallpaperLoader;
 
 mod cache;
 mod cli;
+mod geo;
 mod heic;
 mod loader;
 mod metadata;
 mod properties;
-mod wallpaper;
 mod selection;
-mod geo;
+mod wallpaper;
 
 use metadata::ImageInfo;
 
@@ -46,7 +47,12 @@ pub fn set<P: AsRef<Path>>(path: P) -> Result<()> {
     while time < time_end {
         time = time + Duration::minutes(30);
         let sun_pos = sun::pos(time.timestamp_millis(), lat, lon);
-        println!("{}: {} {}", time, sun_pos.azimuth * 180.0 / PI, sun_pos.altitude);
+        println!(
+            "{}: {} {}",
+            time,
+            sun_pos.azimuth * 180.0 / PI,
+            sun_pos.altitude
+        );
     }
 
     Ok(())
