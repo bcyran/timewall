@@ -134,10 +134,17 @@ impl WallpaperProperties {
 
     /// Get number of images defined by those properties.
     pub fn num_images(&self) -> usize {
-        match self {
-            WallpaperProperties::H24(properties) => properties.time_info.len(),
-            WallpaperProperties::Solar(properties) => properties.solar_info.len(),
-        }
+        // We can't just count time / solar items because they can repeat the same image
+        // for different times!
+        let max_index = match self {
+            WallpaperProperties::H24(properties) => {
+                properties.time_info.iter().map(|item| item.index).max()
+            }
+            WallpaperProperties::Solar(properties) => {
+                properties.solar_info.iter().map(|item| item.index).max()
+            }
+        };
+        max_index.unwrap() + 1
     }
 }
 
