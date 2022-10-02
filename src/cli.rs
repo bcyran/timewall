@@ -33,6 +33,6 @@ pub enum Action {
     Set {
         /// Path to HEIC file
         #[clap(parse(from_os_str))]
-        file: PathBuf,
+        file: Option<PathBuf>,
     },
 }

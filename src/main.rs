@@ -1,9 +1,9 @@
 use std::path::Path;
 
-use anyhow::{Ok, Result};
+use anyhow::Context;
+use anyhow::{anyhow, Ok, Result};
 use chrono::prelude::*;
 use clap::Parser;
-use geo::Coords;
 use loader::WallpaperLoader;
 use properties::WallpaperProperties;
 
@@ -45,28 +45,36 @@ fn main() -> Result<()> {
     }
 }
 
-pub fn set<P: AsRef<Path>>(path: P) -> Result<()> {
+pub fn set<P: AsRef<Path>>(path: Option<P>) -> Result<()> {
     let config = Config::find()?;
-    println!("{config:?}");
-    let mut loader = WallpaperLoader::new();
     let last_wallpaper = LastWallpaper::find();
-    println!("{loader:?}");
-    let wallpaper = loader.load(&path);
-    last_wallpaper.save(&path);
-    println!("{wallpaper:?}");
+
+    let wall_path = if let Some(given_path) = path {
+        last_wallpaper.save(&given_path);
+        given_path.as_ref().to_path_buf()
+    } else if let Some(last_path) = last_wallpaper.get() {
+        last_path
+    } else {
+        return Err(anyhow!("no image to set given"));
+    };
+
+    let wallpaper = WallpaperLoader::new().load(&wall_path);
 
     let now = Local::now();
-    let current_index = match wallpaper.properties {
+    let current_image_index = match wallpaper.properties {
         WallpaperProperties::H24(props) => select_image_h24(&props.time_info, &now.time()),
         WallpaperProperties::Solar(props) => {
             select_image_solar(&props.solar_info, &now, &config.coords)
         }
-    }?;
-    let current_image_path = wallpaper.images.get(current_index).unwrap();
+    }
+    .with_context(|| format!("could not determine image to set"))?;
 
-    println!("image index: {}", current_index);
+    let current_image_path = wallpaper
+        .images
+        .get(current_image_index)
+        .with_context(|| format!("missing image specified by metadata"))?;
 
-    set_wallpaper(current_image_path)?;
+    set_wallpaper(current_image_path).with_context(|| format!("could not set the wallpaper"))?;
 
     Ok(())
 }
