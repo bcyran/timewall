@@ -34,5 +34,8 @@ pub enum Action {
         /// Path to HEIC file
         #[clap(parse(from_os_str))]
         file: Option<PathBuf>,
+        /// Run continuously and update the wallpaper as time passes.
+        #[clap(short, long, action)]
+        daemon: bool,
     },
 }
