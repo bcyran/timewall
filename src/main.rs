@@ -11,6 +11,8 @@ use properties::WallpaperProperties;
 mod macros;
 mod cache;
 mod cli;
+mod config;
+mod constants;
 mod geo;
 mod heic;
 mod loader;
@@ -22,6 +24,7 @@ mod wallpaper;
 
 use metadata::ImageInfo;
 
+use crate::config::Config;
 use crate::selection::select_image_h24;
 use crate::selection::select_image_solar;
 use crate::setter::set_wallpaper;
@@ -42,19 +45,19 @@ fn main() -> Result<()> {
 }
 
 pub fn set<P: AsRef<Path>>(path: P) -> Result<()> {
+    let config = Config::find()?;
+    println!("{config:?}");
     let mut loader = WallpaperLoader::new();
     println!("{loader:?}");
     let wallpaper = loader.load(path);
     println!("{wallpaper:?}");
 
-    let coords = Coords {
-        lat: 50.16,
-        lon: 19.10,
-    };
     let now = Local::now();
     let current_index = match wallpaper.properties {
         WallpaperProperties::H24(props) => select_image_h24(&props.time_info, &now.time()),
-        WallpaperProperties::Solar(props) => select_image_solar(&props.solar_info, &now, &coords),
+        WallpaperProperties::Solar(props) => {
+            select_image_solar(&props.solar_info, &now, &config.coords)
+        }
     }?;
     let current_image_path = wallpaper.images.get(current_index).unwrap();
 

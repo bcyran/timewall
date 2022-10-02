@@ -1,8 +1,11 @@
+use serde::Deserialize;
+
 pub enum Hemisphere {
     Northern,
     Southern,
 }
 
+#[derive(Deserialize, PartialEq, Debug)]
 pub struct Coords {
     pub lat: f64,
     pub lon: f64,

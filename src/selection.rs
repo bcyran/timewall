@@ -1,7 +1,8 @@
+use std::cmp::Reverse;
+
 use anyhow::{Context, Ok, Result};
 use chrono::{DateTime, Local, NaiveTime, Timelike};
 use itertools::Itertools;
-use std::cmp::Reverse;
 use sun::Position;
 
 use crate::{

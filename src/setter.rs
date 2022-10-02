@@ -1,6 +1,7 @@
-use anyhow::{Context, Result};
 use std::path::Path;
 use std::process::Command;
+
+use anyhow::{Context, Result};
 
 pub fn set_wallpaper<P: AsRef<Path>>(path: P) -> Result<()> {
     let abs_path = path.as_ref().canonicalize()?;

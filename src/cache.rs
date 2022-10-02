@@ -6,8 +6,7 @@ use std::{
 
 use directories::ProjectDirs;
 
-const APP_QUALIFIER: &str = "dev.cyran";
-const APP_NAME: &str = "timewall";
+use crate::constants::{APP_NAME, APP_QUALIFIER};
 
 /// Abstraction over a cache directory. Manges multiple cache subdirectories accessed by
 /// a string key.
