@@ -16,10 +16,7 @@ const SECONDS_IN_A_DAY: u32 = 24 * 60 * 60;
 /// Select index of image corresponding with the given time.
 pub fn select_image_h24(time_items: &[TimeItem], time: &NaiveTime) -> Result<usize> {
     let day_progress = time.num_seconds_from_midnight() as f64 / SECONDS_IN_A_DAY as f64;
-    let sorted_time_items = time_items
-        .iter()
-        .sorted_by_key(|item| item.time)
-        .collect_vec();
+    let sorted_time_items = sort_time_items(time_items);
     // Find the last item with time lower or equal to current.
     // If no such item, fall back to the overall last item.
     // This represents the situation when the first item doesn't have 00:00 timestamp,
@@ -31,6 +28,22 @@ pub fn select_image_h24(time_items: &[TimeItem], time: &NaiveTime) -> Result<usi
     let current_item =
         maybe_current_item.with_context(|| format!("no time items to choose from"))?;
     Ok(current_item.index)
+}
+
+/// Get indices of images in their occurrence order for time items.
+pub fn get_image_order_h24(time_items: &[TimeItem]) -> Vec<usize> {
+    sort_time_items(time_items)
+        .iter()
+        .map(|item| item.index)
+        .collect_vec()
+}
+
+/// Sort time items by their time of occurrence.
+fn sort_time_items(time_items: &[TimeItem]) -> Vec<&TimeItem> {
+    time_items
+        .iter()
+        .sorted_by_key(|item| item.time)
+        .collect_vec()
 }
 
 /// Select index of image corresponding with the sun position for given datetime and coordinates.
@@ -54,7 +67,7 @@ fn select_image_solar_from_sun_pos(
     sun_pos: &Position,
     hemishphere: &Hemisphere,
 ) -> Result<usize> {
-    let (rising_items, setting_items) = sort_solar_items(solar_items, hemishphere);
+    let (rising_items, setting_items) = sort_solar_items(solar_items);
     let maybe_current_item = if is_rising(sun_pos.azimuth, hemishphere) {
         // If the sun is currently rising, get last item with altitude lower than the current.
         // If there's no such items, fall back to the last one from setting items.
@@ -79,16 +92,25 @@ fn select_image_solar_from_sun_pos(
     Ok(current_item.index)
 }
 
+/// Get indices of images in their occurrence order for solar items.
+pub fn get_image_order_solar(solar_items: &[SolarItem]) -> Vec<usize> {
+    let (rising_items, setting_items) = sort_solar_items(solar_items);
+    rising_items
+        .iter()
+        .chain(setting_items.iter())
+        .map(|item| item.index)
+        .collect_vec()
+}
+
 /// Split collection of solar items (sun positions) into rising and setting items.
 /// Sort both collections in the natural occurrence order.
 /// Sun altitude increases while it rises and decreases when it's setting.
-fn sort_solar_items<'i>(
-    items: &'i [SolarItem],
-    hemishphere: &Hemisphere,
-) -> (Vec<&'i SolarItem>, Vec<&'i SolarItem>) {
+/// We assume Northen hemisphere for sun coordinates from metadata.
+fn sort_solar_items<'i>(items: &'i [SolarItem]) -> (Vec<&'i SolarItem>, Vec<&'i SolarItem>) {
+    // XXX: Should the hemisphere (coordinates) be taken from image EXIF?
     let (mut rising_items, mut setting_items): (Vec<_>, Vec<_>) = items
         .iter()
-        .partition(|item| is_rising(f64::from(item.azimuth), hemishphere));
+        .partition(|item| is_rising(f64::from(item.azimuth), &Hemisphere::Northern));
     rising_items.sort_by_key(|item| item.altitude);
     setting_items.sort_by_key(|item| Reverse(item.altitude));
     (rising_items, setting_items)
@@ -168,6 +190,12 @@ mod tests {
     }
 
     #[rstest]
+    fn test_get_image_order_h24(time_items: Vec<TimeItem>) {
+        let result = get_image_order_h24(&time_items);
+        assert_eq!(result, vec![0, 1, 2]);
+    }
+
+    #[rstest]
     #[case(Position { azimuth: 30.0, altitude: -68.0 }, 4)]
     #[case(Position { azimuth: 50.0, altitude: -50.0 }, 0)]
     #[case(Position { azimuth: 99.0, altitude: 00.0 }, 0)]
@@ -201,5 +229,11 @@ mod tests {
         let result =
             select_image_solar_from_sun_pos(&solar_items_rising, &sun_pos, &Hemisphere::Northern);
         assert_eq!(result.unwrap(), expected_result);
+    }
+
+    #[rstest]
+    fn test_get_image_order_solar(solar_items: Vec<SolarItem>) {
+        let result = get_image_order_solar(&solar_items);
+        assert_eq!(result, vec![0, 1, 2, 3, 4]);
     }
 }

@@ -20,6 +20,12 @@ pub enum Action {
         #[clap(parse(from_os_str))]
         file: PathBuf,
     },
+    /// Quickly cycle through all images in the wallpaper
+    Preview {
+        /// Path to HEIC file
+        #[clap(parse(from_os_str))]
+        file: PathBuf,
+    },
     /// Extract all images and metadata from HEIC file to a directory
     Unpack {
         /// Path to HEIC file

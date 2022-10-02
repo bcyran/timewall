@@ -29,9 +29,9 @@ use metadata::ImageInfo;
 
 use crate::cache::LastWallpaper;
 use crate::config::Config;
-use crate::constants::UPDATE_INTERVAL_MINUTES;
-use crate::selection::select_image_h24;
+use crate::constants::{PREVIEW_UPDATE_INTERVAL_MILLIS, UPDATE_INTERVAL_MINUTES};
 use crate::selection::select_image_solar;
+use crate::selection::{get_image_order_h24, get_image_order_solar, select_image_h24};
 use crate::setter::set_wallpaper;
 
 fn main() -> Result<()> {
@@ -44,6 +44,7 @@ fn main() -> Result<()> {
             println!("{}", ImageInfo::from_image(file)?);
             Ok(())
         }
+        cli::Action::Preview { file } => preview(file),
         cli::Action::Unpack { file, output } => wallpaper::unpack_heic(file, output),
         cli::Action::Set { file, daemon } => set(file, daemon),
     }
@@ -90,6 +91,22 @@ pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
 
         debug!("sleeping for {UPDATE_INTERVAL_MINUTES} minutes");
         thread::sleep(Duration::from_secs(UPDATE_INTERVAL_MINUTES * 60));
+    }
+
+    Ok(())
+}
+
+pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
+    let wallpaper = WallpaperLoader::new().load(&path);
+    let image_order = match wallpaper.properties {
+        WallpaperProperties::H24(ref props) => get_image_order_h24(&props.time_info),
+        WallpaperProperties::Solar(ref props) => get_image_order_solar(&props.solar_info),
+    };
+
+    for image_index in image_order.iter().cycle() {
+        let image_path = wallpaper.images.get(*image_index).unwrap();
+        set_wallpaper(image_path).with_context(|| format!("could not set the wallpaper"))?;
+        thread::sleep(Duration::from_millis(PREVIEW_UPDATE_INTERVAL_MILLIS));
     }
 
     Ok(())
