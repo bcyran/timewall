@@ -17,12 +17,14 @@ mod loader;
 mod metadata;
 mod properties;
 mod selection;
+mod setter;
 mod wallpaper;
 
 use metadata::ImageInfo;
 
 use crate::selection::select_image_h24;
 use crate::selection::select_image_solar;
+use crate::setter::set_wallpaper;
 
 fn main() -> Result<()> {
     env_logger::init();
@@ -50,12 +52,15 @@ pub fn set<P: AsRef<Path>>(path: P) -> Result<()> {
         lon: 19.10,
     };
     let now = Local::now();
-    let index = match wallpaper.properties {
+    let current_index = match wallpaper.properties {
         WallpaperProperties::H24(props) => select_image_h24(&props.time_info, &now.time()),
         WallpaperProperties::Solar(props) => select_image_solar(&props.solar_info, &now, &coords),
-    };
+    }?;
+    let current_image_path = wallpaper.images.get(current_index).unwrap();
 
-    println!("image index: {}", index.unwrap());
+    println!("image index: {}", current_index);
+
+    set_wallpaper(current_image_path)?;
 
     Ok(())
 }
