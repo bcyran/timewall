@@ -122,13 +122,19 @@ impl LastWallpaper {
 #[cfg(test)]
 mod tests {
     use assert_fs::prelude::*;
+    use assert_fs::TempDir;
     use predicates::prelude::*;
+    use rstest::*;
 
     use super::*;
 
-    #[test]
-    fn test_cache_in_dir_not_exists() {
-        let tmp_dir = assert_fs::TempDir::new().unwrap();
+    #[fixture]
+    fn tmp_dir() -> TempDir {
+        assert_fs::TempDir::new().unwrap()
+    }
+
+    #[rstest]
+    fn test_cache_in_dir_not_exists(tmp_dir: TempDir) {
         let expected_dir = tmp_dir.child("random_dir");
 
         Cache::in_dir(&expected_dir);
@@ -136,9 +142,8 @@ mod tests {
         expected_dir.assert(predicate::path::is_dir());
     }
 
-    #[test]
-    fn test_cache_in_dir_exists() {
-        let tmp_dir = assert_fs::TempDir::new().unwrap();
+    #[rstest]
+    fn test_cache_in_dir_exists(tmp_dir: TempDir) {
         let expected_entries = HashSet::from([String::from("first"), String::from("other")]);
         for entry in &expected_entries {
             tmp_dir.child(entry).create_dir_all().unwrap();
@@ -149,9 +154,8 @@ mod tests {
         assert_eq!(cache.entries, expected_entries);
     }
 
-    #[test]
-    fn test_cache_entry_not_exists() {
-        let tmp_dir = assert_fs::TempDir::new().unwrap();
+    #[rstest]
+    fn test_cache_entry_not_exists(tmp_dir: TempDir) {
         let entry_name = String::from("random-entry");
         let expected_dir = tmp_dir.child(&entry_name);
 
@@ -161,9 +165,8 @@ mod tests {
         expected_dir.assert(predicate::path::is_dir());
     }
 
-    #[test]
-    fn test_cache_entry_exists() {
-        let tmp_dir = assert_fs::TempDir::new().unwrap();
+    #[rstest]
+    fn test_cache_entry_exists(tmp_dir: TempDir) {
         let entry_name = String::from("some_entry");
         let expected_dir = tmp_dir.child(&entry_name);
         expected_dir.create_dir_all().unwrap();
@@ -174,19 +177,17 @@ mod tests {
         expected_dir.assert(predicate::path::is_dir());
     }
 
-    #[test]
+    #[rstest]
     #[should_panic]
-    fn test_cache_entry_file_conflict() {
-        let tmp_dir = assert_fs::TempDir::new().unwrap();
+    fn test_cache_entry_file_conflict(tmp_dir: TempDir) {
         let entry_name = String::from("some_entry");
         tmp_dir.child(&entry_name).touch().unwrap();
 
         Cache::in_dir(&tmp_dir).entry(&entry_name);
     }
 
-    #[test]
-    fn test_last_wallpaper_load_not_exists() {
-        let tmp_dir = assert_fs::TempDir::new().unwrap();
+    #[rstest]
+    fn test_last_wallpaper_load_not_exists(tmp_dir: TempDir) {
         let fake_cache_dir = tmp_dir.child("cache_dir");
         let link_path = fake_cache_dir.child("test_link");
 
@@ -195,9 +196,8 @@ mod tests {
         fake_cache_dir.assert(predicate::path::exists());
     }
 
-    #[test]
-    fn test_last_wallpaper_save_get() {
-        let tmp_dir = assert_fs::TempDir::new().unwrap();
+    #[rstest]
+    fn test_last_wallpaper_save_get(tmp_dir: TempDir) {
         let target_path_1 = tmp_dir.child("target.heic");
         let target_path_2 = tmp_dir.child("other_target.heic");
         let link_path = tmp_dir.child("test_link");
