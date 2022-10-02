@@ -72,6 +72,53 @@ impl Cache {
     }
 }
 
+/// Abstraction over a symlink to the last used wallpaper.
+pub struct LastWallpaper {
+    link_path: PathBuf,
+}
+
+impl LastWallpaper {
+    /// Find user's cache directory and load instance from there.
+    pub fn find() -> Self {
+        match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
+            Some(app_dirs) => LastWallpaper::load(app_dirs.cache_dir().join("last_wall")),
+            None => panic!("couldn't determine user's home directory"),
+        }
+    }
+
+    /// Load instance from given link path.
+    fn load<P: AsRef<Path>>(link_path: P) -> Self {
+        let link_path = link_path.as_ref();
+        let parent_dir = link_path.parent().unwrap();
+
+        if !parent_dir.exists() {
+            fs::create_dir_all(parent_dir).expect("couldn't create cache directory");
+        }
+
+        LastWallpaper {
+            link_path: link_path.to_path_buf(),
+        }
+    }
+
+    /// Save path to the last wallpaper.
+    /// This may silently fail. We don't care because it's not a critical functionality.
+    pub fn save<P: AsRef<Path>>(&self, path: P) {
+        if let Ok(_) = fs::read_link(&self.link_path) {
+            fs::remove_file(&self.link_path).ok();
+        }
+        std::os::unix::fs::symlink(path.as_ref().canonicalize().unwrap(), &self.link_path).ok();
+    }
+
+    /// Get path to the last used wallpaper, if it exists.
+    pub fn get(&self) -> Option<PathBuf> {
+        if self.link_path.exists() {
+            Some(fs::read_link(&self.link_path).unwrap())
+        } else {
+            None
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert_fs::prelude::*;
@@ -80,7 +127,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_in_dir_not_exists() {
+    fn test_cache_in_dir_not_exists() {
         let tmp_dir = assert_fs::TempDir::new().unwrap();
         let expected_dir = tmp_dir.child("random_dir");
 
@@ -90,7 +137,7 @@ mod tests {
     }
 
     #[test]
-    fn test_in_dir_exists() {
+    fn test_cache_in_dir_exists() {
         let tmp_dir = assert_fs::TempDir::new().unwrap();
         let expected_entries = HashSet::from([String::from("first"), String::from("other")]);
         for entry in &expected_entries {
@@ -103,7 +150,7 @@ mod tests {
     }
 
     #[test]
-    fn test_entry_not_exists() {
+    fn test_cache_entry_not_exists() {
         let tmp_dir = assert_fs::TempDir::new().unwrap();
         let entry_name = String::from("random-entry");
         let expected_dir = tmp_dir.child(&entry_name);
@@ -115,7 +162,7 @@ mod tests {
     }
 
     #[test]
-    fn test_entry_exists() {
+    fn test_cache_entry_exists() {
         let tmp_dir = assert_fs::TempDir::new().unwrap();
         let entry_name = String::from("some_entry");
         let expected_dir = tmp_dir.child(&entry_name);
@@ -129,11 +176,43 @@ mod tests {
 
     #[test]
     #[should_panic]
-    fn test_entry_file_conflict() {
+    fn test_cache_entry_file_conflict() {
         let tmp_dir = assert_fs::TempDir::new().unwrap();
         let entry_name = String::from("some_entry");
         tmp_dir.child(&entry_name).touch().unwrap();
 
         Cache::in_dir(&tmp_dir).entry(&entry_name);
+    }
+
+    #[test]
+    fn test_last_wallpaper_load_not_exists() {
+        let tmp_dir = assert_fs::TempDir::new().unwrap();
+        let fake_cache_dir = tmp_dir.child("cache_dir");
+        let link_path = fake_cache_dir.child("test_link");
+
+        LastWallpaper::load(&link_path);
+
+        fake_cache_dir.assert(predicate::path::exists());
+    }
+
+    #[test]
+    fn test_last_wallpaper_save_get() {
+        let tmp_dir = assert_fs::TempDir::new().unwrap();
+        let target_path_1 = tmp_dir.child("target.heic");
+        let target_path_2 = tmp_dir.child("other_target.heic");
+        let link_path = tmp_dir.child("test_link");
+        target_path_1.touch().unwrap();
+        target_path_2.touch().unwrap();
+
+        let last_wall = LastWallpaper::load(&link_path);
+        link_path.assert(predicate::path::missing());
+        assert_eq!(last_wall.get(), None);
+
+        last_wall.save(&target_path_1);
+        assert_eq!(last_wall.get(), Some(target_path_1.to_path_buf()));
+
+        fs::remove_file(target_path_1).unwrap();
+        last_wall.save(&target_path_2);
+        assert_eq!(last_wall.get(), Some(target_path_2.to_path_buf()));
     }
 }

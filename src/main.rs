@@ -24,6 +24,7 @@ mod wallpaper;
 
 use metadata::ImageInfo;
 
+use crate::cache::LastWallpaper;
 use crate::config::Config;
 use crate::selection::select_image_h24;
 use crate::selection::select_image_solar;
@@ -48,8 +49,10 @@ pub fn set<P: AsRef<Path>>(path: P) -> Result<()> {
     let config = Config::find()?;
     println!("{config:?}");
     let mut loader = WallpaperLoader::new();
+    let last_wallpaper = LastWallpaper::find();
     println!("{loader:?}");
-    let wallpaper = loader.load(path);
+    let wallpaper = loader.load(&path);
+    last_wallpaper.save(&path);
     println!("{wallpaper:?}");
 
     let now = Local::now();
