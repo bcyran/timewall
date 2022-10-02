@@ -3,6 +3,7 @@ use std::cmp::Reverse;
 use anyhow::{Context, Ok, Result};
 use chrono::{DateTime, Local, NaiveTime, Timelike};
 use itertools::Itertools;
+use log::debug;
 use sun::Position;
 
 use crate::{
@@ -39,12 +40,11 @@ pub fn select_image_solar(
     coords: &Coords,
 ) -> Result<usize> {
     let sun_pos = sun::pos(datetime.timestamp_millis(), coords.lat, coords.lon);
-    // Both values are supposed to be in radians but it looks like only azimuth actually is?
-    // Let's ensure both are degrees before passing the position further.
     let sun_pos = Position {
         azimuth: sun_pos.azimuth.to_degrees(),
-        altitude: sun_pos.altitude,
+        altitude: sun_pos.altitude.to_degrees(),
     };
+    debug!("sun pos: {sun_pos:?}");
     select_image_solar_from_sun_pos(solar_items, &sun_pos, &coords.hemishphere())
 }
 
@@ -125,9 +125,9 @@ mod tests {
     #[rustfmt::skip]
     fn solar_items_rising() -> Vec<SolarItem> {
         vec![
-            SolarItem { index: 1, azimuth: not_nan!(100.0), altitude: not_nan!(0.01) },
-            SolarItem { index: 0, azimuth: not_nan!(45.0), altitude: not_nan!(-0.58) },
-            SolarItem { index: 2, azimuth: not_nan!(170.0), altitude: not_nan!(0.65) },
+            SolarItem { index: 1, azimuth: not_nan!(100.0), altitude: not_nan!(01.0) },
+            SolarItem { index: 0, azimuth: not_nan!(45.0), altitude: not_nan!(-58.0) },
+            SolarItem { index: 2, azimuth: not_nan!(170.0), altitude: not_nan!(65.0) },
         ]
     }
 
@@ -135,8 +135,8 @@ mod tests {
     #[rustfmt::skip]
     fn solar_items_setting() -> Vec<SolarItem> {
         vec![
-            SolarItem { index: 4, azimuth: not_nan!(300.0), altitude: not_nan!(-0.45) },
-            SolarItem { index: 3, azimuth: not_nan!(250.0), altitude: not_nan!(0.01) },
+            SolarItem { index: 4, azimuth: not_nan!(300.0), altitude: not_nan!(-45.0) },
+            SolarItem { index: 3, azimuth: not_nan!(250.0), altitude: not_nan!(01.0) },
         ]
     }
 
@@ -168,14 +168,14 @@ mod tests {
     }
 
     #[rstest]
-    #[case(Position { azimuth: 30.0, altitude: -0.68 }, 4)]
-    #[case(Position { azimuth: 50.0, altitude: -0.50 }, 0)]
-    #[case(Position { azimuth: 99.0, altitude: 0.0 }, 0)]
-    #[case(Position { azimuth: 101.0, altitude: 0.02 }, 1)]
-    #[case(Position { azimuth: 171.0, altitude: 0.66 }, 2)]
-    #[case(Position { azimuth: 200.0, altitude: 0.55 }, 2)]
-    #[case(Position { azimuth: 251.0, altitude: 0.0 }, 3)]
-    #[case(Position { azimuth: 301.0, altitude: -0.50 }, 4)]
+    #[case(Position { azimuth: 30.0, altitude: -68.0 }, 4)]
+    #[case(Position { azimuth: 50.0, altitude: -50.0 }, 0)]
+    #[case(Position { azimuth: 99.0, altitude: 00.0 }, 0)]
+    #[case(Position { azimuth: 101.0, altitude: 02.0 }, 1)]
+    #[case(Position { azimuth: 171.0, altitude: 66.0 }, 2)]
+    #[case(Position { azimuth: 200.0, altitude: 55.0 }, 2)]
+    #[case(Position { azimuth: 251.0, altitude: 00.0 }, 3)]
+    #[case(Position { azimuth: 301.0, altitude: -50.0 }, 4)]
     fn test_select_image_solar_from_sun_pos_northern_hemi(
         solar_items: Vec<SolarItem>,
         #[case] sun_pos: Position,
@@ -186,13 +186,13 @@ mod tests {
     }
 
     #[rstest]
-    #[case(Position { azimuth: 30.0, altitude: -0.68 }, 2)]
-    #[case(Position { azimuth: 50.0, altitude: -0.50 }, 0)]
-    #[case(Position { azimuth: 101.0, altitude: 0.02 }, 1)]
-    #[case(Position { azimuth: 171.0, altitude: 0.66 }, 2)]
-    #[case(Position { azimuth: 200.0, altitude: 0.55 }, 2)]
-    #[case(Position { azimuth: 251.0, altitude: 0.0 }, 2)]
-    #[case(Position { azimuth: 301.0, altitude: -0.50 }, 2)]
+    #[case(Position { azimuth: 30.0, altitude: -68.0 }, 2)]
+    #[case(Position { azimuth: 50.0, altitude: -50.0 }, 0)]
+    #[case(Position { azimuth: 101.0, altitude: 02.0 }, 1)]
+    #[case(Position { azimuth: 171.0, altitude: 66.0 }, 2)]
+    #[case(Position { azimuth: 200.0, altitude: 55.0 }, 2)]
+    #[case(Position { azimuth: 251.0, altitude: 00.0 }, 2)]
+    #[case(Position { azimuth: 301.0, altitude: -50.0 }, 2)]
     fn test_select_image_solar_from_sun_pos_no_setting(
         solar_items_rising: Vec<SolarItem>,
         #[case] sun_pos: Position,
