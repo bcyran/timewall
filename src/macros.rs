@@ -1,6 +1,6 @@
 #[macro_export]
 macro_rules! not_nan {
-    ( $l:literal ) => {
+    ( $l:expr ) => {
         ordered_float::NotNan::new($l).unwrap()
     };
 }

@@ -22,6 +22,7 @@ mod info;
 mod loader;
 mod metadata;
 mod properties;
+mod schedule;
 mod selection;
 mod setter;
 mod time;
