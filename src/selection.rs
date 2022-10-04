@@ -39,7 +39,7 @@ pub fn get_image_order_h24(time_items: &[TimeItem]) -> Vec<usize> {
 }
 
 /// Sort time items by their time of occurrence.
-fn sort_time_items(time_items: &[TimeItem]) -> Vec<&TimeItem> {
+pub fn sort_time_items(time_items: &[TimeItem]) -> Vec<&TimeItem> {
     time_items
         .iter()
         .sorted_by_key(|item| item.time)
@@ -106,7 +106,7 @@ pub fn get_image_order_solar(solar_items: &[SolarItem]) -> Vec<usize> {
 /// Sort both collections in the natural occurrence order.
 /// Sun altitude increases while it rises and decreases when it's setting.
 /// We assume Northen hemisphere for sun coordinates from metadata.
-fn sort_solar_items<'i>(items: &'i [SolarItem]) -> (Vec<&'i SolarItem>, Vec<&'i SolarItem>) {
+pub fn sort_solar_items<'i>(items: &'i [SolarItem]) -> (Vec<&'i SolarItem>, Vec<&'i SolarItem>) {
     // XXX: Should the hemisphere (coordinates) be taken from image EXIF?
     let (mut rising_items, mut setting_items): (Vec<_>, Vec<_>) = items
         .iter()

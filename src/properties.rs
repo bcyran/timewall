@@ -146,6 +146,16 @@ impl WallpaperProperties {
         };
         max_index.unwrap() + 1
     }
+
+    /// Get number of frames defined by those properties.
+    /// Frames differ from images in that one image can be displayed for more than one frame.
+    /// For instance: the same image in the morning and afternoon.
+    pub fn num_frames(&self) -> usize {
+        match self {
+            WallpaperProperties::H24(properties) => properties.time_info.len(),
+            WallpaperProperties::Solar(properties) => properties.solar_info.len(),
+        }
+    }
 }
 
 #[cfg(test)]

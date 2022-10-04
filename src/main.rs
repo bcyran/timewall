@@ -18,14 +18,16 @@ mod config;
 mod constants;
 mod geo;
 mod heic;
+mod info;
 mod loader;
 mod metadata;
 mod properties;
 mod selection;
 mod setter;
+mod time;
 mod wallpaper;
 
-use metadata::ImageInfo;
+use info::ImageInfo;
 
 use crate::cache::LastWallpaper;
 use crate::config::Config;
@@ -40,14 +42,16 @@ fn main() -> Result<()> {
     let args = cli::Args::parse();
 
     match args.action {
-        cli::Action::Info { file } => {
-            println!("{}", ImageInfo::from_image(file)?);
-            Ok(())
-        }
+        cli::Action::Info { file } => info(file),
         cli::Action::Preview { file } => preview(file),
         cli::Action::Unpack { file, output } => wallpaper::unpack_heic(file, output),
         cli::Action::Set { file, daemon } => set(file, daemon),
     }
+}
+
+pub fn info<P: AsRef<Path>>(path: P) -> Result<()> {
+    print!("{}", ImageInfo::from_image(path)?);
+    Ok(())
 }
 
 pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
