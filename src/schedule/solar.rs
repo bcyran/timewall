@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context, Result};
 use chrono::{DateTime, Local};
 use itertools::Itertools;
+use log::debug;
 use sun::Position;
 
 use crate::{
@@ -8,18 +9,28 @@ use crate::{
     properties::SolarItem,
 };
 
-/// Get the solar item which should be displayed at the given time in the given localization.
-pub fn current_item_solar<'i>(
-    solar_items: &'i [SolarItem],
+/// Get the index of the image which should be displayed for given datetime and location.
+pub fn current_image_index_solar(
+    solar_items: &[SolarItem],
     datetime: &DateTime<Local>,
     coords: &Coords,
-) -> Result<&'i SolarItem> {
+) -> Result<usize> {
     let sun_pos = sun::pos(datetime.timestamp_millis(), coords.lat, coords.lon);
     let sun_pos_degrees = Position {
         azimuth: sun_pos.azimuth.to_degrees(),
         altitude: sun_pos.altitude.to_degrees(),
     };
-    current_item_solar_from_sun_pos(solar_items, &sun_pos_degrees, &coords.hemishphere())
+    debug!("sun position: {:?}", sun_pos_degrees);
+    current_image_index_from_sun_pos(solar_items, &sun_pos_degrees, &coords.hemishphere())
+}
+
+/// Get the index of image which should be displayed for a given sun position.
+fn current_image_index_from_sun_pos(
+    solar_items: &[SolarItem],
+    sun_pos: &Position,
+    hemisphere: &Hemisphere,
+) -> Result<usize> {
+    Ok(current_item_solar_from_sun_pos(solar_items, &sun_pos, hemisphere)?.index)
 }
 
 /// Get the solar item which should be displayed for a given sun position.
@@ -92,6 +103,14 @@ fn is_rising(azimuth: f64, hemishphere: &Hemisphere) -> bool {
     }
 }
 
+/// Get indices of images in appearance order.
+pub fn get_image_order_solar(solar_items: &[SolarItem]) -> Vec<usize> {
+    sort_solar_items(solar_items)
+        .iter()
+        .map(|item| item.index)
+        .collect_vec()
+}
+
 /// Sort solar items by their occurrence order in a day.
 pub fn sort_solar_items(solar_items: &[SolarItem]) -> Vec<&SolarItem> {
     // We assume Northern Hemisphere and just sort by azimuth value.
@@ -154,8 +173,8 @@ mod tests {
         #[case] expected_index: usize,
     ) {
         let result =
-            current_item_solar_from_sun_pos(&solar_items_1, &sun_pos, &Hemisphere::Northern);
-        assert_eq!(result.unwrap().index, expected_index);
+            current_image_index_from_sun_pos(&solar_items_1, &sun_pos, &Hemisphere::Northern);
+        assert_eq!(result.unwrap(), expected_index);
     }
 
     #[rstest]
@@ -169,14 +188,13 @@ mod tests {
         #[case] expected_index: usize,
     ) {
         let result =
-            current_item_solar_from_sun_pos(&solar_items_2, &sun_pos, &Hemisphere::Northern);
-        assert_eq!(result.unwrap().index, expected_index);
+            current_image_index_from_sun_pos(&solar_items_2, &sun_pos, &Hemisphere::Northern);
+        assert_eq!(result.unwrap(), expected_index);
     }
 
     #[rstest]
     fn test_sort_solar_items(solar_items_1: Vec<SolarItem>) {
-        let result = sort_solar_items(&solar_items_1);
-        let result_indices = result.iter().map(|item| item.index).collect_vec();
-        assert_eq!(result_indices, vec![0, 1, 2, 3, 4, 5]);
+        let result = get_image_order_solar(&solar_items_1);
+        assert_eq!(result, vec![0, 1, 2, 3, 4, 5]);
     }
 }

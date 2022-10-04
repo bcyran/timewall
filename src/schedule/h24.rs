@@ -7,8 +7,13 @@ use ordered_float::NotNan;
 
 use crate::{properties::TimeItem, time::time_to_day_fraction};
 
+/// Get the image index from item which should be displayed at the given time.
+pub fn current_image_index_h24(time_items: &[TimeItem], time: &NaiveTime) -> Result<usize> {
+    Ok(current_item_h24(time_items, time)?.index)
+}
+
 /// Get the time item which should be displayed at the given time.
-pub fn current_item_h24<'i>(time_items: &'i [TimeItem], time: &NaiveTime) -> Result<&'i TimeItem> {
+fn current_item_h24<'i>(time_items: &'i [TimeItem], time: &NaiveTime) -> Result<&'i TimeItem> {
     let current_time_fraction = not_nan!(time_to_day_fraction(&time));
     time_items
         .iter()
@@ -23,6 +28,14 @@ fn times_distance(a: &NotNan<f64>, b: &NotNan<f64>) -> NotNan<f64> {
     let first_distance = not_nan!((a - b).abs());
     let second_distance = not_nan!(1.0) - first_distance;
     min(first_distance, second_distance)
+}
+
+/// Get indices of images in appearance order.
+pub fn get_image_index_order_h24(time_items: &[TimeItem]) -> Vec<usize> {
+    sort_time_items(time_items)
+        .iter()
+        .map(|item| item.index)
+        .collect_vec()
 }
 
 /// Sort time items by their time of occurrence.
@@ -81,8 +94,8 @@ mod tests {
         #[case] time: NaiveTime,
         #[case] expected_index: usize,
     ) {
-        let result = current_item_h24(&time_items_1, &time);
-        assert_eq!(result.unwrap().index, expected_index);
+        let result = current_image_index_h24(&time_items_1, &time);
+        assert_eq!(result.unwrap(), expected_index);
     }
 
     #[rstest]
@@ -94,14 +107,13 @@ mod tests {
         #[case] time: NaiveTime,
         #[case] expected_index: usize,
     ) {
-        let result = current_item_h24(&time_items_2, &time);
-        assert_eq!(result.unwrap().index, expected_index);
+        let result = current_image_index_h24(&time_items_2, &time);
+        assert_eq!(result.unwrap(), expected_index);
     }
 
     #[rstest]
     fn test_sort_time_items(time_items_1: Vec<TimeItem>) {
-        let result = sort_time_items(&time_items_1);
-        let result_indices = result.iter().map(|item| item.index).collect_vec();
-        assert_eq!(result_indices, &[0, 1, 2, 3, 4]);
+        let result = get_image_index_order_h24(&time_items_1);
+        assert_eq!(result, &[0, 1, 2, 3, 4]);
     }
 }

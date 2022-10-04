@@ -10,7 +10,7 @@ use libheif_rs::HeifContext;
 use crate::{
     metadata::get_apple_desktop_metadata_from_heif,
     properties::{WallpaperProperties, WallpaperPropertiesH24, WallpaperPropertiesSolar},
-    selection::{sort_solar_items, sort_time_items},
+    schedule::{sort_solar_items, sort_time_items},
     time::day_fraction_to_time,
 };
 
@@ -83,10 +83,9 @@ fn fmt_schedule_solar(
     f: &mut std::fmt::Formatter,
     properties: &WallpaperPropertiesSolar,
 ) -> std::fmt::Result {
-    let (rising_items, setting_items) = sort_solar_items(&properties.solar_info);
-    let sorted_solar_items = rising_items.iter().chain(setting_items.iter());
+    let sorted_solar_items = sort_solar_items(&properties.solar_info);
     writeln!(f, "Frame Image Azimuth Altitude")?;
-    for (idx, item) in sorted_solar_items.enumerate() {
+    for (idx, item) in sorted_solar_items.iter().enumerate() {
         writeln!(
             f,
             "{:<5} {:<5} {:<7.1} {:.1}",
