@@ -40,30 +40,18 @@ fn current_item_solar_from_sun_pos<'i>(
     sun_pos: &Position,
     hemisphere: &Hemisphere,
 ) -> Result<&'i SolarItem> {
+    let (min_alt_item, max_alt_item) = get_minmax_alt_items(solar_items)?;
+    let sorted_items = sort_solar_items(solar_items);
     let current_phase_items: Vec<&SolarItem> = match is_rising(sun_pos.azimuth, hemisphere) {
-        true => get_rising_items(solar_items),
-        false => get_setting_items(solar_items),
-    }?;
+        true => get_items_between(&sorted_items, min_alt_item, max_alt_item),
+        false => get_items_between(&sorted_items, max_alt_item, min_alt_item),
+    };
     let current_altitude = not_nan!(sun_pos.altitude);
     let current_item = current_phase_items
         .iter()
         .min_by_key(|item| not_nan!((current_altitude - item.altitude).abs()))
         .with_context(|| format!("no solar items to choose from"))?;
     Ok(current_item)
-}
-
-/// Get items from the lowest to the highest altitude, inclusive.
-fn get_rising_items(solar_items: &[SolarItem]) -> Result<Vec<&SolarItem>> {
-    let (min_alt_item, max_alt_item) = get_minmax_alt_items(solar_items)?;
-    let sorted_items = sort_solar_items(solar_items);
-    Ok(get_items_between(&sorted_items, min_alt_item, max_alt_item))
-}
-
-/// Get items from the highest to the lowest altitude, inclusive.
-fn get_setting_items(solar_items: &[SolarItem]) -> Result<Vec<&SolarItem>> {
-    let (min_alt_item, max_alt_item) = get_minmax_alt_items(solar_items)?;
-    let sorted_items = sort_solar_items(solar_items);
-    Ok(get_items_between(&sorted_items, max_alt_item, min_alt_item))
 }
 
 /// Get items with lowest and highest altitude.
