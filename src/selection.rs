@@ -1,7 +1,7 @@
 use std::cmp::Reverse;
 
 use anyhow::{Context, Ok, Result};
-use chrono::{DateTime, Local, NaiveTime, Timelike};
+use chrono::{DateTime, Local, NaiveTime};
 use itertools::Itertools;
 use log::debug;
 use sun::Position;
@@ -9,13 +9,12 @@ use sun::Position;
 use crate::{
     geo::{Coords, Hemisphere},
     properties::{SolarItem, TimeItem},
+    time::time_to_day_fraction,
 };
-
-const SECONDS_IN_A_DAY: u32 = 24 * 60 * 60;
 
 /// Select index of image corresponding with the given time.
 pub fn select_image_h24(time_items: &[TimeItem], time: &NaiveTime) -> Result<usize> {
-    let day_progress = time.num_seconds_from_midnight() as f64 / SECONDS_IN_A_DAY as f64;
+    let day_progress = time_to_day_fraction(time);
     let sorted_time_items = sort_time_items(time_items);
     // Find the last item with time lower or equal to current.
     // If no such item, fall back to the overall last item.
