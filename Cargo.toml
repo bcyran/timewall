@@ -22,6 +22,7 @@ serde = { version = "1.0.144", features = ["derive"] }
 sun = "0.2.0"
 threadpool = "1.8.1"
 toml = "0.5.9"
+wallpaper = "3.2.0"
 xml-rs = "0.8.4"
 
 [dev-dependencies]
