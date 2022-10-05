@@ -14,11 +14,11 @@ pub fn current_image_index_h24(time_items: &[TimeItem], time: &NaiveTime) -> Res
 
 /// Get the time item which should be displayed at the given time.
 fn current_item_h24<'i>(time_items: &'i [TimeItem], time: &NaiveTime) -> Result<&'i TimeItem> {
-    let current_time_fraction = not_nan!(time_to_day_fraction(&time));
+    let current_time_fraction = not_nan!(time_to_day_fraction(time));
     time_items
         .iter()
         .min_by_key(|item| times_distance(&item.time, &current_time_fraction))
-        .ok_or(anyhow!("no time items to choose from"))
+        .ok_or_else(|| anyhow!("no time items to choose from"))
 }
 
 /// Calculate distance between two times expressed as day fraction between 0 and 1.

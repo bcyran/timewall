@@ -62,7 +62,7 @@ impl Config {
     }
 
     pub fn setter_command(&self) -> Option<&Vec<String>> {
-        self.setter.as_ref().map_or(None, |s| Some(&s.command))
+        self.setter.as_ref().map(|s| &s.command)
     }
 }
 

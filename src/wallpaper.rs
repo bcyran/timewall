@@ -66,7 +66,7 @@ pub fn unpack_heic<IP: AsRef<Path>, DP: AsRef<Path>>(
 
 fn unpack_images<P: AsRef<Path>>(image_ctx: &HeifContext, dest_dir_path: P) -> Result<()> {
     let dest_dir_path = dest_dir_path.as_ref();
-    let image_handles = heic::get_image_handles(&image_ctx);
+    let image_handles = heic::get_image_handles(image_ctx);
     debug!("found {} images", image_handles.len());
 
     let n_threads = min(num_cpus::get(), image_handles.len());
@@ -88,7 +88,7 @@ fn unpack_images<P: AsRef<Path>>(image_ctx: &HeifContext, dest_dir_path: P) -> R
 
 fn unpack_properties<P: AsRef<Path>>(image_ctx: &HeifContext, dest_path: P) -> Result<()> {
     let dest_path = dest_path.as_ref();
-    let apple_desktop_meta = AppleDesktop::from_heif(&image_ctx)?;
+    let apple_desktop_meta = AppleDesktop::from_heif(image_ctx)?;
     let properties = WallpaperProperties::from_apple_desktop(&apple_desktop_meta)?;
     debug!("writing properties to {}", dest_path.display());
     properties.to_xml_file(&dest_path)

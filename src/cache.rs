@@ -103,7 +103,7 @@ impl LastWallpaper {
     /// Save path to the last wallpaper.
     /// This may silently fail. We don't care because it's not a critical functionality.
     pub fn save<P: AsRef<Path>>(&self, path: P) {
-        if let Ok(_) = fs::read_link(&self.link_path) {
+        if fs::read_link(&self.link_path).is_ok() {
             fs::remove_file(&self.link_path).ok();
         }
         std::os::unix::fs::symlink(path.as_ref().canonicalize().unwrap(), &self.link_path).ok();

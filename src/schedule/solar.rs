@@ -30,7 +30,7 @@ fn current_image_index_from_sun_pos(
     sun_pos: &Position,
     hemisphere: &Hemisphere,
 ) -> Result<usize> {
-    Ok(current_item_solar_from_sun_pos(solar_items, &sun_pos, hemisphere)?.index)
+    Ok(current_item_solar_from_sun_pos(solar_items, sun_pos, hemisphere)?.index)
 }
 
 /// Get the solar item which should be displayed for a given sun position.
@@ -78,7 +78,7 @@ fn get_items_between<'i>(
         .peekable();
     let mut items_between = starting_from_first
         .peeking_take_while(|item| ***item != *last)
-        .map(|item| *item)
+        .cloned()
         .collect_vec();
     items_between.push(*starting_from_first.next().unwrap());
     items_between
