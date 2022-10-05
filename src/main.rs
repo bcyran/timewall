@@ -90,8 +90,7 @@ pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
             .with_context(|| format!("missing image specified by metadata"))?;
 
         debug!("setting wallpaper to {}", current_image_path.display());
-        set_wallpaper(current_image_path)
-            .with_context(|| format!("could not set the wallpaper"))?;
+        set_wallpaper(current_image_path, config.setter_command())?;
 
         if !daemon {
             break;
@@ -105,6 +104,7 @@ pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
 }
 
 pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
+    let config = Config::find()?;
     let wallpaper = WallpaperLoader::new().load(&path);
     let image_order = match wallpaper.properties {
         WallpaperProperties::H24(ref props) => get_image_index_order_h24(&props.time_info),
@@ -113,7 +113,7 @@ pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
 
     for image_index in image_order.iter().cycle() {
         let image_path = wallpaper.images.get(*image_index).unwrap();
-        set_wallpaper(image_path).with_context(|| format!("could not set the wallpaper"))?;
+        set_wallpaper(image_path, config.setter_command())?;
         thread::sleep(Duration::from_millis(PREVIEW_UPDATE_INTERVAL_MILLIS));
     }
 

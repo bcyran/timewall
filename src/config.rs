@@ -13,7 +13,7 @@ const CONFIG_FILE_NAME: &str = "config.toml";
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Setter {
-    pub cmd: String,
+    pub command: Vec<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -59,6 +59,10 @@ impl Config {
         let mut config_file = File::create(path)?;
         config_file.write_all(toml::to_string_pretty(self)?.as_bytes())?;
         Ok(())
+    }
+
+    pub fn setter_command(&self) -> Option<&Vec<String>> {
+        self.setter.as_ref().map_or(None, |s| Some(&s.command))
     }
 }
 
