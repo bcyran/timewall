@@ -5,7 +5,7 @@ use std::{
 };
 
 use anyhow::Result;
-use libheif_rs::{ColorSpace, HeifContext, ImageHandle, ItemId, RgbChroma};
+use libheif_rs::{ColorSpace, HeifContext, HeifError, Image, ImageHandle, ItemId, RgbChroma};
 use log::debug;
 
 const CHANNELS: usize = 3;
@@ -21,12 +21,16 @@ pub fn get_image_handles(image_ctx: &HeifContext) -> Vec<ImageHandle> {
         .collect()
 }
 
-/// Write image from HEIC handle as PNG at the specified path.
-pub fn write_as_png<P: AsRef<Path>>(image_handle: &ImageHandle, path: P) -> Result<()> {
+/// Decode image from HEIC handle.
+pub fn decode_image_from_handle(image_handle: &ImageHandle) -> Result<Image, HeifError> {
+    image_handle.decode(ColorSpace::Rgb(RgbChroma::Rgb), false)
+}
+
+/// Write HEIC image as PNG at the specified path.
+pub fn write_image_as_png<P: AsRef<Path>>(image: &Image, path: P) -> Result<()> {
     let output = File::create(&path)?;
     let output_writer = BufWriter::new(output);
 
-    let image = image_handle.decode(ColorSpace::Rgb(RgbChroma::Rgb), false)?;
     let image_plane = image.planes().interleaved.unwrap();
     let line_length = image_plane.width as usize * CHANNELS;
 
