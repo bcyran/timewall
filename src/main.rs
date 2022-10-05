@@ -79,7 +79,7 @@ pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
                 current_image_index_h24(&props.time_info, &now.time())
             }
             WallpaperProperties::Solar(ref props) => {
-                current_image_index_solar(&props.solar_info, &now, &config.coords)
+                current_image_index_solar(&props.solar_info, &now, &config.location)
             }
         }
         .with_context(|| format!("could not determine image to set"))?;
