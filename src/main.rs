@@ -34,7 +34,7 @@ use crate::config::Config;
 use crate::constants::{PREVIEW_UPDATE_INTERVAL_MILLIS, UPDATE_INTERVAL_MINUTES};
 use crate::schedule::{
     current_image_index_h24, current_image_index_solar, get_image_index_order_h24,
-    get_image_order_solar,
+    get_image_index_order_solar,
 };
 use crate::setter::set_wallpaper;
 
@@ -108,7 +108,7 @@ pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
     let wallpaper = WallpaperLoader::new().load(&path);
     let image_order = match wallpaper.properties {
         WallpaperProperties::H24(ref props) => get_image_index_order_h24(&props.time_info),
-        WallpaperProperties::Solar(ref props) => get_image_order_solar(&props.solar_info),
+        WallpaperProperties::Solar(ref props) => get_image_index_order_solar(&props.solar_info),
     };
 
     for image_index in image_order.iter().cycle() {

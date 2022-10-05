@@ -1,6 +1,6 @@
-use anyhow::{anyhow, Context, Result};
+use anyhow::{anyhow, Result};
 use chrono::{DateTime, Local};
-use itertools::Itertools;
+use itertools::{Itertools, MinMaxResult};
 use log::debug;
 use sun::Position;
 
@@ -42,23 +42,25 @@ fn current_item_solar_from_sun_pos<'i>(
 ) -> Result<&'i SolarItem> {
     let (min_alt_item, max_alt_item) = get_minmax_alt_items(solar_items)?;
     let sorted_items = sort_solar_items(solar_items);
-    let current_phase_items: Vec<&SolarItem> = match is_rising(sun_pos.azimuth, hemisphere) {
+    let current_phase_items = match is_rising(sun_pos.azimuth, hemisphere) {
+        // If sun is rising, get items from the lowest altitude to the highest altitude
         true => get_items_between(&sorted_items, min_alt_item, max_alt_item),
+        // If sun is setting, get items from the highest altitude to the lowest altitude
         false => get_items_between(&sorted_items, max_alt_item, min_alt_item),
     };
-    let current_altitude = not_nan!(sun_pos.altitude);
     let current_item = current_phase_items
         .iter()
-        .min_by_key(|item| not_nan!((current_altitude - item.altitude).abs()))
-        .with_context(|| format!("no solar items to choose from"))?;
+        .min_by_key(|item| not_nan!((item.altitude - sun_pos.altitude).abs()))
+        .unwrap();
     Ok(current_item)
 }
 
 /// Get items with lowest and highest altitude.
 fn get_minmax_alt_items(solar_items: &[SolarItem]) -> Result<(&SolarItem, &SolarItem)> {
     match solar_items.iter().minmax_by_key(|item| item.altitude) {
-        itertools::MinMaxResult::MinMax(min, max) => Ok((min, max)),
-        _ => Err(anyhow!("no solar items to choose from")),
+        MinMaxResult::MinMax(min, max) => Ok((min, max)),
+        MinMaxResult::OneElement(item) => Ok((item, item)),
+        MinMaxResult::NoElements => Err(anyhow!("no solar items to choose from")),
     }
 }
 
@@ -92,7 +94,7 @@ fn is_rising(azimuth: f64, hemishphere: &Hemisphere) -> bool {
 }
 
 /// Get indices of images in appearance order.
-pub fn get_image_order_solar(solar_items: &[SolarItem]) -> Vec<usize> {
+pub fn get_image_index_order_solar(solar_items: &[SolarItem]) -> Vec<usize> {
     sort_solar_items(solar_items)
         .iter()
         .map(|item| item.index)
@@ -138,6 +140,15 @@ mod tests {
         ]
     }
 
+    #[fixture]
+    #[rustfmt::skip]
+    fn solar_items_3() -> Vec<SolarItem> {
+        vec![
+            SolarItem { index: 0, azimuth: not_nan!(100.0), altitude: not_nan!(50.0) },
+        ]
+    }
+
+    // Normal, expected cases.
     #[rstest]
     #[case(Position { azimuth: 100.0, altitude: -70.0 }, 5)] // wrap around to last item
     #[case(Position { azimuth: 100.0, altitude: -58.0 }, 5)] // wrap around to last item
@@ -155,7 +166,7 @@ mod tests {
     #[case(Position { azimuth: 250.0, altitude: 00.0 }, 4)]
     #[case(Position { azimuth: 250.0, altitude: -50.0 }, 5)]
     #[case(Position { azimuth: 250.0, altitude: -70.0 }, 5)]
-    fn test_current_item_solar_from_sun_pos_1(
+    fn test_current_image_index_from_sun_pos_1(
         solar_items_1: Vec<SolarItem>,
         #[case] sun_pos: Position,
         #[case] expected_index: usize,
@@ -165,12 +176,13 @@ mod tests {
         assert_eq!(result.unwrap(), expected_index);
     }
 
+    // Only two items, test wrapping around.
     #[rstest]
     #[case(Position { azimuth: 100.0, altitude: -60.0 }, 0)]
     #[case(Position { azimuth: 100.0, altitude: -40.0 }, 1)]
     #[case(Position { azimuth: 250.0, altitude: -40.0 }, 1)]
     #[case(Position { azimuth: 250.0, altitude: -60.0 }, 0)] // wrap around to first item
-    fn test_current_item_solar_from_sun_pos_2(
+    fn test_current_image_index_from_sun_pos_2(
         solar_items_2: Vec<SolarItem>,
         #[case] sun_pos: Position,
         #[case] expected_index: usize,
@@ -180,9 +192,25 @@ mod tests {
         assert_eq!(result.unwrap(), expected_index);
     }
 
+    // Single item so just should return it for every given position.
     #[rstest]
-    fn test_sort_solar_items(solar_items_1: Vec<SolarItem>) {
-        let result = get_image_order_solar(&solar_items_1);
+    #[case(Position { azimuth: 100.0, altitude: -60.0 }, 0)]
+    #[case(Position { azimuth: 100.0, altitude: -40.0 }, 0)]
+    #[case(Position { azimuth: 250.0, altitude: -40.0 }, 0)]
+    #[case(Position { azimuth: 250.0, altitude: -60.0 }, 0)]
+    fn test_current_image_index_from_sun_pos_3(
+        solar_items_3: Vec<SolarItem>,
+        #[case] sun_pos: Position,
+        #[case] expected_index: usize,
+    ) {
+        let result =
+            current_image_index_from_sun_pos(&solar_items_3, &sun_pos, &Hemisphere::Northern);
+        assert_eq!(result.unwrap(), expected_index);
+    }
+
+    #[rstest]
+    fn test_get_image_index_order_solar(solar_items_1: Vec<SolarItem>) {
+        let result = get_image_index_order_solar(&solar_items_1);
         assert_eq!(result, vec![0, 1, 2, 3, 4, 5]);
     }
 }

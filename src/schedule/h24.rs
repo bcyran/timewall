@@ -89,7 +89,7 @@ mod tests {
     #[case("20:00:00", 4)]
     #[case("23:00:00", 4)]
     #[case("23:59:00", 0)] // wrap to after midnight
-    fn test_select_image_h24_1(
+    fn test_current_image_index_h24_1(
         time_items_1: Vec<TimeItem>,
         #[case] time: NaiveTime,
         #[case] expected_index: usize,
@@ -102,7 +102,7 @@ mod tests {
     #[case("01:00:00", 1)] // wrap to before midnight
     #[case("03:00:00", 0)]
     #[case("12:00:00", 0)]
-    fn test_select_image_h24_2(
+    fn test_current_image_index_h24_2(
         time_items_2: Vec<TimeItem>,
         #[case] time: NaiveTime,
         #[case] expected_index: usize,
@@ -112,7 +112,7 @@ mod tests {
     }
 
     #[rstest]
-    fn test_sort_time_items(time_items_1: Vec<TimeItem>) {
+    fn test_get_image_index_order_h24(time_items_1: Vec<TimeItem>) {
         let result = get_image_index_order_h24(&time_items_1);
         assert_eq!(result, &[0, 1, 2, 3, 4]);
     }
