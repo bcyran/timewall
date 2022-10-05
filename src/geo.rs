@@ -12,7 +12,7 @@ pub struct Coords {
 }
 
 impl Coords {
-    pub fn hemishphere(&self) -> Hemisphere {
+    pub fn hemisphere(&self) -> Hemisphere {
         if self.lat >= 0.0 {
             Hemisphere::Northern
         } else {

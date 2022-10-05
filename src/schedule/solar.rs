@@ -21,7 +21,7 @@ pub fn current_image_index_solar(
         altitude: sun_pos.altitude.to_degrees(),
     };
     debug!("sun position: {:?}", sun_pos_degrees);
-    current_image_index_from_sun_pos(solar_items, &sun_pos_degrees, &coords.hemishphere())
+    current_image_index_from_sun_pos(solar_items, &sun_pos_degrees, &coords.hemisphere())
 }
 
 /// Get the index of image which should be displayed for a given sun position.
