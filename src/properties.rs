@@ -11,7 +11,7 @@ use crate::metadata::AppleDesktop;
 pub struct PropertiesH24 {
     // Theme appearance details.
     #[serde(rename = "ap", default)]
-    pub appearance: Option<Appearance>,
+    pub appearance: Option<PropertiesAppearance>,
     // Info about the image sequence.
     #[serde(rename = "ti")]
     pub time_info: Vec<TimeItem>,
@@ -19,7 +19,7 @@ pub struct PropertiesH24 {
 
 /// Wallpaper appearance depending on the theme.
 #[derive(Deserialize, Serialize, PartialEq, Eq, Debug)]
-pub struct Appearance {
+pub struct PropertiesAppearance {
     // Index of the image to use for a dark theme.
     #[serde(rename = "d")]
     pub dark: i32,
@@ -44,7 +44,7 @@ pub struct TimeItem {
 pub struct PropertiesSolar {
     // Theme appearance details.
     #[serde(rename = "ap", default)]
-    pub appearance: Option<Appearance>,
+    pub appearance: Option<PropertiesAppearance>,
     // Info about the image sequence.
     #[serde(rename = "si")]
     pub solar_info: Vec<SolarItem>,
@@ -85,14 +85,17 @@ pub trait Plist: DeserializeOwned + Serialize {
 
 impl Plist for PropertiesH24 {}
 impl Plist for PropertiesSolar {}
+impl Plist for PropertiesAppearance {}
 
-// Wallpaper properties describing either time-based or sun-based schedule
+/// Wallpaper properties describing either time-based or sun-based schedule
 #[derive(Debug)]
 pub enum Properties {
-    // Time-based schedule
+    /// Time-based schedule
     H24(PropertiesH24),
-    // Sun-based schedule
+    /// Sun-based schedule
     Solar(PropertiesSolar),
+    /// Dark & light mode.
+    Appearance(PropertiesAppearance),
 }
 
 impl Properties {
@@ -104,6 +107,9 @@ impl Properties {
             }
             AppleDesktop::Solar(value) => {
                 Properties::Solar(PropertiesSolar::from_base64(value.as_bytes())?)
+            }
+            AppleDesktop::Apr(value) => {
+                Properties::Appearance(PropertiesAppearance::from_base64(value.as_bytes())?)
             }
         };
         Ok(properties)
@@ -117,6 +123,9 @@ impl Properties {
         if let Ok(properties_solar) = PropertiesSolar::from_xml_file(&path) {
             return Ok(Self::Solar(properties_solar));
         }
+        if let Ok(properties_appearance) = PropertiesAppearance::from_xml_file(&path) {
+            return Ok(Self::Appearance(properties_appearance));
+        }
         Err(anyhow!(
             "invalid properties file {}",
             path.as_ref().display()
@@ -128,6 +137,7 @@ impl Properties {
         match self {
             Properties::H24(props) => props.to_xml_file(dest_path),
             Properties::Solar(props) => props.to_xml_file(dest_path),
+            Properties::Appearance(props) => props.to_xml_file(dest_path),
         }
     }
 
@@ -138,6 +148,7 @@ impl Properties {
         let max_index = match self {
             Properties::H24(props) => props.time_info.iter().map(|item| item.index).max(),
             Properties::Solar(props) => props.solar_info.iter().map(|item| item.index).max(),
+            Properties::Appearance(..) => Some(1),
         };
         max_index.unwrap() + 1
     }
@@ -149,6 +160,7 @@ impl Properties {
         match self {
             Properties::H24(props) => props.time_info.len(),
             Properties::Solar(props) => props.solar_info.len(),
+            Properties::Appearance(..) => 2,
         }
     }
 }
@@ -163,7 +175,7 @@ mod tests {
     #[test]
     fn test_plist_h24_from_base64() {
         let expected = PropertiesH24 {
-            appearance: Some(Appearance { dark: 5, light: 2 }),
+            appearance: Some(PropertiesAppearance { dark: 5, light: 2 }),
             time_info: vec![
                 TimeItem {
                     index: 0,
@@ -184,7 +196,7 @@ mod tests {
     #[test]
     fn test_plist_solar_from_base64() {
         let expected = PropertiesSolar {
-            appearance: Some(Appearance { dark: 1, light: 0 }),
+            appearance: Some(PropertiesAppearance { dark: 1, light: 0 }),
             solar_info: vec![
                 SolarItem {
                     index: 0,

@@ -9,7 +9,7 @@ use libheif_rs::HeifContext;
 
 use crate::{
     metadata::get_apple_desktop_metadata_from_heif,
-    properties::{Properties, PropertiesH24, PropertiesSolar},
+    properties::{Properties, PropertiesAppearance, PropertiesH24, PropertiesSolar},
     schedule::{sort_solar_items, sort_time_items},
     time::day_fraction_to_time,
 };
@@ -45,6 +45,7 @@ impl ImageInfo {
         match self.properties {
             Properties::H24 { .. } => "time",
             Properties::Solar { .. } => "solar",
+            Properties::Appearance { .. } => "appearance",
         }
     }
 }
@@ -61,6 +62,7 @@ impl Display for ImageInfo {
         match self.properties {
             Properties::H24(ref props) => fmt_schedule_h24(f, props)?,
             Properties::Solar(ref props) => fmt_schedule_solar(f, props)?,
+            Properties::Appearance(ref props) => fmt_schedule_appearance(f, props)?,
         };
         Ok(())
     }
@@ -92,5 +94,14 @@ fn fmt_schedule_solar(
             item.altitude,
         )?;
     }
+    Ok(())
+}
+
+fn fmt_schedule_appearance(
+    f: &mut std::fmt::Formatter,
+    properties: &PropertiesAppearance,
+) -> std::fmt::Result {
+    writeln!(f, "Light: {}", properties.light)?;
+    writeln!(f, "Dark: {}", properties.dark)?;
     Ok(())
 }

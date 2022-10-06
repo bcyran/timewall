@@ -12,8 +12,10 @@ use xml::{
 pub enum AppleDesktop {
     /// H24 variant - time based wallpaper.
     H24(String),
-    // Solar variant - sun position baed wallpaper.
+    /// Solar variant - sun position baed wallpaper.
     Solar(String),
+    /// Appearance variant - light and dark mode wallpaper.
+    Apr(String),
 }
 
 impl AppleDesktop {
@@ -94,6 +96,7 @@ fn get_apple_desktop_attribute(attributes: &[OwnedAttribute]) -> Result<AppleDes
                 return match local_name.as_str() {
                     "solar" => Ok(AppleDesktop::Solar(value.to_owned())),
                     "h24" => Ok(AppleDesktop::H24(value.to_owned())),
+                    "apr" => Ok(AppleDesktop::Apr(value.to_owned())),
                     _ => Err(anyhow!("invalid apple_desktop attribute")),
                 };
             }

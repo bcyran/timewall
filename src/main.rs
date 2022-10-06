@@ -79,6 +79,7 @@ pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
             Properties::Solar(ref props) => {
                 current_image_index_solar(&props.solar_info, &now, &config.location)
             }
+            Properties::Appearance(..) => todo!(),
         }
         .with_context(|| "could not determine image to set")?;
 
@@ -107,6 +108,7 @@ pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
     let image_order = match wallpaper.properties {
         Properties::H24(ref props) => get_image_index_order_h24(&props.time_info),
         Properties::Solar(ref props) => get_image_index_order_solar(&props.solar_info),
+        Properties::Appearance(..) => vec![0, 1],
     };
 
     for image_index in image_order.iter().cycle() {
