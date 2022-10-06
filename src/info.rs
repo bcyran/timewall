@@ -43,9 +43,9 @@ impl ImageInfo {
 
     pub fn schedule_type(&self) -> &str {
         match self.properties {
-            Properties::H24 { .. } => "time",
-            Properties::Solar { .. } => "solar",
-            Properties::Appearance { .. } => "appearance",
+            Properties::H24(..) => "time",
+            Properties::Solar(..) => "solar",
+            Properties::Appearance(..) => "appearance",
         }
     }
 }

@@ -81,7 +81,7 @@ pub fn set<P: AsRef<Path>>(
         debug!("last used wallpaper at {}", last_path.display());
         last_path
     } else {
-        return Err(anyhow!("no image to set given"));
+        bail!("no image to set given");
     };
 
     let wallpaper = WallpaperLoader::new().load(&wall_path);
