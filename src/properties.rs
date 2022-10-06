@@ -171,6 +171,8 @@ mod tests {
 
     const H24_PLIST_BASE64: &'static str = "YnBsaXN0MDDSAQIDBFJhcFJ0adIFBgcIUWRRbBAFEAKiCQrSCwwNDlF0UWkjP9KqqqAAAAAQANILDA8QIwAAAAAAAAAAEAEIDRATIBgaHB4jNygqLDU8RQAAAAAAAAEBAAAAAAAAABEAAAAAAAAAAAAAAAAAAABH";
     const SOLAR_PLIST_BASE64: &'static str = "YnBsaXN0MDDSAQIDBFJhcFJzadIFBgcIUWRRbBABEACiCQrTCwwNDggPUWFRaVF6I0AuAAAAAAAAI0BgQAAAAAAA0wsMDRAHESPAUYAAAAAAACNASwAAAAAAAAgNEBMgGBocHiNCKiwuMDlJUgAAAAAAAAEBAAAAAAAAABIAAAAAAAAAAAAAAAAAAABb";
+    const APPEARANCE_PLIST_BASE64: &'static str =
+        "YnBsaXN0MDDSAQIDBFFsUWQQABABCA0PERMAAAAAAAABAQAAAAAAAAAFAAAAAAAAAAAAAAAAAAAAFQ==";
 
     #[test]
     fn test_plist_h24_from_base64() {
@@ -212,6 +214,15 @@ mod tests {
         };
 
         let result = PropertiesSolar::from_base64(SOLAR_PLIST_BASE64.as_bytes()).unwrap();
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_plist_appearance_from_base64() {
+        let expected = PropertiesAppearance { dark: 1, light: 0 };
+
+        let result = PropertiesAppearance::from_base64(APPEARANCE_PLIST_BASE64.as_bytes()).unwrap();
 
         assert_eq!(result, expected);
     }

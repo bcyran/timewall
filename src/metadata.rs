@@ -135,12 +135,22 @@ mod tests {
 
     #[test]
     fn test_get_solar_metadata_from_xmp() {
-        let expected_value = String::from("dummy_h24_value");
+        let expected_value = String::from("dummy_solar_value");
         let xmp = build_xmp_metadata_string("apple_desktop:solar", &expected_value);
 
         let result = get_apple_desktop_metadata_from_xmp(xmp.as_bytes()).unwrap();
 
         assert_eq!(result, AppleDesktop::Solar(expected_value));
+    }
+
+    #[test]
+    fn test_get_appearance_metadata_from_xmp() {
+        let expected_value = String::from("dummy_appearance_value");
+        let xmp = build_xmp_metadata_string("apple_desktop:apr", &expected_value);
+
+        let result = get_apple_desktop_metadata_from_xmp(xmp.as_bytes()).unwrap();
+
+        assert_eq!(result, AppleDesktop::Apr(expected_value));
     }
 
     #[test]
