@@ -8,7 +8,7 @@ use crate::metadata::AppleDesktop;
 
 /// Property List for the time based wallpaper.
 #[derive(Deserialize, Serialize, PartialEq, Eq, Debug)]
-pub struct WallpaperPropertiesH24 {
+pub struct PropertiesH24 {
     // Theme appearance details.
     #[serde(rename = "ap", default)]
     pub appearance: Option<Appearance>,
@@ -41,7 +41,7 @@ pub struct TimeItem {
 
 /// Property List for the sun based wallpaper.
 #[derive(Deserialize, Serialize, PartialEq, Eq, Debug)]
-pub struct WallpaperPropertiesSolar {
+pub struct PropertiesSolar {
     // Theme appearance details.
     #[serde(rename = "ap", default)]
     pub appearance: Option<Appearance>,
@@ -83,27 +83,27 @@ pub trait Plist: DeserializeOwned + Serialize {
     }
 }
 
-impl Plist for WallpaperPropertiesH24 {}
-impl Plist for WallpaperPropertiesSolar {}
+impl Plist for PropertiesH24 {}
+impl Plist for PropertiesSolar {}
 
 // Wallpaper properties describing either time-based or sun-based schedule
 #[derive(Debug)]
-pub enum WallpaperProperties {
+pub enum Properties {
     // Time-based schedule
-    H24(WallpaperPropertiesH24),
+    H24(PropertiesH24),
     // Sun-based schedule
-    Solar(WallpaperPropertiesSolar),
+    Solar(PropertiesSolar),
 }
 
-impl WallpaperProperties {
+impl Properties {
     /// Create an instance from apple desktop metadata.
     pub fn from_apple_desktop(apple_desktop: &AppleDesktop) -> Result<Self> {
         let properties = match apple_desktop {
             AppleDesktop::H24(value) => {
-                WallpaperProperties::H24(WallpaperPropertiesH24::from_base64(value.as_bytes())?)
+                Properties::H24(PropertiesH24::from_base64(value.as_bytes())?)
             }
             AppleDesktop::Solar(value) => {
-                WallpaperProperties::Solar(WallpaperPropertiesSolar::from_base64(value.as_bytes())?)
+                Properties::Solar(PropertiesSolar::from_base64(value.as_bytes())?)
             }
         };
         Ok(properties)
@@ -111,10 +111,10 @@ impl WallpaperProperties {
 
     /// Load from XML file.
     pub fn from_xml_file<P: AsRef<Path>>(path: P) -> Result<Self> {
-        if let Ok(properties_h24) = WallpaperPropertiesH24::from_xml_file(&path) {
+        if let Ok(properties_h24) = PropertiesH24::from_xml_file(&path) {
             return Ok(Self::H24(properties_h24));
         }
-        if let Ok(properties_solar) = WallpaperPropertiesSolar::from_xml_file(&path) {
+        if let Ok(properties_solar) = PropertiesSolar::from_xml_file(&path) {
             return Ok(Self::Solar(properties_solar));
         }
         Err(anyhow!(
@@ -126,8 +126,8 @@ impl WallpaperProperties {
     /// Save the properties as a XML file.
     pub fn to_xml_file<P: AsRef<Path>>(&self, dest_path: P) -> Result<()> {
         match self {
-            WallpaperProperties::H24(properties) => properties.to_xml_file(dest_path),
-            WallpaperProperties::Solar(properties) => properties.to_xml_file(dest_path),
+            Properties::H24(props) => props.to_xml_file(dest_path),
+            Properties::Solar(props) => props.to_xml_file(dest_path),
         }
     }
 
@@ -136,12 +136,8 @@ impl WallpaperProperties {
         // We can't just count time / solar items because they can repeat the same image
         // for different times!
         let max_index = match self {
-            WallpaperProperties::H24(properties) => {
-                properties.time_info.iter().map(|item| item.index).max()
-            }
-            WallpaperProperties::Solar(properties) => {
-                properties.solar_info.iter().map(|item| item.index).max()
-            }
+            Properties::H24(props) => props.time_info.iter().map(|item| item.index).max(),
+            Properties::Solar(props) => props.solar_info.iter().map(|item| item.index).max(),
         };
         max_index.unwrap() + 1
     }
@@ -151,8 +147,8 @@ impl WallpaperProperties {
     /// For instance: the same image in the morning and afternoon.
     pub fn num_frames(&self) -> usize {
         match self {
-            WallpaperProperties::H24(properties) => properties.time_info.len(),
-            WallpaperProperties::Solar(properties) => properties.solar_info.len(),
+            Properties::H24(props) => props.time_info.len(),
+            Properties::Solar(props) => props.solar_info.len(),
         }
     }
 }
@@ -165,8 +161,8 @@ mod tests {
     const SOLAR_PLIST_BASE64: &'static str = "YnBsaXN0MDDSAQIDBFJhcFJzadIFBgcIUWRRbBABEACiCQrTCwwNDggPUWFRaVF6I0AuAAAAAAAAI0BgQAAAAAAA0wsMDRAHESPAUYAAAAAAACNASwAAAAAAAAgNEBMgGBocHiNCKiwuMDlJUgAAAAAAAAEBAAAAAAAAABIAAAAAAAAAAAAAAAAAAABb";
 
     #[test]
-    fn test_wallpaper_plist_h24_from_base64() {
-        let expected = WallpaperPropertiesH24 {
+    fn test_plist_h24_from_base64() {
+        let expected = PropertiesH24 {
             appearance: Some(Appearance { dark: 5, light: 2 }),
             time_info: vec![
                 TimeItem {
@@ -180,14 +176,14 @@ mod tests {
             ],
         };
 
-        let result = WallpaperPropertiesH24::from_base64(H24_PLIST_BASE64.as_bytes()).unwrap();
+        let result = PropertiesH24::from_base64(H24_PLIST_BASE64.as_bytes()).unwrap();
 
         assert_eq!(result, expected);
     }
 
     #[test]
-    fn test_wallpaper_plist_solar_from_base64() {
-        let expected = WallpaperPropertiesSolar {
+    fn test_plist_solar_from_base64() {
+        let expected = PropertiesSolar {
             appearance: Some(Appearance { dark: 1, light: 0 }),
             solar_info: vec![
                 SolarItem {
@@ -203,7 +199,7 @@ mod tests {
             ],
         };
 
-        let result = WallpaperPropertiesSolar::from_base64(SOLAR_PLIST_BASE64.as_bytes()).unwrap();
+        let result = PropertiesSolar::from_base64(SOLAR_PLIST_BASE64.as_bytes()).unwrap();
 
         assert_eq!(result, expected);
     }

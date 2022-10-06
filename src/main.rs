@@ -8,7 +8,7 @@ use chrono::prelude::*;
 use clap::Parser;
 use loader::WallpaperLoader;
 use log::debug;
-use properties::WallpaperProperties;
+use properties::Properties;
 
 #[macro_use]
 mod macros;
@@ -75,10 +75,8 @@ pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
     loop {
         let now = Local::now();
         let current_image_index = match wallpaper.properties {
-            WallpaperProperties::H24(ref props) => {
-                current_image_index_h24(&props.time_info, &now.time())
-            }
-            WallpaperProperties::Solar(ref props) => {
+            Properties::H24(ref props) => current_image_index_h24(&props.time_info, &now.time()),
+            Properties::Solar(ref props) => {
                 current_image_index_solar(&props.solar_info, &now, &config.location)
             }
         }
@@ -107,8 +105,8 @@ pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
     let config = Config::find()?;
     let wallpaper = WallpaperLoader::new().load(&path);
     let image_order = match wallpaper.properties {
-        WallpaperProperties::H24(ref props) => get_image_index_order_h24(&props.time_info),
-        WallpaperProperties::Solar(ref props) => get_image_index_order_solar(&props.solar_info),
+        Properties::H24(ref props) => get_image_index_order_h24(&props.time_info),
+        Properties::Solar(ref props) => get_image_index_order_solar(&props.solar_info),
     };
 
     for image_index in image_order.iter().cycle() {

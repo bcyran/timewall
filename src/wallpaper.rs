@@ -8,7 +8,7 @@ use threadpool::ThreadPool;
 
 use crate::heic;
 use crate::metadata::AppleDesktop;
-use crate::properties::WallpaperProperties;
+use crate::properties::Properties;
 
 const PROPERTIES_NAME: &str = "properties.xml";
 
@@ -22,7 +22,7 @@ pub struct Wallpaper {
     /// Paths of extracted images.
     pub images: Vec<PathBuf>,
     /// Wallpaper properties.
-    pub properties: WallpaperProperties,
+    pub properties: Properties,
 }
 
 impl Wallpaper {
@@ -30,7 +30,7 @@ impl Wallpaper {
     pub fn load<P: AsRef<Path>>(dir_path: P) -> Result<Self> {
         let dir_path = dir_path.as_ref();
 
-        let properties = WallpaperProperties::from_xml_file(dir_path.join(PROPERTIES_NAME))?;
+        let properties = Properties::from_xml_file(dir_path.join(PROPERTIES_NAME))?;
         let mut images: Vec<PathBuf> = Vec::with_capacity(properties.num_images());
 
         for i in 0..properties.num_images() {
@@ -89,7 +89,7 @@ fn unpack_images<P: AsRef<Path>>(image_ctx: &HeifContext, dest_dir_path: P) -> R
 fn unpack_properties<P: AsRef<Path>>(image_ctx: &HeifContext, dest_path: P) -> Result<()> {
     let dest_path = dest_path.as_ref();
     let apple_desktop_meta = AppleDesktop::from_heif(image_ctx)?;
-    let properties = WallpaperProperties::from_apple_desktop(&apple_desktop_meta)?;
+    let properties = Properties::from_apple_desktop(&apple_desktop_meta)?;
     debug!("writing properties to {}", dest_path.display());
     properties.to_xml_file(&dest_path)
 }

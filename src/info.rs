@@ -9,7 +9,7 @@ use libheif_rs::HeifContext;
 
 use crate::{
     metadata::get_apple_desktop_metadata_from_heif,
-    properties::{WallpaperProperties, WallpaperPropertiesH24, WallpaperPropertiesSolar},
+    properties::{Properties, PropertiesH24, PropertiesSolar},
     schedule::{sort_solar_items, sort_time_items},
     time::day_fraction_to_time,
 };
@@ -21,7 +21,7 @@ pub struct ImageInfo {
     width: u32,
     height: u32,
     images: usize,
-    properties: WallpaperProperties,
+    properties: Properties,
 }
 
 impl ImageInfo {
@@ -37,14 +37,14 @@ impl ImageInfo {
             width: primary_handle.width(),
             height: primary_handle.height(),
             images: heif_ctx.number_of_top_level_images(),
-            properties: WallpaperProperties::from_apple_desktop(&metadata)?,
+            properties: Properties::from_apple_desktop(&metadata)?,
         })
     }
 
     pub fn schedule_type(&self) -> &str {
         match self.properties {
-            WallpaperProperties::H24 { .. } => "time",
-            WallpaperProperties::Solar { .. } => "solar",
+            Properties::H24 { .. } => "time",
+            Properties::Solar { .. } => "solar",
         }
     }
 }
@@ -59,17 +59,14 @@ impl Display for ImageInfo {
         writeln!(f, "Number of frames: {}", self.properties.num_frames())?;
         writeln!(f, "Schedule:")?;
         match self.properties {
-            WallpaperProperties::H24(ref props) => fmt_schedule_h24(f, props)?,
-            WallpaperProperties::Solar(ref props) => fmt_schedule_solar(f, props)?,
+            Properties::H24(ref props) => fmt_schedule_h24(f, props)?,
+            Properties::Solar(ref props) => fmt_schedule_solar(f, props)?,
         };
         Ok(())
     }
 }
 
-fn fmt_schedule_h24(
-    f: &mut std::fmt::Formatter,
-    properties: &WallpaperPropertiesH24,
-) -> std::fmt::Result {
+fn fmt_schedule_h24(f: &mut std::fmt::Formatter, properties: &PropertiesH24) -> std::fmt::Result {
     let sorted_time_items = sort_time_items(&properties.time_info);
     writeln!(f, "Frame Image Time")?;
     for (idx, item) in sorted_time_items.iter().enumerate() {
@@ -81,7 +78,7 @@ fn fmt_schedule_h24(
 
 fn fmt_schedule_solar(
     f: &mut std::fmt::Formatter,
-    properties: &WallpaperPropertiesSolar,
+    properties: &PropertiesSolar,
 ) -> std::fmt::Result {
     let sorted_solar_items = sort_solar_items(&properties.solar_info);
     writeln!(f, "Frame Image Azimuth Altitude")?;
