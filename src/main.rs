@@ -2,10 +2,11 @@ use std::path::Path;
 use std::thread;
 use std::time::Duration;
 
-use anyhow::Context;
 use anyhow::{anyhow, Ok, Result};
+use anyhow::{bail, Context};
 use chrono::prelude::*;
 use clap::Parser;
+use cli::Appearance;
 use loader::WallpaperLoader;
 use log::debug;
 use properties::Properties;
@@ -28,8 +29,8 @@ mod time;
 mod wallpaper;
 
 use info::ImageInfo;
+use schedule::get_image_index_order_appearance;
 
-use crate::cache::LastWallpaper;
 use crate::config::Config;
 use crate::constants::{PREVIEW_UPDATE_INTERVAL_MILLIS, UPDATE_INTERVAL_MINUTES};
 use crate::schedule::{
@@ -37,6 +38,7 @@ use crate::schedule::{
     get_image_index_order_solar,
 };
 use crate::setter::set_wallpaper;
+use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
 
 fn main() -> Result<()> {
     env_logger::init();
@@ -47,7 +49,11 @@ fn main() -> Result<()> {
         cli::Action::Info { file } => info(file),
         cli::Action::Preview { file } => preview(file),
         cli::Action::Unpack { file, output } => wallpaper::unpack_heic(file, output),
-        cli::Action::Set { file, daemon } => set(file, daemon),
+        cli::Action::Set {
+            file,
+            daemon,
+            appearance,
+        } => set(file, daemon, appearance),
     }
 }
 
@@ -56,7 +62,15 @@ pub fn info<P: AsRef<Path>>(path: P) -> Result<()> {
     Ok(())
 }
 
-pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
+pub fn set<P: AsRef<Path>>(
+    path: Option<P>,
+    daemon: bool,
+    appearance: Option<Appearance>,
+) -> Result<()> {
+    if daemon && appearance.is_some() {
+        bail!("Appearance can't be used in daemon mode!")
+    }
+
     let config = Config::find()?;
     let last_wallpaper = LastWallpaper::find();
 
@@ -79,7 +93,7 @@ pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
             Properties::Solar(ref props) => {
                 current_image_index_solar(&props.solar_info, &now, &config.location)
             }
-            Properties::Appearance(..) => todo!(),
+            Properties::Appearance(ref props) => current_image_index_appearance(props, appearance),
         }
         .with_context(|| "could not determine image to set")?;
 
@@ -108,7 +122,7 @@ pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
     let image_order = match wallpaper.properties {
         Properties::H24(ref props) => get_image_index_order_h24(&props.time_info),
         Properties::Solar(ref props) => get_image_index_order_solar(&props.solar_info),
-        Properties::Appearance(..) => vec![0, 1],
+        Properties::Appearance(ref props) => get_image_index_order_appearance(&props),
     };
 
     for image_index in image_order.iter().cycle() {

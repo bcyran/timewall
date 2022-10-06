@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 
 /// All-in-one tool for Apple dynamic HEIC wallpapers on GNU/Linux
 #[derive(Parser, Debug)]
@@ -40,8 +40,17 @@ pub enum Action {
         /// Path to HEIC file
         #[clap(parse(from_os_str))]
         file: Option<PathBuf>,
-        /// Run continuously and update the wallpaper as time passes.
+        /// Run continuously and update the wallpaper as time passes
         #[clap(short, long, action)]
         daemon: bool,
+        /// Use light or dark variant
+        #[clap(short, long, action, arg_enum, value_parser)]
+        appearance: Option<Appearance>,
     },
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+pub enum Appearance {
+    Light,
+    Dark,
 }
