@@ -24,7 +24,7 @@ fn set_wallpaper_custom_command<P: AsRef<Path>>(path: P, command_str: &[String])
 
     let command_status = process_command
         .status()
-        .with_context(|| format!("failed to run custom command"))?;
+        .with_context(|| "failed to run custom command")?;
 
     match command_status.success() {
         true => Ok(()),

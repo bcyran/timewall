@@ -7,7 +7,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use crate::metadata::AppleDesktop;
 
 /// Property List for the time based wallpaper.
-#[derive(Deserialize, Serialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug)]
 pub struct WallpaperPropertiesH24 {
     // Theme appearance details.
     #[serde(rename = "ap", default)]
@@ -18,7 +18,7 @@ pub struct WallpaperPropertiesH24 {
 }
 
 /// Wallpaper appearance depending on the theme.
-#[derive(Deserialize, Serialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug)]
 pub struct Appearance {
     // Index of the image to use for a dark theme.
     #[serde(rename = "d")]
@@ -29,7 +29,7 @@ pub struct Appearance {
 }
 
 /// Single image sequence item of the time based wallpaper.
-#[derive(Deserialize, Serialize, PartialEq, Clone, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Eq, Clone, Debug)]
 pub struct TimeItem {
     // Index of the image in the sequence.
     #[serde(rename = "i")]
@@ -40,7 +40,7 @@ pub struct TimeItem {
 }
 
 /// Property List for the sun based wallpaper.
-#[derive(Deserialize, Serialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Eq, Debug)]
 pub struct WallpaperPropertiesSolar {
     // Theme appearance details.
     #[serde(rename = "ap", default)]
@@ -51,7 +51,7 @@ pub struct WallpaperPropertiesSolar {
 }
 
 /// Single image sequence item of the sun based wallpaper.
-#[derive(Deserialize, Serialize, PartialEq, Clone, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Eq, Clone, Debug)]
 pub struct SolarItem {
     // Index of the image in the sequence.
     #[serde(rename = "i")]
@@ -67,20 +67,19 @@ pub struct SolarItem {
 pub trait Plist: DeserializeOwned + Serialize {
     /// Parse base64 encoded `plist`.
     fn from_base64(base64_value: &[u8]) -> Result<Self> {
-        let decoded = base64::decode(base64_value)
-            .with_context(|| format!("could not decode plist base64"))?;
-        plist::from_bytes(&decoded).with_context(|| format!("could not parse plist bytes"))
+        let decoded =
+            base64::decode(base64_value).with_context(|| "could not decode plist base64")?;
+        plist::from_bytes(&decoded).with_context(|| "could not parse plist bytes")
     }
 
     /// Deserialize `plist` from XML file.
     fn from_xml_file<T: AsRef<Path>>(path: T) -> Result<Self> {
-        plist::from_file(path).with_context(|| format!("could not read plist from XML file"))
+        plist::from_file(path).with_context(|| "could not read plist from XML file")
     }
 
     /// Serialize `plist` as XML and write to a file.
     fn to_xml_file<T: AsRef<Path>>(&self, path: T) -> Result<()> {
-        plist::to_file_xml(path, &self)
-            .with_context(|| format!("could not write plist to XML file"))
+        plist::to_file_xml(path, &self).with_context(|| "could not write plist to XML file")
     }
 }
 

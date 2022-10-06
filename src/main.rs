@@ -82,12 +82,12 @@ pub fn set<P: AsRef<Path>>(path: Option<P>, daemon: bool) -> Result<()> {
                 current_image_index_solar(&props.solar_info, &now, &config.location)
             }
         }
-        .with_context(|| format!("could not determine image to set"))?;
+        .with_context(|| "could not determine image to set")?;
 
         let current_image_path = wallpaper
             .images
             .get(current_image_index)
-            .with_context(|| format!("missing image specified by metadata"))?;
+            .with_context(|| "missing image specified by metadata")?;
 
         debug!("setting wallpaper to {}", current_image_path.display());
         set_wallpaper(current_image_path, config.setter_command())?;

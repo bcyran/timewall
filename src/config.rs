@@ -47,10 +47,10 @@ impl Config {
 
     fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref();
-        let config_str = fs::read_to_string(path)
-            .with_context(|| format!("couldn't read the configuration file"))?;
-        let config: Config = toml::from_str(&config_str)
-            .with_context(|| format!("couldn't parse the configuation file"))?;
+        let config_str =
+            fs::read_to_string(path).with_context(|| "couldn't read the configuration file")?;
+        let config: Config =
+            toml::from_str(&config_str).with_context(|| "couldn't parse the configuation file")?;
         Ok(config)
     }
 

@@ -8,7 +8,7 @@ use xml::{
 };
 
 /// AppleDesktop XMP metadata attribute.
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum AppleDesktop {
     /// H24 variant - time based wallpaper.
     H24(String),
