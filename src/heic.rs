@@ -1,14 +1,31 @@
 use std::{
     fs::File,
-    io::{BufWriter, Write},
+    io::{BufWriter, Read, Write},
     path::Path,
 };
 
-use anyhow::Result;
-use libheif_rs::{ColorSpace, HeifContext, HeifError, Image, ImageHandle, ItemId, RgbChroma};
+use anyhow::{anyhow, Result};
+use libheif_rs::{
+    check_file_type, ColorSpace, FileTypeResult, HeifContext, HeifError, Image, ImageHandle,
+    ItemId, RgbChroma,
+};
 use log::debug;
 
 const CHANNELS: usize = 3;
+
+/// Check whether file at a given path is HEIC and is supported.
+pub fn validate_heic_file<P: AsRef<Path>>(path: P) -> Result<()> {
+    let mut file = File::open(path)?;
+    let mut first_bytes = [0; 64];
+    file.read_exact(&mut first_bytes)?;
+    match check_file_type(&first_bytes) {
+        FileTypeResult::Supported => Ok(()),
+        FileTypeResult::No => Err(anyhow!("only HEIC/HEIF files are supported")),
+        FileTypeResult::Unsupported | FileTypeResult::MayBe => {
+            Err(anyhow!("this HEIF is not supported"))
+        }
+    }
+}
 
 /// Get all available top level image handles from HEIC.
 pub fn get_image_handles(image_ctx: &HeifContext) -> Vec<ImageHandle> {

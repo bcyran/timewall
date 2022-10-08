@@ -7,6 +7,7 @@ use anyhow::{Ok, Result};
 use chrono::prelude::*;
 use clap::Parser;
 use cli::Appearance;
+use heic::validate_heic_file;
 use loader::WallpaperLoader;
 use log::debug;
 use properties::Properties;
@@ -49,7 +50,7 @@ fn main() -> Result<()> {
     match args.action {
         cli::Action::Info { file } => info(file),
         cli::Action::Preview { file } => preview(file),
-        cli::Action::Unpack { file, output } => wallpaper::unpack_heic(file, output),
+        cli::Action::Unpack { file, output } => unpack(file, output),
         cli::Action::Set {
             file,
             daemon,
@@ -59,8 +60,14 @@ fn main() -> Result<()> {
 }
 
 pub fn info<P: AsRef<Path>>(path: P) -> Result<()> {
-    print!("{}", ImageInfo::from_image(path)?);
+    validate_wallpaper_file(&path)?;
+    print!("{}", ImageInfo::from_image(&path)?);
     Ok(())
+}
+
+pub fn unpack<IP: AsRef<Path>, OP: AsRef<Path>>(source: IP, destination: OP) -> Result<()> {
+    validate_wallpaper_file(&source)?;
+    wallpaper::unpack_heic(source, destination)
 }
 
 pub fn set<P: AsRef<Path>>(
@@ -85,6 +92,7 @@ pub fn set<P: AsRef<Path>>(
         bail!("no image to set given");
     };
 
+    validate_wallpaper_file(&wall_path)?;
     let wallpaper = WallpaperLoader::new().load(&wall_path);
 
     loop {
@@ -106,6 +114,17 @@ pub fn set<P: AsRef<Path>>(
     }
 
     Ok(())
+}
+
+fn validate_wallpaper_file<P: AsRef<Path>>(path: P) -> Result<()> {
+    let path = path.as_ref();
+    if !path.exists() {
+        bail!("file '{}' is not accessible", path.display());
+    }
+    if !path.is_file() {
+        bail!("'{}' is not a file", path.display());
+    }
+    validate_heic_file(path)
 }
 
 fn current_image_index(
@@ -133,6 +152,7 @@ fn current_image_index(
 
 pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
     let config = Config::find()?;
+    validate_wallpaper_file(&path)?;
     let wallpaper = WallpaperLoader::new().load(&path);
     let image_order = match wallpaper.properties {
         Properties::H24(ref props) => get_image_index_order_h24(&props.time_info),
