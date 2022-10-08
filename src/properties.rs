@@ -163,6 +163,21 @@ impl Properties {
             Properties::Appearance(..) => 2,
         }
     }
+
+    /// Get appearance properties if present.
+    pub fn appearance(&self) -> Option<&PropertiesAppearance> {
+        match self {
+            Properties::Appearance(ref appearance) => Some(appearance),
+            Properties::H24(PropertiesH24 {
+                appearance: maybe_appearance,
+                ..
+            }) => maybe_appearance.as_ref(),
+            Properties::Solar(PropertiesSolar {
+                appearance: maybe_appearance,
+                ..
+            }) => maybe_appearance.as_ref(),
+        }
+    }
 }
 
 #[cfg(test)]

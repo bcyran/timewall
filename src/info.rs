@@ -58,12 +58,22 @@ impl Display for ImageInfo {
         writeln!(f, "Schedule type: {}", self.schedule_type())?;
         writeln!(f, "Number of images: {}", self.images)?;
         writeln!(f, "Number of frames: {}", self.properties.num_frames())?;
-        writeln!(f, "Schedule:")?;
         match self.properties {
-            Properties::H24(ref props) => fmt_schedule_h24(f, props)?,
-            Properties::Solar(ref props) => fmt_schedule_solar(f, props)?,
-            Properties::Appearance(ref props) => fmt_schedule_appearance(f, props)?,
+            Properties::H24(ref props) => {
+                writeln!(f, "Schedule:")?;
+                fmt_schedule_h24(f, props)?;
+            }
+            Properties::Solar(ref props) => {
+                writeln!(f, "Schedule:")?;
+                fmt_schedule_solar(f, props)?;
+            }
+            _ => (),
         };
+        if let Some(appearance_props) = self.properties.appearance() {
+            writeln!(f, "Appearance:")?;
+            fmt_schedule_appearance(f, appearance_props)?
+        }
+
         Ok(())
     }
 }

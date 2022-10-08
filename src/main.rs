@@ -2,8 +2,8 @@ use std::path::Path;
 use std::thread;
 use std::time::Duration;
 
-use anyhow::{anyhow, Ok, Result};
 use anyhow::{bail, Context};
+use anyhow::{Ok, Result};
 use chrono::prelude::*;
 use clap::Parser;
 use cli::Appearance;
@@ -38,6 +38,7 @@ use crate::schedule::{
     get_image_index_order_solar,
 };
 use crate::setter::set_wallpaper;
+use crate::wallpaper::Wallpaper;
 use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
 
 fn main() -> Result<()> {
@@ -65,10 +66,10 @@ pub fn info<P: AsRef<Path>>(path: P) -> Result<()> {
 pub fn set<P: AsRef<Path>>(
     path: Option<P>,
     daemon: bool,
-    appearance: Option<Appearance>,
+    user_appearance: Option<Appearance>,
 ) -> Result<()> {
-    if daemon && appearance.is_some() {
-        bail!("Appearance can't be used in daemon mode!")
+    if daemon && user_appearance.is_some() {
+        bail!("appearance can't be used in daemon mode!")
     }
 
     let config = Config::find()?;
@@ -87,16 +88,7 @@ pub fn set<P: AsRef<Path>>(
     let wallpaper = WallpaperLoader::new().load(&wall_path);
 
     loop {
-        let now = Local::now();
-        let current_image_index = match wallpaper.properties {
-            Properties::H24(ref props) => current_image_index_h24(&props.time_info, &now.time()),
-            Properties::Solar(ref props) => {
-                current_image_index_solar(&props.solar_info, &now, &config.location)
-            }
-            Properties::Appearance(ref props) => current_image_index_appearance(props, appearance),
-        }
-        .with_context(|| "could not determine image to set")?;
-
+        let current_image_index = current_image_index(&wallpaper, &config, user_appearance)?;
         let current_image_path = wallpaper
             .images
             .get(current_image_index)
@@ -114,6 +106,29 @@ pub fn set<P: AsRef<Path>>(
     }
 
     Ok(())
+}
+
+fn current_image_index(
+    wallpaper: &Wallpaper,
+    config: &Config,
+    user_appearance: Option<Appearance>,
+) -> Result<usize> {
+    let now = Local::now();
+    match wallpaper.properties {
+        ref any_properties if user_appearance.is_some() => match any_properties.appearance() {
+            Some(appearance_props) => {
+                current_image_index_appearance(appearance_props, user_appearance)
+            }
+            None => bail!("wallpaper missing appearance metadata"),
+        },
+        Properties::Appearance(ref appearance_props) => {
+            current_image_index_appearance(appearance_props, user_appearance)
+        }
+        Properties::H24(ref props) => current_image_index_h24(&props.time_info, &now.time()),
+        Properties::Solar(ref props) => {
+            current_image_index_solar(&props.solar_info, &now, &config.location)
+        }
+    }
 }
 
 pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
