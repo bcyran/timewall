@@ -33,7 +33,7 @@ use info::ImageInfo;
 use schedule::get_image_index_order_appearance;
 
 use crate::config::Config;
-use crate::constants::{PREVIEW_UPDATE_INTERVAL_MILLIS, UPDATE_INTERVAL_MINUTES};
+use crate::constants::UPDATE_INTERVAL_MINUTES;
 use crate::schedule::{
     current_image_index_h24, current_image_index_solar, get_image_index_order_h24,
     get_image_index_order_solar,
@@ -49,7 +49,7 @@ fn main() -> Result<()> {
 
     match args.action {
         cli::Action::Info { file } => info(file),
-        cli::Action::Preview { file } => preview(file),
+        cli::Action::Preview { file, delay } => preview(file, delay),
         cli::Action::Unpack { file, output } => unpack(file, output),
         cli::Action::Set {
             file,
@@ -150,7 +150,7 @@ fn current_image_index(
     }
 }
 
-pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
+pub fn preview<P: AsRef<Path>>(path: P, delay: u64) -> Result<()> {
     let config = Config::find()?;
     validate_wallpaper_file(&path)?;
     let wallpaper = WallpaperLoader::new().load(&path);
@@ -163,7 +163,7 @@ pub fn preview<P: AsRef<Path>>(path: P) -> Result<()> {
     for image_index in image_order.iter().cycle() {
         let image_path = wallpaper.images.get(*image_index).unwrap();
         set_wallpaper(image_path, config.setter_command())?;
-        thread::sleep(Duration::from_millis(PREVIEW_UPDATE_INTERVAL_MILLIS));
+        thread::sleep(Duration::from_millis(delay));
     }
 
     Ok(())

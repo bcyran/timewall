@@ -25,6 +25,9 @@ pub enum Action {
         /// Path to HEIC file
         #[clap(parse(from_os_str))]
         file: PathBuf,
+        /// Delay between wallpaper changes in milliseconds.
+        #[clap(short, long, default_value_t = 500)]
+        delay: u64,
     },
     /// Extract all images and metadata from HEIC file to a directory
     Unpack {
