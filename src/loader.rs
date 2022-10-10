@@ -3,9 +3,9 @@ use std::{fs, io, path::Path};
 use anyhow::Result;
 
 use crate::wallpaper::Wallpaper;
-use crate::{cache::Cache, wallpaper::unpack_heic};
+use crate::{cache::Cache, wallpaper::unpack};
 
-/// Unpacks HEIC files and loads them into `Wallpaper` structs, while transparently caching them.
+/// Unpacks HEIF files and loads them into `Wallpaper` structs, while transparently caching them.
 #[derive(Debug)]
 pub struct WallpaperLoader {
     cache: Cache,
@@ -25,7 +25,7 @@ impl WallpaperLoader {
         let hash = hash_file(&path).expect("wallpaper hashing failed");
         let cache_dir = self.cache.entry(&hash);
         if cache_dir.read_dir().unwrap().next().is_none() {
-            unpack_heic(&path, &cache_dir).expect("wallpaper unpacking failed");
+            unpack(&path, &cache_dir).expect("wallpaper unpacking failed");
         }
         Wallpaper::load(&cache_dir).expect("malformed wallpaper cache")
     }

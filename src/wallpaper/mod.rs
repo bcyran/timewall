@@ -6,10 +6,10 @@ use std::path::{Path, PathBuf};
 use anyhow::{anyhow, Result};
 use libheif_rs::HeifContext;
 use log::debug;
-
-use crate::heif;
 use metadata::AppleDesktop;
 use properties::Properties;
+
+use crate::heif;
 
 const PROPERTIES_NAME: &str = "properties.xml";
 
@@ -42,12 +42,9 @@ impl Wallpaper {
     }
 }
 
-/// Unpack wallpaper images and properties from HEIC into a directory.
-pub fn unpack_heic<IP: AsRef<Path>, DP: AsRef<Path>>(
-    image_path: IP,
-    dest_dir_path: DP,
-) -> Result<()> {
-    let image_path = image_path.as_ref();
+/// Unpack wallpaper images and properties from HEIF into a directory.
+pub fn unpack<IP: AsRef<Path>, DP: AsRef<Path>>(wall_path: IP, dest_dir_path: DP) -> Result<()> {
+    let image_path = wall_path.as_ref();
     let dest_dir_path = dest_dir_path.as_ref();
 
     if !dest_dir_path.is_dir() {
@@ -61,9 +58,9 @@ pub fn unpack_heic<IP: AsRef<Path>, DP: AsRef<Path>>(
     Ok(())
 }
 
-fn unpack_properties<P: AsRef<Path>>(image_ctx: &HeifContext, dest_path: P) -> Result<()> {
+fn unpack_properties<P: AsRef<Path>>(heif_ctx: &HeifContext, dest_path: P) -> Result<()> {
     let dest_path = dest_path.as_ref();
-    let apple_desktop_meta = AppleDesktop::from_heif(image_ctx)?;
+    let apple_desktop_meta = AppleDesktop::from_heif(heif_ctx)?;
     let properties = Properties::from_apple_desktop(&apple_desktop_meta)?;
     debug!("writing properties to {}", dest_path.display());
     properties.to_xml_file(&dest_path)

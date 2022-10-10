@@ -7,7 +7,6 @@ use anyhow::{Ok, Result};
 use chrono::prelude::*;
 use clap::Parser;
 use cli::Appearance;
-use heif::validate_heif_file;
 use loader::WallpaperLoader;
 use log::debug;
 
@@ -64,7 +63,7 @@ pub fn info<P: AsRef<Path>>(path: P) -> Result<()> {
 
 pub fn unpack<IP: AsRef<Path>, OP: AsRef<Path>>(source: IP, destination: OP) -> Result<()> {
     validate_wallpaper_file(&source)?;
-    wallpaper::unpack_heic(source, destination)
+    wallpaper::unpack(source, destination)
 }
 
 pub fn set<P: AsRef<Path>>(
@@ -121,7 +120,7 @@ fn validate_wallpaper_file<P: AsRef<Path>>(path: P) -> Result<()> {
     if !path.is_file() {
         bail!("'{}' is not a file", path.display());
     }
-    validate_heif_file(path)
+    heif::validate_file(path)
 }
 
 fn current_image_index(
