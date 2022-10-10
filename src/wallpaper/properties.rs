@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context, Result};
 use ordered_float::NotNan;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-use crate::metadata::AppleDesktop;
+use super::metadata::AppleDesktop;
 
 /// Property List for the time based wallpaper.
 #[derive(Deserialize, Serialize, PartialEq, Eq, Debug)]

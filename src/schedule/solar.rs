@@ -6,7 +6,7 @@ use sun::Position;
 
 use crate::{
     geo::{Coords, Hemisphere},
-    properties::SolarItem,
+    wallpaper::properties::SolarItem,
 };
 
 /// Get the index of the image which should be displayed for given datetime and location.

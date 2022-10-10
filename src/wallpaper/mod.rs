@@ -1,3 +1,6 @@
+pub mod metadata;
+pub mod properties;
+
 use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
@@ -5,14 +8,10 @@ use libheif_rs::HeifContext;
 use log::debug;
 
 use crate::heif;
-use crate::metadata::AppleDesktop;
-use crate::properties::Properties;
+use metadata::AppleDesktop;
+use properties::Properties;
 
 const PROPERTIES_NAME: &str = "properties.xml";
-
-fn image_name(index: usize) -> String {
-    format!("{index}.png")
-}
 
 /// Unpacked wallpaper laying somewhere in the filesystem.
 #[derive(Debug)]
@@ -32,7 +31,7 @@ impl Wallpaper {
         let mut images: Vec<PathBuf> = Vec::with_capacity(properties.num_images());
 
         for i in 0..properties.num_images() {
-            let image_path = dir_path.join(image_name(i)).canonicalize()?;
+            let image_path = dir_path.join(format!("{i}.png")).canonicalize()?;
             if !image_path.exists() {
                 return Err(anyhow!("image {i} present in properties but not in dir"));
             }

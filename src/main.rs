@@ -10,7 +10,6 @@ use cli::Appearance;
 use heif::validate_heif_file;
 use loader::WallpaperLoader;
 use log::debug;
-use properties::Properties;
 
 #[macro_use]
 mod macros;
@@ -22,8 +21,6 @@ mod geo;
 mod heif;
 mod info;
 mod loader;
-mod metadata;
-mod properties;
 mod schedule;
 mod setter;
 mod wallpaper;
@@ -38,6 +35,7 @@ use crate::schedule::{
     get_image_index_order_solar,
 };
 use crate::setter::set_wallpaper;
+use crate::wallpaper::properties::Properties;
 use crate::wallpaper::Wallpaper;
 use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
 

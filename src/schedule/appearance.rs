@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::{cli::Appearance, properties::PropertiesAppearance};
+use crate::{cli::Appearance, wallpaper::properties::PropertiesAppearance};
 
 pub fn current_image_index_appearance(
     properties: &PropertiesAppearance,
