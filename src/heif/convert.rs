@@ -1,14 +1,42 @@
 use std::{
+    cmp::min,
     fs::File,
     io::{BufWriter, Write},
     path::Path,
 };
 
 use anyhow::Result;
-use libheif_rs::{Channel, ColorSpace, Image, RgbChroma};
+use libheif_rs::{Channel, ColorSpace, HeifContext, Image, RgbChroma};
 use log::debug;
+use threadpool::ThreadPool;
+
+use super::read;
 
 const CHANNELS: usize = 3;
+
+/// Unpack all images from given HEIC into PNG files in specified directory.
+/// Unpacked images will be named by their indices, starting from 0: '0.png', '1.png'...
+pub fn unpack_images<P: AsRef<Path>>(image_ctx: &HeifContext, dest_dir_path: P) -> Result<()> {
+    let dest_dir_path = dest_dir_path.as_ref();
+    let image_handles = read::get_image_handles(image_ctx);
+    debug!("found {} images", image_handles.len());
+
+    let n_threads = min(num_cpus::get(), image_handles.len());
+    let thread_pool = ThreadPool::new(n_threads);
+    debug!("unpacking using {n_threads} threads");
+
+    for (i, image_handle) in image_handles.iter().enumerate() {
+        let unpacked_image_path = dest_dir_path.join(format!("{i}.png"));
+        let image = read::decode_image_from_handle(image_handle)?;
+        thread_pool.execute(move || {
+            debug!("writing image to {}", unpacked_image_path.display());
+            write_image_as_png(&image, &unpacked_image_path).unwrap();
+        });
+    }
+    thread_pool.join();
+
+    Ok(())
+}
 
 /// Write HEIC image as PNG at the specified path.
 pub fn write_image_as_png<P: AsRef<Path>>(image: &Image, path: P) -> Result<()> {
