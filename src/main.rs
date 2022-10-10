@@ -7,7 +7,7 @@ use anyhow::{Ok, Result};
 use chrono::prelude::*;
 use clap::Parser;
 use cli::Appearance;
-use heic::validate_heic_file;
+use heif::validate_heif_file;
 use loader::WallpaperLoader;
 use log::debug;
 use properties::Properties;
@@ -19,7 +19,7 @@ mod cli;
 mod config;
 mod constants;
 mod geo;
-mod heic;
+mod heif;
 mod info;
 mod loader;
 mod metadata;
@@ -124,7 +124,7 @@ fn validate_wallpaper_file<P: AsRef<Path>>(path: P) -> Result<()> {
     if !path.is_file() {
         bail!("'{}' is not a file", path.display());
     }
-    validate_heic_file(path)
+    validate_heif_file(path)
 }
 
 fn current_image_index(

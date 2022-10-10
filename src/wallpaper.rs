@@ -6,7 +6,7 @@ use libheif_rs::HeifContext;
 use log::debug;
 use threadpool::ThreadPool;
 
-use crate::heic;
+use crate::heif;
 use crate::metadata::AppleDesktop;
 use crate::properties::Properties;
 
@@ -66,7 +66,7 @@ pub fn unpack_heic<IP: AsRef<Path>, DP: AsRef<Path>>(
 
 fn unpack_images<P: AsRef<Path>>(image_ctx: &HeifContext, dest_dir_path: P) -> Result<()> {
     let dest_dir_path = dest_dir_path.as_ref();
-    let image_handles = heic::get_image_handles(image_ctx);
+    let image_handles = heif::get_image_handles(image_ctx);
     debug!("found {} images", image_handles.len());
 
     let n_threads = min(num_cpus::get(), image_handles.len());
@@ -75,10 +75,10 @@ fn unpack_images<P: AsRef<Path>>(image_ctx: &HeifContext, dest_dir_path: P) -> R
 
     for (i, image_handle) in image_handles.iter().enumerate() {
         let unpacked_image_path = dest_dir_path.join(image_name(i));
-        let image = heic::decode_image_from_handle(image_handle)?;
+        let image = heif::decode_image_from_handle(image_handle)?;
         thread_pool.execute(move || {
             debug!("writing image to {}", unpacked_image_path.display());
-            heic::write_image_as_png(&image, &unpacked_image_path).unwrap();
+            heif::write_image_as_png(&image, &unpacked_image_path).unwrap();
         });
     }
     thread_pool.join();

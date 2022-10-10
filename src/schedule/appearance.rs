@@ -1,5 +1,6 @@
-use crate::{cli::Appearance, properties::PropertiesAppearance};
 use anyhow::Result;
+
+use crate::{cli::Appearance, properties::PropertiesAppearance};
 
 pub fn current_image_index_appearance(
     properties: &PropertiesAppearance,
@@ -17,8 +18,9 @@ pub fn get_image_index_order_appearance(properties: &PropertiesAppearance) -> Ve
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rstest::*;
+
+    use super::*;
 
     #[fixture]
     fn properties() -> PropertiesAppearance {
