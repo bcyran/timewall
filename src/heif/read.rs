@@ -5,6 +5,7 @@ use libheif_rs::{
     check_file_type, ColorSpace, FileTypeResult, HeifContext, HeifError, Image, ImageHandle,
     ItemId, RgbChroma,
 };
+use log::debug;
 
 /// Check whether file at a given path is HEIF and is supported.
 pub fn validate_heif_file<P: AsRef<Path>>(path: P) -> Result<()> {
@@ -18,6 +19,21 @@ pub fn validate_heif_file<P: AsRef<Path>>(path: P) -> Result<()> {
             Err(anyhow!("this HEIF is not supported"))
         }
     }
+}
+
+/// Extract XMP metadata bytes from HEIF image.
+pub fn get_xmp_metadata(heif_ctx: &HeifContext) -> Result<Box<[u8]>> {
+    let primary_image_handle = heif_ctx.primary_image_handle()?;
+
+    let mut metadata_ids: [ItemId; 1] = [0];
+    primary_image_handle.metadata_block_ids("mime", &mut metadata_ids);
+    let xmp_metadata_id = metadata_ids[0];
+    debug!("XMP metadata ID: {xmp_metadata_id}");
+
+    let xmp_metadata = primary_image_handle.metadata(xmp_metadata_id)?;
+
+    debug!("XMP metadata read");
+    Ok(xmp_metadata.into_boxed_slice())
 }
 
 /// Get all available top level image handles from HEIC.

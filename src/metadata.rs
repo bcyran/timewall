@@ -1,11 +1,13 @@
 use anyhow::{anyhow, Result};
-use libheif_rs::{HeifContext, ItemId};
+use libheif_rs::HeifContext;
 use log::debug;
 use xml::{
     attribute::OwnedAttribute,
     name::OwnedName,
     reader::{EventReader, XmlEvent},
 };
+
+use crate::heif;
 
 /// AppleDesktop XMP metadata attribute.
 #[derive(PartialEq, Eq, Debug)]
@@ -26,8 +28,8 @@ impl AppleDesktop {
 }
 
 /// Extract apple_desktop attribute from HEIF image.
-pub fn get_apple_desktop_metadata_from_heif(image_ctx: &HeifContext) -> Result<AppleDesktop> {
-    let xmp_metadata = get_xmp_metadata(image_ctx)?;
+pub fn get_apple_desktop_metadata_from_heif(heif_ctx: &HeifContext) -> Result<AppleDesktop> {
+    let xmp_metadata = heif::get_xmp_metadata(heif_ctx)?;
     get_apple_desktop_metadata_from_xmp(&xmp_metadata)
 }
 
@@ -39,21 +41,6 @@ pub fn get_apple_desktop_metadata_from_xmp(xmp_metadata: &[u8]) -> Result<AppleD
         return get_apple_desktop_attribute(attributes);
     }
     panic!("unexpected XML event")
-}
-
-/// Extract XMP metadata bytes from HEIF image.
-fn get_xmp_metadata(image_ctx: &HeifContext) -> Result<Box<[u8]>> {
-    let primary_image_handle = image_ctx.primary_image_handle()?;
-
-    let mut metadata_ids: [ItemId; 1] = [0];
-    primary_image_handle.metadata_block_ids("mime", &mut metadata_ids);
-    let xmp_metadata_id = metadata_ids[0];
-    debug!("XMP metadata ID: {xmp_metadata_id}");
-
-    let xmp_metadata = primary_image_handle.metadata(xmp_metadata_id)?;
-
-    debug!("XMP metadata read");
-    Ok(xmp_metadata.into_boxed_slice())
 }
 
 /// Find `<rdf:Description ... />` element using XML event reader.
