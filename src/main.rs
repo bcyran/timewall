@@ -26,7 +26,6 @@ mod metadata;
 mod properties;
 mod schedule;
 mod setter;
-mod time;
 mod wallpaper;
 
 use info::ImageInfo;

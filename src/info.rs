@@ -10,8 +10,7 @@ use libheif_rs::HeifContext;
 use crate::{
     metadata::get_apple_desktop_metadata_from_heif,
     properties::{Properties, PropertiesAppearance, PropertiesH24, PropertiesSolar},
-    schedule::{sort_solar_items, sort_time_items},
-    time::day_fraction_to_time,
+    schedule::{sort_solar_items, sort_time_items, time::day_fraction_to_time},
 };
 
 #[derive(Debug)]

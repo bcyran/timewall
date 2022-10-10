@@ -5,7 +5,8 @@ use chrono::NaiveTime;
 use itertools::Itertools;
 use ordered_float::NotNan;
 
-use crate::{properties::TimeItem, time::time_to_day_fraction};
+use super::time::time_to_day_fraction;
+use crate::properties::TimeItem;
 
 /// Get the image index from item which should be displayed at the given time.
 pub fn current_image_index_h24(time_items: &[TimeItem], time: &NaiveTime) -> Result<usize> {
