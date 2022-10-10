@@ -1,6 +1,6 @@
 use std::{fs::File, io::Read, path::Path};
 
-use anyhow::{anyhow, Context, Ok, Result};
+use anyhow::{anyhow, bail, Context, Ok, Result};
 use libheif_rs::{
     check_file_type, ColorSpace, FileTypeResult, HeifContext, HeifError, Image, ItemId, RgbChroma,
 };
@@ -25,7 +25,10 @@ pub fn get_xmp_metadata(heif_ctx: &HeifContext) -> Result<Box<[u8]>> {
     let primary_image_handle = heif_ctx.primary_image_handle()?;
 
     let mut metadata_ids: [ItemId; 1] = [0];
-    primary_image_handle.metadata_block_ids("mime", &mut metadata_ids);
+    let metdata_blocks_number = primary_image_handle.metadata_block_ids("mime", &mut metadata_ids);
+    if metdata_blocks_number != 1 {
+        bail!("unexpected XMP blocks number: {metdata_blocks_number}");
+    }
     let xmp_metadata_id = metadata_ids[0];
     debug!("XMP metadata ID: {xmp_metadata_id}");
 

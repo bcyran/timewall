@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use libheif_rs::HeifContext;
 use log::debug;
 use xml::{
@@ -29,7 +29,7 @@ impl AppleDesktop {
 
 /// Extract apple_desktop attribute from HEIF image.
 pub fn get_apple_desktop_metadata_from_heif(heif_ctx: &HeifContext) -> Result<AppleDesktop> {
-    let xmp_metadata = heif::get_xmp_metadata(heif_ctx)?;
+    let xmp_metadata = heif::get_xmp_metadata(heif_ctx).context("couldn't read XMP metadata")?;
     get_apple_desktop_metadata_from_xmp(&xmp_metadata)
 }
 
