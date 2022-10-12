@@ -1,7 +1,8 @@
 use assert_cmd::Command;
 use rstest::fixture;
 
-pub const LENNA_TIME: &str = "tests/examples/lenna_time.heic";
+pub const EXAMPLE_TIME: &str = "tests/examples/time.heic";
+pub const EXAMPLE_SUN: &str = "tests/examples/sun.heic";
 
 #[fixture]
 pub fn timewall() -> Command {

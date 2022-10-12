@@ -3,7 +3,7 @@ mod utils;
 use assert_cmd::Command;
 use predicates::prelude::*;
 use rstest::rstest;
-use utils::{timewall, LENNA_TIME};
+use utils::{timewall, EXAMPLE_TIME};
 
 #[rstest]
 fn test_info_time(mut timewall: Command) {
@@ -22,7 +22,7 @@ Light: 0
 Dark: 1
 "#,
     );
-    timewall.arg("info").arg(LENNA_TIME);
+    timewall.arg("info").arg(EXAMPLE_TIME);
 
     timewall.assert().success().stdout(expected_stdout);
 }
