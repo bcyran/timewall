@@ -1,8 +1,11 @@
 use std::fs::File;
 use std::io::Write;
-use std::{fs, path::Path};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
-use anyhow::{anyhow, Context, Result};
+use anyhow::{bail, Context, Ok, Result};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 
@@ -24,10 +27,15 @@ pub struct Config {
 
 impl Config {
     pub fn find() -> Result<Self> {
-        match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
-            Some(app_dirs) => Config::load_or_create(app_dirs.config_dir().join(CONFIG_FILE_NAME)),
-            None => Err(anyhow!("couldn't determine user's home directory")),
-        }
+        let config_path = if let Result::Ok(path_str) = env::var("TIMEWALL_CONFIG_DIR") {
+            PathBuf::from(path_str)
+        } else {
+            match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
+                Some(app_dirs) => app_dirs.config_dir().join(CONFIG_FILE_NAME),
+                None => bail!("couldn't determine user's home directory"),
+            }
+        };
+        Config::load_or_create(config_path)
     }
 
     fn load_or_create<P: AsRef<Path>>(path: P) -> Result<Self> {
