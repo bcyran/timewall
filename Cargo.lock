@@ -1193,6 +1193,7 @@ dependencies = [
  "directories",
  "env_logger",
  "itertools",
+ "lazy_static",
  "libheif-rs",
  "log",
  "num_cpus",
