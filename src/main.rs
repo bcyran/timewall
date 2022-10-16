@@ -1,6 +1,6 @@
-use std::path::Path;
-use std::thread;
 use std::time::Duration;
+use std::{env, path::Path};
+use std::{str::FromStr, thread};
 
 use anyhow::{bail, Context};
 use anyhow::{Ok, Result};
@@ -123,12 +123,19 @@ fn validate_wallpaper_file<P: AsRef<Path>>(path: P) -> Result<()> {
     heif::validate_file(path)
 }
 
+fn get_now_time() -> DateTime<Local> {
+    match env::var("TIMEWALL_OVERRIDE_TIME") {
+        Err(_) => Local::now(),
+        Result::Ok(time_str) => DateTime::from_str(&time_str).unwrap(),
+    }
+}
+
 fn current_image_index(
     wallpaper: &Wallpaper,
     config: &Config,
     user_appearance: Option<Appearance>,
 ) -> Result<usize> {
-    let now = Local::now();
+    let now = get_now_time();
     match wallpaper.properties {
         ref any_properties if user_appearance.is_some() => match any_properties.appearance() {
             Some(appearance_props) => {
