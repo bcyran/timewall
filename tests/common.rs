@@ -23,6 +23,14 @@ lazy_static! {
     pub static ref EXAMPLE_SUN: PathBuf = PathBuf::from("tests/examples/sun.heic")
         .canonicalize()
         .unwrap();
+    /// Absolute path to example time-based properties XML file.
+    pub static ref PROPERTIES_TIME: PathBuf = PathBuf::from("tests/examples/properties_time.xml")
+        .canonicalize()
+        .unwrap();
+    /// Absolute path to example sun-based properties XML file.
+    pub static ref PROPERTIES_SUN: PathBuf = PathBuf::from("tests/examples/properties_sun.xml")
+        .canonicalize()
+        .unwrap();
     /// Mapping of examples wallpaper paths to their hashes.
     pub static ref WALLPAPER_HASHES: HashMap<PathBuf, &'static str> = HashMap::from([
         (
