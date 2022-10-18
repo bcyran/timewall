@@ -6,8 +6,9 @@ use assert_cmd::Command;
 use assert_fs::prelude::*;
 use chrono::{DateTime, Local};
 use common::{
-    cached_image_path_str, testenv, timewall, TestEnv, DATETIME_DAY, DATETIME_NIGHT, EXAMPLE_SUN,
-    EXAMPLE_TIME, IMAGE_DAY, IMAGE_NIGHT, IMAGE_SET_MESSAGE, WALLPAPER_HASHES,
+    cached_image_path_str, testenv, timewall, TestEnv, COMMAND_RUN_MESSAGE, DATETIME_DAY,
+    DATETIME_NIGHT, EXAMPLE_SUN, EXAMPLE_TIME, IMAGE_DAY, IMAGE_NIGHT, IMAGE_SET_MESSAGE,
+    WALLPAPER_HASHES,
 };
 use predicates::prelude::*;
 use rstest::rstest;
@@ -32,6 +33,26 @@ fn test_sets_correct_image(
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_image_path_str));
+}
+
+#[rstest]
+fn test_runs_command(testenv: TestEnv, mut timewall: Command) {
+    let wallpaper_path = EXAMPLE_SUN.to_path_buf();
+    let config =
+        "[location]\nlat = 51.11\nlon = 17.02\n[setter]\ncommand = ['feh', '--bg-fill', '%f']";
+
+    let expected_image_path_str =
+        cached_image_path_str(&testenv.cache_dir, &wallpaper_path, IMAGE_NIGHT);
+    let expected_command_str = format!("feh --bg-fill {expected_image_path_str}");
+
+    timewall.arg("set").arg(wallpaper_path);
+    testenv
+        .with_config(&config)
+        .with_time(*DATETIME_NIGHT)
+        .run(&mut timewall)
+        .success()
+        .stdout(predicate::str::contains(COMMAND_RUN_MESSAGE).count(1))
+        .stdout(predicate::str::contains(expected_command_str));
 }
 
 #[rstest]
