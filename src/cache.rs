@@ -85,10 +85,15 @@ pub struct LastWallpaper {
 impl LastWallpaper {
     /// Find user's cache directory and load instance from there.
     pub fn find() -> Self {
-        match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
-            Some(app_dirs) => LastWallpaper::load(app_dirs.cache_dir().join("last_wall")),
-            None => panic!("couldn't determine user's home directory"),
-        }
+        let cache_dir = if let Result::Ok(path_str) = env::var("TIMEWALL_CACHE_DIR") {
+            PathBuf::from(path_str)
+        } else {
+            match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
+                Some(app_dirs) => app_dirs.cache_dir().to_path_buf(),
+                None => panic!("couldn't determine user's home directory"),
+            }
+        };
+        LastWallpaper::load(cache_dir.join("last_wall"))
     }
 
     /// Load instance from given link path.
