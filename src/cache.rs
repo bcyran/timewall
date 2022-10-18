@@ -22,15 +22,15 @@ impl Cache {
     /// E.g. `Cache::find("wallpapers")` will create 'wallpapers' directory in timewall
     /// directory in user's main cache directory.
     pub fn find(name: &str) -> Self {
-        let cache_path = if let Result::Ok(path_str) = env::var("TIMEWALL_CACHE_DIR") {
+        let cache_dir = if let Result::Ok(path_str) = env::var("TIMEWALL_CACHE_DIR") {
             PathBuf::from(path_str)
         } else {
             match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
-                Some(app_dirs) => app_dirs.cache_dir().join(name),
+                Some(app_dirs) => app_dirs.cache_dir().to_path_buf(),
                 None => panic!("couldn't determine user's home directory"),
             }
         };
-        Cache::in_dir(cache_path)
+        Cache::in_dir(cache_dir.join(name))
     }
 
     /// Load cache from a given directory. Create it if it doesn't exist.

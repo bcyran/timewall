@@ -27,15 +27,15 @@ pub struct Config {
 
 impl Config {
     pub fn find() -> Result<Self> {
-        let config_path = if let Result::Ok(path_str) = env::var("TIMEWALL_CONFIG_DIR") {
+        let config_dir = if let Result::Ok(path_str) = env::var("TIMEWALL_CONFIG_DIR") {
             PathBuf::from(path_str)
         } else {
             match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
-                Some(app_dirs) => app_dirs.config_dir().join(CONFIG_FILE_NAME),
+                Some(app_dirs) => app_dirs.config_dir().to_path_buf(),
                 None => bail!("couldn't determine user's home directory"),
             }
         };
-        Config::load_or_create(config_path)
+        Config::load_or_create(config_dir.join(CONFIG_FILE_NAME))
     }
 
     fn load_or_create<P: AsRef<Path>>(path: P) -> Result<Self> {
