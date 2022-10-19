@@ -123,7 +123,7 @@ fn write_to_padded_data<W: Write>(
         debug!("image lines padded");
         let padding = vec![0; padding_length];
         for data_line in data.chunks(line_length) {
-            writer.write_all(&data_line)?;
+            writer.write_all(data_line)?;
             writer.write_all(&padding)?;
         }
     }

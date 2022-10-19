@@ -164,7 +164,7 @@ pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> 
     let image_order = match wallpaper.properties {
         Properties::H24(ref props) => get_image_index_order_h24(&props.time_info),
         Properties::Solar(ref props) => get_image_index_order_solar(&props.solar_info),
-        Properties::Appearance(ref props) => get_image_index_order_appearance(&props),
+        Properties::Appearance(ref props) => get_image_index_order_appearance(props),
     };
 
     loop {
