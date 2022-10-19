@@ -36,6 +36,33 @@ fn test_sets_correct_image(
 }
 
 #[rstest]
+#[case("light", IMAGE_DAY)]
+#[case("dark", IMAGE_NIGHT)]
+fn test_sets_correct_image_appearance(
+    testenv: TestEnv,
+    mut timewall: Command,
+    #[values(EXAMPLE_SUN.to_path_buf(), EXAMPLE_TIME.to_path_buf())] wallpaper_path: PathBuf,
+    #[values(*DATETIME_DAY, *DATETIME_NIGHT)] datetime: DateTime<Local>,
+    #[case] appearance_value: &str,
+    #[case] expected_image: &str,
+) {
+    let expected_image_path_str =
+        cached_image_path_str(&testenv.cache_dir, &wallpaper_path, expected_image);
+
+    timewall
+        .arg("set")
+        .arg("--appearance")
+        .arg(appearance_value)
+        .arg(wallpaper_path);
+    testenv
+        .with_time(datetime)
+        .run(&mut timewall)
+        .success()
+        .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
+        .stdout(predicate::str::contains(expected_image_path_str));
+}
+
+#[rstest]
 fn test_runs_command(testenv: TestEnv, mut timewall: Command) {
     let wallpaper_path = EXAMPLE_SUN.to_path_buf();
     let config =
