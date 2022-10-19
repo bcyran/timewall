@@ -13,10 +13,8 @@ use rstest::rstest;
 #[case(EXAMPLE_SUN.to_path_buf())]
 #[case(EXAMPLE_TIME.to_path_buf())]
 fn test_preview(testenv: TestEnv, mut timewall: Command, #[case] wall_path: PathBuf) {
-    timewall.arg("preview").arg(wall_path);
-
     testenv
-        .run(&mut timewall)
+        .run(timewall.arg("preview").arg(wall_path))
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(2))
         .stdout(predicate::str::contains(IMAGE_DAY).count(1))

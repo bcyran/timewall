@@ -1,10 +1,11 @@
 mod common;
 
+use std::path::PathBuf;
+
 use assert_cmd::Command;
-use common::{timewall, EXAMPLE_SUN, EXAMPLE_TIME};
+use common::{testenv, timewall, TestEnv, EXAMPLE_SUN, EXAMPLE_TIME};
 use predicates::prelude::*;
 use rstest::rstest;
-use std::path::PathBuf;
 
 const EXAMPLE_TIME_INFO: &str = r#"
 Size: 88723B
@@ -39,9 +40,14 @@ Dark: 1
 #[rstest]
 #[case(EXAMPLE_TIME.to_path_buf(), EXAMPLE_TIME_INFO)]
 #[case(EXAMPLE_SUN.to_path_buf(), EXAMPLE_SUN_INFO)]
-fn test_info(mut timewall: Command, #[case] input_path: PathBuf, #[case] expected_output: &str) {
-    let expected_stdout = predicate::str::ends_with(expected_output);
-    timewall.arg("info").arg(input_path);
-
-    timewall.assert().success().stdout(expected_stdout);
+fn test_info(
+    testenv: TestEnv,
+    mut timewall: Command,
+    #[case] wall_path: PathBuf,
+    #[case] expected_output: &str,
+) {
+    testenv
+        .run(timewall.arg("info").arg(wall_path))
+        .success()
+        .stdout(predicate::str::ends_with(expected_output));
 }

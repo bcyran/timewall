@@ -26,10 +26,9 @@ fn test_sets_correct_image(
     let expected_image_path_str =
         cached_image_path_str(&testenv.cache_dir, &wallpaper_path, expected_image);
 
-    timewall.arg("set").arg(wallpaper_path);
     testenv
         .with_time(datetime)
-        .run(&mut timewall)
+        .run(timewall.arg("set").arg(wallpaper_path))
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_image_path_str));
@@ -49,14 +48,15 @@ fn test_sets_correct_image_appearance(
     let expected_image_path_str =
         cached_image_path_str(&testenv.cache_dir, &wallpaper_path, expected_image);
 
-    timewall
-        .arg("set")
-        .arg("--appearance")
-        .arg(appearance_value)
-        .arg(wallpaper_path);
     testenv
         .with_time(datetime)
-        .run(&mut timewall)
+        .run(
+            timewall
+                .arg("set")
+                .arg("--appearance")
+                .arg(appearance_value)
+                .arg(wallpaper_path),
+        )
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_image_path_str));
@@ -67,16 +67,14 @@ fn test_runs_command(testenv: TestEnv, mut timewall: Command) {
     let wallpaper_path = EXAMPLE_SUN.to_path_buf();
     let config =
         "[location]\nlat = 51.11\nlon = 17.02\n[setter]\ncommand = ['feh', '--bg-fill', '%f']";
-
     let expected_image_path_str =
         cached_image_path_str(&testenv.cache_dir, &wallpaper_path, IMAGE_NIGHT);
     let expected_command_str = format!("feh --bg-fill {expected_image_path_str}");
 
-    timewall.arg("set").arg(wallpaper_path);
     testenv
         .with_config(&config)
         .with_time(*DATETIME_NIGHT)
-        .run(&mut timewall)
+        .run(timewall.arg("set").arg(wallpaper_path))
         .success()
         .stdout(predicate::str::contains(COMMAND_RUN_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_command_str));
@@ -88,11 +86,11 @@ fn test_creates_config(testenv: TestEnv, mut timewall: Command) {
     let expected_config = "[location]\nlat = 51.11\nlon = 17.02\n";
     let expected_stderr = format!("Default config written to {}", config_path.display());
 
-    timewall.arg("set").arg(EXAMPLE_SUN.to_path_buf());
     testenv
-        .run(&mut timewall)
+        .run(timewall.arg("set").arg(EXAMPLE_SUN.to_path_buf()))
         .success()
         .stderr(predicate::str::contains(expected_stderr));
+
     config_path
         .assert(predicate::path::is_file())
         .assert(predicate::eq(expected_config));
@@ -100,27 +98,25 @@ fn test_creates_config(testenv: TestEnv, mut timewall: Command) {
 
 #[rstest]
 fn test_saves_last_wallpaper(testenv: TestEnv, mut timewall: Command) {
-    let expected_wallpaper = EXAMPLE_SUN.to_path_buf();
+    let wall_path = EXAMPLE_SUN.to_path_buf();
 
-    timewall.arg("set").arg(&expected_wallpaper);
-    testenv.run(&mut timewall).success();
+    testenv.run(timewall.arg("set").arg(&wall_path)).success();
 
     let saved_wallpaper = testenv.cache_dir.child("last_wall");
     assert!(saved_wallpaper.is_symlink());
-    saved_wallpaper.assert(predicate::path::eq_file(expected_wallpaper));
+    saved_wallpaper.assert(predicate::path::eq_file(wall_path));
 }
 
 #[rstest]
 fn test_caches_wallpaper(testenv: TestEnv, mut timewall: Command) {
-    let expected_wallpaper = EXAMPLE_SUN.to_path_buf();
+    let wall_path = EXAMPLE_SUN.to_path_buf();
 
-    timewall.arg("set").arg(&expected_wallpaper);
-    testenv.run(&mut timewall).success();
+    testenv.run(timewall.arg("set").arg(&wall_path)).success();
 
     let wallpaper_cache_dir = testenv
         .cache_dir
         .child("wallpapers")
-        .child(WALLPAPER_HASHES.get(&expected_wallpaper).unwrap());
+        .child(WALLPAPER_HASHES.get(&wall_path).unwrap());
     wallpaper_cache_dir.assert(predicate::path::is_dir());
     wallpaper_cache_dir
         .child(IMAGE_DAY)

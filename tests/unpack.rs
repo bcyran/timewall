@@ -23,8 +23,9 @@ fn test_unpack(
     let unpack_dir = testenv.cwd.child(unpack_path);
     unpack_dir.create_dir_all().unwrap();
 
-    timewall.arg("unpack").arg(input_path).arg(unpack_path);
-    testenv.run(&mut timewall).success();
+    testenv
+        .run(timewall.arg("unpack").arg(input_path).arg(unpack_path))
+        .success();
 
     unpack_dir
         .child(IMAGE_DAY)

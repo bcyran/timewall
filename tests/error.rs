@@ -16,9 +16,8 @@ const EXAMPLE_DIR: &str = ".";
 fn test_unsupported_image(testenv: TestEnv, mut timewall: Command, #[case] args: &[&str]) {
     let expected_message = "Error: only HEIF files are supported";
 
-    timewall.args(args);
     testenv
-        .run(&mut timewall)
+        .run(timewall.args(args))
         .failure()
         .stderr(predicate::str::contains(expected_message));
 }
@@ -31,9 +30,8 @@ fn test_unsupported_image(testenv: TestEnv, mut timewall: Command, #[case] args:
 fn test_not_existing_path(testenv: TestEnv, mut timewall: Command, #[case] args: &[&str]) {
     let expected_message = format!("Error: file '{EXAMPLE_NOT_EXISTING}' is not accessible");
 
-    timewall.args(args);
     testenv
-        .run(&mut timewall)
+        .run(timewall.args(args))
         .failure()
         .stderr(predicate::str::contains(expected_message));
 }
@@ -46,9 +44,8 @@ fn test_not_existing_path(testenv: TestEnv, mut timewall: Command, #[case] args:
 fn test_dir_path(testenv: TestEnv, mut timewall: Command, #[case] args: &[&str]) {
     let expected_message = format!("Error: '{EXAMPLE_DIR}' is not a file");
 
-    timewall.args(args);
     testenv
-        .run(&mut timewall)
+        .run(timewall.args(args))
         .failure()
         .stderr(predicate::str::contains(expected_message));
 }
