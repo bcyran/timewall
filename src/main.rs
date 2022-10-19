@@ -83,6 +83,7 @@ pub fn set<P: AsRef<Path>>(
     let last_wallpaper = LastWallpaper::find();
 
     let wall_path = if let Some(given_path) = path {
+        validate_wallpaper_file(&given_path)?;
         last_wallpaper.save(&given_path);
         given_path.as_ref().to_path_buf()
     } else if let Some(last_path) = last_wallpaper.get() {
@@ -92,7 +93,6 @@ pub fn set<P: AsRef<Path>>(
         bail!("no image to set given");
     };
 
-    validate_wallpaper_file(&wall_path)?;
     let wallpaper = WallpaperLoader::new().load(&wall_path);
 
     loop {
