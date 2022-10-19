@@ -23,6 +23,10 @@ lazy_static! {
     pub static ref EXAMPLE_SUN: PathBuf = PathBuf::from("tests/examples/sun.heic")
         .canonicalize()
         .unwrap();
+    /// Absolute path to example unsupported image file.
+    pub static ref EXAMPLE_UNSUPPORTED: PathBuf = PathBuf::from("tests/examples/unsupported.jpg")
+        .canonicalize()
+        .unwrap();
     /// Absolute path to example time-based properties XML file.
     pub static ref PROPERTIES_TIME: PathBuf = PathBuf::from("tests/examples/properties_time.xml")
         .canonicalize()
