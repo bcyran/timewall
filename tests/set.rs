@@ -84,13 +84,16 @@ fn test_runs_command(testenv: TestEnv, mut timewall: Command) {
 
 #[rstest]
 fn test_creates_config(testenv: TestEnv, mut timewall: Command) {
+    let config_path = testenv.config_dir.child("config.toml");
     let expected_config = "[location]\nlat = 51.11\nlon = 17.02\n";
+    let expected_stderr = format!("Default config written to {}", config_path.display());
 
     timewall.arg("set").arg(EXAMPLE_SUN.to_path_buf());
-    testenv.run(&mut timewall).success();
     testenv
-        .config_dir
-        .child("config.toml")
+        .run(&mut timewall)
+        .success()
+        .stderr(predicate::str::contains(expected_stderr));
+    config_path
         .assert(predicate::path::is_file())
         .assert(predicate::eq(expected_config));
 }
