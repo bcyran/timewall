@@ -28,6 +28,9 @@ pub enum Action {
         /// Delay between wallpaper changes in milliseconds.
         #[clap(short, long, default_value_t = 500)]
         delay: u64,
+        /// Repeat the preview in a loop until killed
+        #[clap(short, long, action)]
+        repeat: bool,
     },
     /// Extract all images and metadata from HEIF file to a directory
     Unpack {

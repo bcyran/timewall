@@ -45,7 +45,11 @@ fn main() -> Result<()> {
 
     match args.action {
         cli::Action::Info { file } => info(file),
-        cli::Action::Preview { file, delay } => preview(file, delay),
+        cli::Action::Preview {
+            file,
+            delay,
+            repeat,
+        } => preview(file, delay, repeat),
         cli::Action::Unpack { file, output } => unpack(file, output),
         cli::Action::Set {
             file,
@@ -153,7 +157,7 @@ fn current_image_index(
     }
 }
 
-pub fn preview<P: AsRef<Path>>(path: P, delay: u64) -> Result<()> {
+pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> {
     let config = Config::find()?;
     validate_wallpaper_file(&path)?;
     let wallpaper = WallpaperLoader::new().load(&path);
@@ -163,10 +167,16 @@ pub fn preview<P: AsRef<Path>>(path: P, delay: u64) -> Result<()> {
         Properties::Appearance(ref props) => get_image_index_order_appearance(&props),
     };
 
-    for image_index in image_order.iter().cycle() {
-        let image_path = wallpaper.images.get(*image_index).unwrap();
-        set_wallpaper(image_path, config.setter_command())?;
-        thread::sleep(Duration::from_millis(delay));
+    loop {
+        for image_index in &image_order {
+            let image_path = wallpaper.images.get(*image_index).unwrap();
+            set_wallpaper(image_path, config.setter_command())?;
+            thread::sleep(Duration::from_millis(delay));
+        }
+
+        if !repeat {
+            break;
+        }
     }
 
     Ok(())
