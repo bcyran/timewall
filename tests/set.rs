@@ -94,12 +94,20 @@ fn test_creates_config(testenv: TestEnv) {
 #[rstest]
 fn test_saves_last_wallpaper(testenv: TestEnv) {
     let wall_path = EXAMPLE_SUN.to_path_buf();
+    let expected_image_path_str =
+        cached_image_path_str(&testenv.cache_dir, &wall_path, IMAGE_NIGHT);
 
-    testenv.run(&["set", wall_path.to_str().unwrap()]).success();
-
-    let saved_wallpaper = testenv.cache_dir.child("last_wall");
-    assert!(saved_wallpaper.is_symlink());
-    saved_wallpaper.assert(predicate::path::eq_file(wall_path));
+    let testenv = testenv.with_time(*DATETIME_NIGHT);
+    testenv
+        .run(&["set", wall_path.to_str().unwrap()])
+        .success()
+        .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
+        .stdout(predicate::str::contains(&expected_image_path_str).count(1));
+    testenv
+        .run(&["set"])
+        .success()
+        .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
+        .stdout(predicate::str::contains(&expected_image_path_str).count(1));
 }
 
 #[rstest]
