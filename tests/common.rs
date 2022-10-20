@@ -115,22 +115,19 @@ impl TestEnv {
     }
 
     /// Run the command and return `Assert` object.
-    pub fn run(&self, command: &mut Command) -> Assert {
+    pub fn run(&self, args: &[&str]) -> Assert {
+        let mut command = Command::cargo_bin(crate_name!()).unwrap();
         command
             .current_dir(&self.cwd)
             .env("TIMEWALL_DRY_RUN", "true")
             .env("TIMEWALL_CONFIG_DIR", &self.config_dir.path())
-            .env("TIMEWALL_CACHE_DIR", &self.cache_dir.path());
+            .env("TIMEWALL_CACHE_DIR", &self.cache_dir.path())
+            .args(args);
         if let Some(datetime) = self.datetime {
             command.env("TIMEWALL_OVERRIDE_TIME", datetime.to_rfc3339());
         }
         command.assert()
     }
-}
-
-#[fixture]
-pub fn timewall() -> Command {
-    Command::cargo_bin(crate_name!()).unwrap()
 }
 
 #[fixture]

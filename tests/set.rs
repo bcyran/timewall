@@ -2,13 +2,11 @@ mod common;
 
 use std::path::PathBuf;
 
-use assert_cmd::Command;
 use assert_fs::prelude::*;
 use chrono::{DateTime, Local};
 use common::{
-    cached_image_path_str, testenv, timewall, TestEnv, COMMAND_RUN_MESSAGE, DATETIME_DAY,
-    DATETIME_NIGHT, EXAMPLE_SUN, EXAMPLE_TIME, IMAGE_DAY, IMAGE_NIGHT, IMAGE_SET_MESSAGE,
-    WALLPAPER_HASHES,
+    cached_image_path_str, testenv, TestEnv, COMMAND_RUN_MESSAGE, DATETIME_DAY, DATETIME_NIGHT,
+    EXAMPLE_SUN, EXAMPLE_TIME, IMAGE_DAY, IMAGE_NIGHT, IMAGE_SET_MESSAGE, WALLPAPER_HASHES,
 };
 use predicates::prelude::*;
 use rstest::rstest;
@@ -18,7 +16,6 @@ use rstest::rstest;
 #[case(*DATETIME_NIGHT, IMAGE_NIGHT)]
 fn test_sets_correct_image(
     testenv: TestEnv,
-    mut timewall: Command,
     #[values(EXAMPLE_SUN.to_path_buf(), EXAMPLE_TIME.to_path_buf())] wallpaper_path: PathBuf,
     #[case] datetime: DateTime<Local>,
     #[case] expected_image: &str,
@@ -28,7 +25,7 @@ fn test_sets_correct_image(
 
     testenv
         .with_time(datetime)
-        .run(timewall.arg("set").arg(wallpaper_path))
+        .run(&["set", wallpaper_path.to_str().unwrap()])
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_image_path_str));
@@ -39,7 +36,6 @@ fn test_sets_correct_image(
 #[case("dark", IMAGE_NIGHT)]
 fn test_sets_correct_image_appearance(
     testenv: TestEnv,
-    mut timewall: Command,
     #[values(EXAMPLE_SUN.to_path_buf(), EXAMPLE_TIME.to_path_buf())] wallpaper_path: PathBuf,
     #[values(*DATETIME_DAY, *DATETIME_NIGHT)] datetime: DateTime<Local>,
     #[case] appearance_value: &str,
@@ -50,20 +46,19 @@ fn test_sets_correct_image_appearance(
 
     testenv
         .with_time(datetime)
-        .run(
-            timewall
-                .arg("set")
-                .arg("--appearance")
-                .arg(appearance_value)
-                .arg(wallpaper_path),
-        )
+        .run(&[
+            "set",
+            "--appearance",
+            appearance_value,
+            wallpaper_path.to_str().unwrap(),
+        ])
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_image_path_str));
 }
 
 #[rstest]
-fn test_runs_command(testenv: TestEnv, mut timewall: Command) {
+fn test_runs_command(testenv: TestEnv) {
     let wallpaper_path = EXAMPLE_SUN.to_path_buf();
     let config =
         "[location]\nlat = 51.11\nlon = 17.02\n[setter]\ncommand = ['feh', '--bg-fill', '%f']";
@@ -74,20 +69,20 @@ fn test_runs_command(testenv: TestEnv, mut timewall: Command) {
     testenv
         .with_config(&config)
         .with_time(*DATETIME_NIGHT)
-        .run(timewall.arg("set").arg(wallpaper_path))
+        .run(&["set", wallpaper_path.to_str().unwrap()])
         .success()
         .stdout(predicate::str::contains(COMMAND_RUN_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_command_str));
 }
 
 #[rstest]
-fn test_creates_config(testenv: TestEnv, mut timewall: Command) {
+fn test_creates_config(testenv: TestEnv) {
     let config_path = testenv.config_dir.child("config.toml");
     let expected_config = "[location]\nlat = 51.11\nlon = 17.02\n";
     let expected_stderr = format!("Default config written to {}", config_path.display());
 
     testenv
-        .run(timewall.arg("set").arg(EXAMPLE_SUN.to_path_buf()))
+        .run(&["set", EXAMPLE_SUN.to_str().unwrap()])
         .success()
         .stderr(predicate::str::contains(expected_stderr));
 
@@ -97,10 +92,10 @@ fn test_creates_config(testenv: TestEnv, mut timewall: Command) {
 }
 
 #[rstest]
-fn test_saves_last_wallpaper(testenv: TestEnv, mut timewall: Command) {
+fn test_saves_last_wallpaper(testenv: TestEnv) {
     let wall_path = EXAMPLE_SUN.to_path_buf();
 
-    testenv.run(timewall.arg("set").arg(&wall_path)).success();
+    testenv.run(&["set", wall_path.to_str().unwrap()]).success();
 
     let saved_wallpaper = testenv.cache_dir.child("last_wall");
     assert!(saved_wallpaper.is_symlink());
@@ -108,10 +103,10 @@ fn test_saves_last_wallpaper(testenv: TestEnv, mut timewall: Command) {
 }
 
 #[rstest]
-fn test_caches_wallpaper(testenv: TestEnv, mut timewall: Command) {
+fn test_caches_wallpaper(testenv: TestEnv) {
     let wall_path = EXAMPLE_SUN.to_path_buf();
 
-    testenv.run(timewall.arg("set").arg(&wall_path)).success();
+    testenv.run(&["set", wall_path.to_str().unwrap()]).success();
 
     let wallpaper_cache_dir = testenv
         .cache_dir

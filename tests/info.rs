@@ -2,8 +2,7 @@ mod common;
 
 use std::path::PathBuf;
 
-use assert_cmd::Command;
-use common::{testenv, timewall, TestEnv, EXAMPLE_SUN, EXAMPLE_TIME};
+use common::{testenv, TestEnv, EXAMPLE_SUN, EXAMPLE_TIME};
 use predicates::prelude::*;
 use rstest::rstest;
 
@@ -40,14 +39,9 @@ Dark: 1
 #[rstest]
 #[case(EXAMPLE_TIME.to_path_buf(), EXAMPLE_TIME_INFO)]
 #[case(EXAMPLE_SUN.to_path_buf(), EXAMPLE_SUN_INFO)]
-fn test_info(
-    testenv: TestEnv,
-    mut timewall: Command,
-    #[case] wall_path: PathBuf,
-    #[case] expected_output: &str,
-) {
+fn test_info(testenv: TestEnv, #[case] wall_path: PathBuf, #[case] expected_output: &str) {
     testenv
-        .run(timewall.arg("info").arg(wall_path))
+        .run(&["info", wall_path.to_str().unwrap()])
         .success()
         .stdout(predicate::str::ends_with(expected_output));
 }

@@ -1,10 +1,9 @@
 mod common;
 use std::path::PathBuf;
 
-use assert_cmd::Command;
 use assert_fs::prelude::*;
 use common::{
-    testenv, timewall, TestEnv, EXAMPLE_SUN, EXAMPLE_TIME, IMAGE_DAY, IMAGE_NIGHT, PROPERTIES_SUN,
+    testenv, TestEnv, EXAMPLE_SUN, EXAMPLE_TIME, IMAGE_DAY, IMAGE_NIGHT, PROPERTIES_SUN,
     PROPERTIES_TIME,
 };
 use predicates::prelude::*;
@@ -15,7 +14,6 @@ use rstest::rstest;
 #[case(EXAMPLE_TIME.to_path_buf(), PROPERTIES_TIME.to_path_buf())]
 fn test_unpack(
     testenv: TestEnv,
-    mut timewall: Command,
     #[case] input_path: PathBuf,
     #[case] expected_properties: PathBuf,
 ) {
@@ -24,7 +22,11 @@ fn test_unpack(
     unpack_dir.create_dir_all().unwrap();
 
     testenv
-        .run(timewall.arg("unpack").arg(input_path).arg(unpack_path))
+        .run(&[
+            "unpack",
+            input_path.to_str().unwrap(),
+            unpack_dir.to_str().unwrap(),
+        ])
         .success();
 
     unpack_dir
