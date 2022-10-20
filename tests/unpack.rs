@@ -12,11 +12,7 @@ use rstest::rstest;
 #[rstest]
 #[case(EXAMPLE_SUN.to_path_buf(), PROPERTIES_SUN.to_path_buf())]
 #[case(EXAMPLE_TIME.to_path_buf(), PROPERTIES_TIME.to_path_buf())]
-fn test_unpack(
-    testenv: TestEnv,
-    #[case] input_path: PathBuf,
-    #[case] expected_properties: PathBuf,
-) {
+fn test_unpack(testenv: TestEnv, #[case] wall_path: PathBuf, #[case] expected_properties: PathBuf) {
     let unpack_path = "unpacked";
     let unpack_dir = testenv.cwd.child(unpack_path);
     unpack_dir.create_dir_all().unwrap();
@@ -24,7 +20,7 @@ fn test_unpack(
     testenv
         .run(&[
             "unpack",
-            input_path.to_str().unwrap(),
+            wall_path.to_str().unwrap(),
             unpack_dir.to_str().unwrap(),
         ])
         .success();

@@ -16,16 +16,16 @@ use rstest::rstest;
 #[case(*DATETIME_NIGHT, IMAGE_NIGHT)]
 fn test_sets_correct_image(
     testenv: TestEnv,
-    #[values(EXAMPLE_SUN.to_path_buf(), EXAMPLE_TIME.to_path_buf())] wallpaper_path: PathBuf,
+    #[values(EXAMPLE_SUN.to_path_buf(), EXAMPLE_TIME.to_path_buf())] wall_path: PathBuf,
     #[case] datetime: DateTime<Local>,
     #[case] expected_image: &str,
 ) {
     let expected_image_path_str =
-        cached_image_path_str(&testenv.cache_dir, &wallpaper_path, expected_image);
+        cached_image_path_str(&testenv.cache_dir, &wall_path, expected_image);
 
     testenv
         .with_time(datetime)
-        .run(&["set", wallpaper_path.to_str().unwrap()])
+        .run(&["set", wall_path.to_str().unwrap()])
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_image_path_str));
@@ -36,13 +36,13 @@ fn test_sets_correct_image(
 #[case("dark", IMAGE_NIGHT)]
 fn test_sets_correct_image_appearance(
     testenv: TestEnv,
-    #[values(EXAMPLE_SUN.to_path_buf(), EXAMPLE_TIME.to_path_buf())] wallpaper_path: PathBuf,
+    #[values(EXAMPLE_SUN.to_path_buf(), EXAMPLE_TIME.to_path_buf())] wall_path: PathBuf,
     #[values(*DATETIME_DAY, *DATETIME_NIGHT)] datetime: DateTime<Local>,
     #[case] appearance_value: &str,
     #[case] expected_image: &str,
 ) {
     let expected_image_path_str =
-        cached_image_path_str(&testenv.cache_dir, &wallpaper_path, expected_image);
+        cached_image_path_str(&testenv.cache_dir, &wall_path, expected_image);
 
     testenv
         .with_time(datetime)
@@ -50,7 +50,7 @@ fn test_sets_correct_image_appearance(
             "set",
             "--appearance",
             appearance_value,
-            wallpaper_path.to_str().unwrap(),
+            wall_path.to_str().unwrap(),
         ])
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
@@ -59,17 +59,17 @@ fn test_sets_correct_image_appearance(
 
 #[rstest]
 fn test_runs_command(testenv: TestEnv) {
-    let wallpaper_path = EXAMPLE_SUN.to_path_buf();
+    let wall_path = EXAMPLE_SUN.to_path_buf();
     let config =
         "[location]\nlat = 51.11\nlon = 17.02\n[setter]\ncommand = ['feh', '--bg-fill', '%f']";
     let expected_image_path_str =
-        cached_image_path_str(&testenv.cache_dir, &wallpaper_path, IMAGE_NIGHT);
+        cached_image_path_str(&testenv.cache_dir, &wall_path, IMAGE_NIGHT);
     let expected_command_str = format!("feh --bg-fill {expected_image_path_str}");
 
     testenv
         .with_config(&config)
         .with_time(*DATETIME_NIGHT)
-        .run(&["set", wallpaper_path.to_str().unwrap()])
+        .run(&["set", wall_path.to_str().unwrap()])
         .success()
         .stdout(predicate::str::contains(COMMAND_RUN_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_command_str));
