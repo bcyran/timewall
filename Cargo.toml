@@ -1,7 +1,15 @@
 [package]
 name = "timewall"
+description = "All-in-one tool for Apple dynamic HEIF wallpapers on GNU/Linux"
 version = "0.1.0"
 edition = "2021"
+authors = ["Bazyli Cyran <bazyli@cyran.dev>"]
+categories = ["command-line-utilities", "multimedia::images"]
+keywords = ["wallpaper", "dynamic-wallpaper", "heif"]
+homepage = "https://github.com/bcyran/timewall"
+repository = "https://github.com/bcyran/timewall.git"
+readme = "README.md"
+license = "MIT"
 
 [dependencies]
 anyhow = "1.0.64"
