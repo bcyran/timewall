@@ -37,14 +37,8 @@ lazy_static! {
         .unwrap();
     /// Mapping of examples wallpaper paths to their hashes.
     pub static ref WALLPAPER_HASHES: HashMap<PathBuf, &'static str> = HashMap::from([
-        (
-            EXAMPLE_TIME.to_path_buf(),
-            "1ac969ea8c5394f9a3ff800f7907681029c90152599a682ff925adfcd4cf5b94"
-        ),
-        (
-            EXAMPLE_SUN.to_path_buf(),
-            "7cd9ab090db69844d39806b1694e1e708d6f06b6eb6c3e723ad1189d6f789a96"
-        )
+        (EXAMPLE_TIME.to_path_buf(), "dcbcd5f96ccdbdd"),
+        (EXAMPLE_SUN.to_path_buf(), "a81fb8b5a1b35168"),
     ]);
     /// Datetime that should result in day-time image in example wallpapers.
     pub static ref DATETIME_DAY: DateTime<Local> = Local.ymd(2022, 10, 18).and_hms(14, 30, 30);

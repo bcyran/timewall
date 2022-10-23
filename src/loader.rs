@@ -1,4 +1,4 @@
-use std::{fs, io, path::Path};
+use std::{fs, hash::Hasher, io::Read, path::Path};
 
 use anyhow::Result;
 
@@ -32,9 +32,21 @@ impl WallpaperLoader {
 }
 
 fn hash_file<P: AsRef<Path>>(path: P) -> Result<String> {
+    const BUFFER_LEN: usize = 1024;
+    let mut buffer = [0u8; BUFFER_LEN];
+
     let mut file = fs::File::open(&path)?;
-    let mut hasher = blake3::Hasher::new();
-    io::copy(&mut file, &mut hasher)?;
-    let hash_bytes = hasher.finalize();
-    Ok(hash_bytes.to_hex().to_lowercase())
+    let mut hasher = seahash::SeaHasher::new();
+
+    loop {
+        let read_count = file.read(&mut buffer)?;
+        hasher.write(&buffer[..read_count]);
+
+        if read_count != BUFFER_LEN {
+            break;
+        }
+    }
+
+    let hash_bytes = hasher.finish();
+    Ok(format!("{hash_bytes:x}"))
 }
