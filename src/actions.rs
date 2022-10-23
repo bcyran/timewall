@@ -68,6 +68,7 @@ pub fn set<P: AsRef<Path>>(
         set_wallpaper(current_image_path, config.setter_command())?;
 
         if !daemon {
+            eprintln!("Wallpaper set!");
             break;
         }
 

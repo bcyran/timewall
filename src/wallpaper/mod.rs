@@ -46,6 +46,7 @@ impl Wallpaper {
 pub fn unpack<IP: AsRef<Path>, DP: AsRef<Path>>(wall_path: IP, dest_dir_path: DP) -> Result<()> {
     let image_path = wall_path.as_ref();
     let dest_dir_path = dest_dir_path.as_ref();
+    eprintln!("Unpacking '{}'...", image_path.display());
 
     if !dest_dir_path.is_dir() {
         return Err(anyhow!("{} is not a directory", dest_dir_path.display()));
