@@ -1,0 +1,88 @@
+name: build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+    name: ${{ matrix.target }}
+    env:
+      SHELL_COMPLETIONS_DIR: completions
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install prerequisites
+        shell: bash
+        run: |
+          sudo apt-get -y update
+          sudo apt-get install -y libheif-dev libheif1
+
+      - name: Extract crate information
+        id: info
+        shell: bash
+        run: |
+          PKG_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)
+          echo ::set-output name=PKG_VERSION::${PKG_VERSION}
+
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+
+      - name: Show version information
+        shell: bash
+        run: |
+          rustup -V
+          rustup toolchain list
+          rustup default
+          cargo -V
+          rustc -V
+
+      - name: Create completions dir
+        run: mkdir -p "${SHELL_COMPLETIONS_DIR}"
+
+      - name: Build the binary
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --locked --target=${{ matrix.target }}
+
+      - name: Strip the binary
+        run: strip "target/${{ matrix.target }}/release/timewall"
+
+      - name: Build the archive artifact
+        id: build
+        shell: bash
+        run: |
+          PKG_STAGING="timewall-${{ steps.info.outputs.PKG_VERSION }}-${{ matrix.target }}"
+          mkdir -p "${PKG_STAGING}"
+
+          cp "target/${{ matrix.target }}/release/timewall" "${PKG_STAGING}"
+          cp -r "${SHELL_COMPLETIONS_DIR}" "${PKG_STAGING}"
+          cp {README.md,LICENSE} "${PKG_STAGING}"
+
+          PKG_ARTIFACT="${PKG_STAGING}.tar.gz"
+          tar -czf "${PKG_ARTIFACT}" "${PKG_STAGING}"
+          echo ::set-output name=PKG_ARTIFACT::${PKG_ARTIFACT}
+
+      - name: Upload the artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.build.outputs.PKG_ARTIFACT }}
+          path: ${{ steps.build.outputs.PKG_ARTIFACT }}
+
+      - name: Release the artifact
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          draft: true
+          files: ${{ steps.build.outputs.PKG_ARTIFACT }}
