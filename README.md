@@ -23,6 +23,11 @@ Features:
 
 ---
 
+## Installation
+### Prerequisites
+`timewall` depends on [`libheif`](https://github.com/strukturag/libheif) for HEIF support, make sure you have it installed.
+If you're building it from source you may also need `libheif-dev`, depending on your distribution.
+
 ## Usage
 ### Initial configuration
 If you intend to use sun position based wallpapers, you need to provide `timewall` with your approximate location.
@@ -102,6 +107,16 @@ All metadata known to `timewall` can be displayed using:
 ```bash
 timewall info path/to/wallpaper.heif
 ```
+
+### Configuration
+#### Custom wallpaper setting command
+If the default wallpaper setting doesn't work in your case for some reason, or you just want to customize it, you can specify custom command tu use.
+For instance, to set the wallpaper using `feh`, you could add the following to your `~/.config/timewall/config.toml`:
+```toml
+[setter]
+command = ['feg', '--bg-fill', '%f']
+```
+`%f` is a placeholder which will be replaced with full absolute path to the image, which should be set as a wallpaper.
 
 ## Resources / credits
 The following resources helped me in `timewall` development:
