@@ -63,26 +63,31 @@ jobs:
         id: build
         shell: bash
         run: |
-          PKG_STAGING="timewall-${{ steps.info.outputs.PKG_VERSION }}-${{ matrix.target }}"
+          PKG_NAME="timewall-${{ steps.info.outputs.PKG_VERSION }}-${{ matrix.target }}"
+          PKG_STAGING="${PWD}/${PKG_NAME}"
           mkdir -p "${PKG_STAGING}"
 
           cp "target/${{ matrix.target }}/release/timewall" "${PKG_STAGING}"
           cp -r "${SHELL_COMPLETIONS_DIR}" "${PKG_STAGING}"
           cp {README.md,LICENSE} "${PKG_STAGING}"
 
-          PKG_ARTIFACT="${PKG_STAGING}.tar.gz"
-          tar -czf "${PKG_ARTIFACT}" "${PKG_STAGING}"
-          echo ::set-output name=PKG_ARTIFACT::${PKG_ARTIFACT}
+          PKG_ARTIFACT_NAME="${PKG_NAME}.tar.gz"
+          PKG_ARTIFACT_PATH="${PWD}/${PKG_ARTIFACT_NAME}"
+          cd "${PKG_STAGING}"
+          tar -czf "${PKG_ARTIFACT_PATH}" *
+
+          echo ::set-output name=PKG_ARTIFACT_NAME::${PKG_ARTIFACT_NAME}
+          echo ::set-output name=PKG_ARTIFACT_PATH::${PKG_ARTIFACT_PATH}
 
       - name: Upload the artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.build.outputs.PKG_ARTIFACT }}
-          path: ${{ steps.build.outputs.PKG_ARTIFACT }}
+          name: ${{ steps.build.outputs.PKG_ARTIFACT_NAME }}
+          path: ${{ steps.build.outputs.PKG_ARTIFACT_PATH }}
 
       - name: Release the artifact
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           draft: true
-          files: ${{ steps.build.outputs.PKG_ARTIFACT }}
+          files: ${{ steps.build.outputs.PKG_ARTIFACT_PATH }}
