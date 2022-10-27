@@ -57,7 +57,7 @@ lon = 17.02
 ### Setting the wallpaper
 #### One-time mode
 To set the wallpaper just run:
-```bash
+```
 timewall set path/to/wallpaper.heif
 ```
 This will set your wallpaper to the correct image, taking into account current time or sun position, depending on the wallpaper schedule.
@@ -69,7 +69,7 @@ See also: [where to find the dynamic wallpapers](#where-to-find-the-dynamic-wall
 #### Daemon mode
 You probably don't want to update the wallpaper manually every time.
 To do this automatically you can use the daemon mode:
-```bash
+```
 timewall set --daemon
 ```
 This command will run continuously and update your wallpaper as time passes.
@@ -97,14 +97,14 @@ WantedBy=default.target
 ```
 
 And run:
-```bash
+```
 systemctl --user enable --now timewall.service
 ```
 After this `timewall` should start automatically on boot and update your wallpaper during the day.
 
 ### Previewing
 To preview the wallpaper, run:
-```bash
+```
 timewall preview path/to/wallpaper.heif
 ```
 This will quickly cycle all images in the wallpaper to simulate changes throughout the day.
@@ -113,13 +113,13 @@ You can also infinitely loop the preview using `--repeat` option.
 
 ### Unpacking
 To unpack all images stored in the wallpaper, as well as its metadata in XML format, run:
-```bash
+```
 timewall unpack path/to/wallpaper.heif path/to/output/directory
 ```
 
 ### Reading metadata
 All metadata known to `timewall` can be displayed using:
-```bash
+```
 timewall info path/to/wallpaper.heif
 ```
 
