@@ -63,6 +63,8 @@ This will set your wallpaper to the correct image, taking into account current t
 Note that wallpaper set like this will not update with time.
 You can update it by repeating the command above, you can also shorten it to just `timewall set` - last used wallpaper is remembered.
 
+See also: [where to find the dynamic wallpapers](#where-to-find-the-dynamic-wallappers).
+
 #### Daemon mode
 You probably don't want to update the wallpaper manually every time.
 To do this automatically you can use the daemon mode:
@@ -129,6 +131,22 @@ For instance, to set the wallpaper using `feh`, you could add the following to y
 command = ['feg', '--bg-fill', '%f']
 ```
 `%f` is a placeholder which will be replaced with full absolute path to the image, which should be set as a wallpaper.
+
+### Where to find the dynamic wallpapers
+- Original MacOS dynamic wallpapers.
+  If you have access to a computer running MacOS, you can just copy the dynamic wallpapers.
+  You can also find those files online with a bit of effort.
+  I'm not going to link any of them because of legal reasons.
+- [Dynamic Wallpaper Club](https://www.dynamicwallpaper.club/).
+  A lot of user-created wallpapers.
+  Unfortunately, many of them are of mediocre quality.
+  Only a handful makes use of the sun position schedule (which is the best part of the whole concept to me), and those which do, usually do it poorly.
+- [dynwalls.com](http://dynwalls.com/).
+  Some free, high quality walls.
+- [Jetson Creative](https://www.jetsoncreative.com/mojave).
+  Three free wallpapers and some bundles you can buy.
+- [mczachurski/wallpaper](https://github.com/mczachurski/wallpapper).
+  Two high quality custom made walls.
 
 ## Resources / credits
 The following resources helped me in `timewall` development:
