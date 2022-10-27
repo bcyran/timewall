@@ -28,6 +28,18 @@ Features:
 `timewall` depends on [`libheif`](https://github.com/strukturag/libheif) for HEIF support, make sure you have it installed.
 If you're building it from source you may also need `libheif-dev`, depending on your distribution.
 
+### Arch Linux (AUR)
+AUR packages are available: [timewall](https://aur.archlinux.org/packages/timewall) and [timewall-bin](https://aur.archlinux.org/packages/timewall-bin).
+
+### Binary
+You can download tarball containing the latest prebuilt binary and shell completions from the [releases page](https://github.com/bcyran/timewall/releases).
+The binary named `timewall` has to be placed in directory in you `$PATH`, e.g. `/usr/local/bin`.
+
+### Cargo
+```
+cargo install timewall
+```
+
 ## Usage
 ### Initial configuration
 If you intend to use sun position based wallpapers, you need to provide `timewall` with your approximate location.
