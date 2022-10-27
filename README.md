@@ -34,7 +34,7 @@ AUR packages are available: [timewall](https://aur.archlinux.org/packages/timewa
 
 ### Binary
 You can download tarball containing the latest prebuilt binary and shell completions from the [releases page](https://github.com/bcyran/timewall/releases).
-The binary named `timewall` has to be placed in directory in you `$PATH`, e.g. `/usr/local/bin`.
+The binary named `timewall` has to be placed in directory in your `$PATH`, e.g. `/usr/local/bin`.
 
 ### Cargo
 ```
@@ -64,7 +64,7 @@ This will set your wallpaper to the correct image, taking into account current t
 Note that wallpaper set like this will not update with time.
 You can update it by repeating the command above, you can also shorten it to just `timewall set` - last used wallpaper is remembered.
 
-See also: [where to find the dynamic wallpapers](#where-to-find-the-dynamic-wallappers).
+See also: [where to find the dynamic wallpapers](#where-to-find-the-dynamic-wallpapers).
 
 #### Daemon mode
 You probably don't want to update the wallpaper manually every time.
