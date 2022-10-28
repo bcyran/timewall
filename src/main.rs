@@ -17,9 +17,11 @@ use anyhow::Result;
 use clap::Parser;
 
 fn main() -> Result<()> {
-    env_logger::init();
-
     let args = cli::Args::parse();
+
+    env_logger::Builder::new()
+        .filter_level(args.verbose.log_level_filter())
+        .init();
 
     match args.action {
         cli::Action::Info { file } => actions::info(file),
