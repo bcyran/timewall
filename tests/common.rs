@@ -7,6 +7,7 @@ use std::{
 
 use assert_cmd::{assert::Assert, crate_name, Command};
 use assert_fs::{
+    fixture::ChildPath,
     prelude::{FileWriteStr, PathChild},
     TempDir,
 };
@@ -78,8 +79,8 @@ pub fn cached_image_path_str<CP: AsRef<Path>>(
 /// enables dry-run, allows overriding date and time seen by the binary.
 pub struct TestEnv {
     pub cwd: TempDir,
-    pub config_dir: TempDir,
-    pub cache_dir: TempDir,
+    pub config_dir: ChildPath,
+    pub cache_dir: ChildPath,
     datetime: Option<DateTime<Local>>,
 }
 
@@ -87,8 +88,8 @@ impl TestEnv {
     pub fn new() -> Self {
         TestEnv {
             cwd: assert_fs::TempDir::new().unwrap(),
-            config_dir: assert_fs::TempDir::new().unwrap(),
-            cache_dir: assert_fs::TempDir::new().unwrap(),
+            config_dir: assert_fs::TempDir::new().unwrap().child("config"),
+            cache_dir: assert_fs::TempDir::new().unwrap().child("cache"),
             datetime: None,
         }
     }
