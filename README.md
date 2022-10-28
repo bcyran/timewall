@@ -125,11 +125,11 @@ timewall info path/to/wallpaper.heif
 
 ### Configuration
 #### Custom wallpaper setting command
-If the default wallpaper setting doesn't work in your case for some reason, or you just want to customize it, you can specify custom command tu use.
+If the default wallpaper setting doesn't work in your case for some reason, or you just want to customize it, you can specify custom command to use.
 For instance, to set the wallpaper using `feh`, you could add the following to your `~/.config/timewall/config.toml`:
 ```toml
 [setter]
-command = ['feg', '--bg-fill', '%f']
+command = ['feh', '--bg-fill', '%f']
 ```
 `%f` is a placeholder which will be replaced with full absolute path to the image, which should be set as a wallpaper.
 
