@@ -9,6 +9,9 @@ pub struct Args {
     /// Action subcommand
     #[command(subcommand)]
     pub action: Action,
+    /// Control output verbosity
+    #[clap(flatten)]
+    pub verbose: clap_verbosity_flag::Verbosity,
 }
 
 /// Main action subcommands
