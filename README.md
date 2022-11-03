@@ -156,7 +156,7 @@ This isn't yet supported in the wallpaper setting library used by `timewall`, bu
 Add the following to your `~/.config/timewall/config.toml`:
 ```toml
 [setter]
-command=['gsettings', 'set', 'org.gnome.desktop.background','picture-uri-dark','file:///%f']   
+command = ['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri-dark', 'file:///%f']
 ```
 
 ## Resources / credits
