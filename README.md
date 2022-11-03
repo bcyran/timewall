@@ -64,7 +64,7 @@ This will set your wallpaper to the correct image, taking into account current t
 Note that wallpaper set like this will not update with time.
 You can update it by repeating the command above, you can also shorten it to just `timewall set` - last used wallpaper is remembered.
 
-See also: [where to find the dynamic wallpapers](#where-to-find-the-dynamic-wallpapers).
+See also: [where to find the dynamic wallpapers](#where-to-find-the-dynamic-wallpapers), [known issues](#known-issues).
 
 #### Daemon mode
 You probably don't want to update the wallpaper manually every time.
@@ -133,7 +133,7 @@ command = ['feh', '--bg-fill', '%f']
 ```
 `%f` is a placeholder which will be replaced with full absolute path to the image, which should be set as a wallpaper.
 
-### Where to find the dynamic wallpapers
+## Where to find the dynamic wallpapers
 - Original MacOS dynamic wallpapers.
   If you have access to a computer running MacOS, you can just copy the dynamic wallpapers.
   You can also find those files online with a bit of effort.
@@ -148,6 +148,16 @@ command = ['feh', '--bg-fill', '%f']
   Three free wallpapers and some bundles you can buy.
 - [mczachurski/wallpaper](https://github.com/mczachurski/wallpapper).
   Two high quality custom made walls.
+
+## Known issues
+### Not working on Gnome >= 42 with dark theme
+Gnome 42 introduces dark theme which requires special command for setting the wallpaper.
+This isn't yet supported in the wallpaper setting library used by `timewall`, but can be worked around by using a custom command.
+Add the following to your `~/.config/timewall/config.toml`:
+```toml
+[setter]
+command=['gsettings', 'set', 'org.gnome.desktop.background','picture-uri-dark','file:///%f']   
+```
 
 ## Resources / credits
 The following resources helped me in `timewall` development:
