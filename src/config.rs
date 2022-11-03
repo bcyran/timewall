@@ -45,7 +45,7 @@ impl Config {
         } else {
             let config_dir = path.parent().unwrap();
             if !config_dir.exists() {
-                fs::create_dir_all(&config_dir).context("couldn't create config directory")?;
+                fs::create_dir_all(config_dir).context("couldn't create config directory")?;
             }
             let config = Config::default();
             config

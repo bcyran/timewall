@@ -64,5 +64,5 @@ fn unpack_properties<P: AsRef<Path>>(heif_ctx: &HeifContext, dest_path: P) -> Re
     let apple_desktop_meta = AppleDesktop::from_heif(heif_ctx)?;
     let properties = Properties::from_apple_desktop(&apple_desktop_meta)?;
     debug!("writing properties to {}", dest_path.display());
-    properties.to_xml_file(&dest_path)
+    properties.to_xml_file(dest_path)
 }
