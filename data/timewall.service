@@ -1,0 +1,9 @@
+[Unit]
+Description=Dynamic wallpapers daemon
+
+[Service]
+Type=simple
+ExecStart=timewall set --daemon
+
+[Install]
+WantedBy=default.target
