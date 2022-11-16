@@ -83,7 +83,7 @@ jobs:
 
           cp "target/${{ matrix.target }}/release/timewall" "${PKG_STAGING}"
           cp -r "${SHELL_COMPLETIONS_DIR}" "${PKG_STAGING}"
-          cp {README.md,LICENSE} "${PKG_STAGING}"
+          cp {README.md,LICENSE,timewall.service} "${PKG_STAGING}"
 
           PKG_ARTIFACT_NAME="${PKG_NAME}.tar.gz"
           PKG_ARTIFACT_PATH="${PWD}/${PKG_ARTIFACT_NAME}"
