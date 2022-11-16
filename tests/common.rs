@@ -42,9 +42,9 @@ lazy_static! {
         (EXAMPLE_SUN.to_path_buf(), "a81fb8b5a1b35168"),
     ]);
     /// Datetime that should result in day-time image in example wallpapers.
-    pub static ref DATETIME_DAY: DateTime<Local> = Local.ymd(2022, 10, 18).and_hms(14, 30, 30);
+    pub static ref DATETIME_DAY: DateTime<Local> = Local.with_ymd_and_hms(2022, 10, 18, 14, 30, 30).single().unwrap();
     /// Datetime that should result in night-time image in example wallpapers.
-    pub static ref DATETIME_NIGHT: DateTime<Local> = Local.ymd(2022, 10, 18).and_hms(22, 30, 30);
+    pub static ref DATETIME_NIGHT: DateTime<Local> = Local.with_ymd_and_hms(2022, 10, 18, 22, 30, 30).single().unwrap();
 }
 
 /// Name of the image that should be set for day-time in example wallpapers.
