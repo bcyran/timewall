@@ -19,7 +19,7 @@ chrono = "0.4.22"
 clap = { version = "4.0.29", features = ["derive"] }
 clap-verbosity-flag = "2.0.0"
 directories = "4.0.1"
-env_logger = "0.9.0"
+env_logger = "0.10.0"
 itertools = "0.10.5"
 libheif-rs = "0.15.0"
 log = "0.4.17"
