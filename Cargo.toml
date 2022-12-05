@@ -39,7 +39,7 @@ xml-rs = "0.8.4"
 assert_cmd = "2.0.4"
 assert_fs = "1.0.7"
 lazy_static = "1.4.0"
-predicates = "2.1.1"
+predicates = "2.1.4"
 rstest = "0.16.0"
 
 [build-dependencies]
