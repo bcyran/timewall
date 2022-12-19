@@ -31,7 +31,7 @@ seahash = "4.1.0"
 serde = { version = "1.0.150", features = ["derive"] }
 sun = "0.2.0"
 threadpool = "1.8.1"
-toml = "0.5.9"
+toml = "0.5.10"
 wallpaper = "3.2.0"
 xml-rs = "0.8.4"
 
