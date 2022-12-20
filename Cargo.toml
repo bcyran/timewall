@@ -13,7 +13,7 @@ license = "MIT"
 build = "build.rs"
 
 [dependencies]
-anyhow = "1.0.64"
+anyhow = "1.0.68"
 base64 = "0.20.0"
 chrono = "0.4.22"
 clap = { version = "4.0.29", features = ["derive"] }
