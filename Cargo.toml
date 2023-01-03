@@ -1,7 +1,7 @@
 [package]
 name = "timewall"
 description = "All-in-one tool for Apple dynamic HEIF wallpapers on GNU/Linux"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 authors = ["Bazyli Cyran <bazyli@cyran.dev>"]
 categories = ["command-line-utilities", "multimedia::images"]
@@ -32,7 +32,7 @@ serde = { version = "1.0.152", features = ["derive"] }
 sun = "0.2.0"
 threadpool = "1.8.1"
 toml = "0.5.10"
-wallpaper = "3.2.0"
+wallpape-rs = "2.0.0"
 xml-rs = "0.8.4"
 
 [dev-dependencies]

@@ -5,6 +5,7 @@ use std::process::Command;
 use anyhow::{anyhow, Context, Result};
 use itertools::Itertools;
 use log::debug;
+use wallpape_rs as wallpaper;
 
 /// Set wallpaper to the image pointed by a given path. Use custom command if provided.
 pub fn set_wallpaper<P: AsRef<Path>>(path: P, custom_command: Option<&Vec<String>>) -> Result<()> {

@@ -149,16 +149,6 @@ command = ['feh', '--bg-fill', '%f']
 - [mczachurski/wallpaper](https://github.com/mczachurski/wallpapper).
   Two high quality custom made walls.
 
-## Known issues
-### Not working on Gnome >= 42 with dark theme
-Gnome 42 introduces dark theme which requires special command for setting the wallpaper.
-This isn't yet supported in the wallpaper setting library used by `timewall`, but can be worked around by using a custom command.
-Add the following to your `~/.config/timewall/config.toml`:
-```toml
-[setter]
-command = ['gsettings', 'set', 'org.gnome.desktop.background', 'picture-uri-dark', 'file:///%f']
-```
-
 ## Resources / credits
 The following resources helped me in `timewall` development:
 - https://itnext.io/macos-mojave-dynamic-wallpaper-fd26b0698223
