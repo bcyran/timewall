@@ -4,7 +4,7 @@
 
 [![CI](https://github.com/bcyran/timewall/actions/workflows/test.yml/badge.svg)](https://github.com/bcyran/timewall/actions/workflows/test.yml)
 [![license](https://img.shields.io/github/license/bcyran/timewall)](https://github.com/bcyran/timewall/blob/master/LICENSE)
-![Crates.io](https://img.shields.io/crates/v/timewall)
+[![Crates.io](https://img.shields.io/crates/v/timewall)](https://crates.io/crates/timewall)
 
 Apple dynamic HEIF wallpapers on GNU/Linux.
 
