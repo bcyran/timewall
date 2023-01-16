@@ -64,7 +64,7 @@ This will set your wallpaper to the correct image, taking into account current t
 Note that wallpaper set like this will not update with time.
 You can update it by repeating the command above, you can also shorten it to just `timewall set` - last used wallpaper is remembered.
 
-See also: [where to find the dynamic wallpapers](#where-to-find-the-dynamic-wallpapers), [known issues](#known-issues).
+See also: [where to find the dynamic wallpapers](#where-to-find-the-dynamic-wallpapers).
 
 #### Daemon mode
 You probably don't want to update the wallpaper manually every time.
