@@ -3,6 +3,7 @@
 # timewall
 
 [![CI](https://github.com/bcyran/timewall/actions/workflows/test.yml/badge.svg)](https://github.com/bcyran/timewall/actions/workflows/test.yml)
+[![test coverage](https://codecov.io/gh/bcyran/timewall/branch/master/graph/badge.svg?token=Z025ICENDQ)](https://codecov.io/gh/bcyran/timewall)
 [![license](https://img.shields.io/github/license/bcyran/timewall)](https://github.com/bcyran/timewall/blob/master/LICENSE)
 [![Crates.io](https://img.shields.io/crates/v/timewall)](https://crates.io/crates/timewall)
 
