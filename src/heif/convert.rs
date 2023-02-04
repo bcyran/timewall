@@ -6,7 +6,7 @@ use std::{
 };
 
 use anyhow::Result;
-use libheif_rs::{Channel, ColorSpace, HeifContext, Image, RgbChroma};
+use libheif_rs::{HeifContext, Image};
 use log::debug;
 use threadpool::ThreadPool;
 
@@ -83,54 +83,6 @@ fn write_from_padded_data<W: Write>(
     Ok(())
 }
 
-/// Read image from PNG file at the specified path.
-#[allow(dead_code)] // not used yet :(
-pub fn read_image_from_png<P: AsRef<Path>>(path: P) -> Result<Image> {
-    let file = File::open(path)?;
-    let decoder = png::Decoder::new(file);
-    let mut reader = decoder.read_info()?;
-    let mut png_data = vec![0; reader.output_buffer_size()];
-    let info = reader.next_frame(&mut png_data)?;
-    png_data.truncate(info.buffer_size());
-    png_data.shrink_to_fit();
-
-    let mut image = Image::new(info.width, info.height, ColorSpace::Rgb(RgbChroma::Rgb))?;
-    image.create_plane(Channel::Interleaved, info.width, info.height, 8)?;
-    let mut image_plane = image.planes_mut().interleaved.unwrap();
-
-    write_to_padded_data(
-        &mut image_plane.data,
-        &png_data,
-        image_plane.stride,
-        info.line_size,
-    )?;
-
-    Ok(image)
-}
-
-/// Write unpadded data into potentially padded container, adding the padding if necessary.
-fn write_to_padded_data<W: Write>(
-    writer: &mut W,
-    data: &[u8],
-    data_stride: usize,
-    line_length: usize,
-) -> Result<()> {
-    let padding_length = data_stride - line_length;
-    if padding_length == 0 {
-        debug!("image lines not padded");
-        writer.write_all(data)?;
-    } else {
-        debug!("image lines padded");
-        let padding = vec![0; padding_length];
-        for data_line in data.chunks(line_length) {
-            writer.write_all(data_line)?;
-            writer.write_all(&padding)?;
-        }
-    }
-
-    Ok(())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -171,46 +123,6 @@ mod tests {
 
         let mut result: Vec<u8> = Vec::new();
         write_from_padded_data(&mut result, data, data_stride, line_length).unwrap();
-
-        assert_eq!(result, expected);
-    }
-
-    #[test]
-    fn test_write_to_padded_data_no_padding() {
-        #[rustfmt::skip]
-        let data = &[
-            1, 1, 1,
-            2, 2, 2,
-            3, 3, 3
-        ];
-        let data_stride = 3;
-        let line_length = 3;
-
-        let mut result: Vec<u8> = Vec::new();
-        write_to_padded_data(&mut result, data, data_stride, line_length).unwrap();
-
-        assert_eq!(result, data);
-    }
-
-    #[test]
-    fn test_write_to_padded_data_with_padding() {
-        #[rustfmt::skip]
-        let data = &[
-            1, 1, 1,
-            2, 2, 2,
-            3, 3, 3
-        ];
-        let data_stride = 6;
-        let line_length = 3;
-        #[rustfmt::skip]
-        let expected = &[
-            1, 1, 1, 0, 0, 0,
-            2, 2, 2, 0, 0, 0,
-            3, 3, 3, 0, 0, 0,
-        ];
-
-        let mut result: Vec<u8> = Vec::new();
-        write_to_padded_data(&mut result, data, data_stride, line_length).unwrap();
 
         assert_eq!(result, expected);
     }
