@@ -16,7 +16,7 @@ build = "build.rs"
 anyhow = "1.0.69"
 base64 = "0.20.0"
 chrono = "0.4.22"
-clap = { version = "4.1.4", features = ["derive"] }
+clap = { version = "4.1.8", features = ["derive"] }
 clap-verbosity-flag = "2.0.0"
 directories = "4.0.1"
 env_logger = "0.10.0"
@@ -43,6 +43,6 @@ predicates = "2.1.5"
 rstest = "0.16.0"
 
 [build-dependencies]
-clap = { version = "4.1.4", features = ["derive"] }
+clap = { version = "4.1.8", features = ["derive"] }
 clap-verbosity-flag = "2.0.0"
 clap_complete = "4.1.1"
