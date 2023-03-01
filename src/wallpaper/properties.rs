@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use anyhow::{anyhow, Context, Result};
+use base64::Engine;
 use ordered_float::NotNan;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
@@ -67,9 +68,10 @@ pub struct SolarItem {
 pub trait Plist: DeserializeOwned + Serialize {
     /// Parse base64 encoded `plist`.
     fn from_base64(base64_value: &[u8]) -> Result<Self> {
-        let decoded =
-            base64::decode(base64_value).with_context(|| "could not decode plist base64")?;
-        plist::from_bytes(&decoded).with_context(|| "could not parse plist bytes")
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(base64_value)
+            .with_context(|| "could not decode plist base64")?;
+        plist::from_bytes(decoded.as_slice()).with_context(|| "could not parse plist bytes")
     }
 
     /// Deserialize `plist` from XML file.
