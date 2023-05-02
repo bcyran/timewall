@@ -435,6 +435,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
+name = "four-cc"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "92d73a076bdabd78c2f9045dba1b90664a655fa8372581c238596e1eb3a5e1b7"
+
+[[package]]
 name = "futures"
 version = "0.3.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -715,19 +721,21 @@ checksum = "fc7fcc620a3bff7cdd7a365be3376c97191aeaccc2a603e600951e452615bf89"
 
 [[package]]
 name = "libheif-rs"
-version = "0.15.1"
+version = "0.19.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edf58b5301fc9c13d446e2a75e363ebf848f624ab7026d5cda567b11a6f21056"
+checksum = "749fcebc2069f334599304546cfa891c30be08cdf4f358ed984a2c71c5e0031f"
 dependencies = [
  "enumn",
+ "four-cc",
+ "libc",
  "libheif-sys",
 ]
 
 [[package]]
 name = "libheif-sys"
-version = "1.12.0"
+version = "1.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9426b3c799fe53b9636aac80ddc60efa5060c1959faee2e9d3edf0da6b8536a"
+checksum = "6af8b7a4151ae10f6d2e8684f7172c43f09c0258c84190fd9704422588ceec63"
 dependencies = [
  "libc",
 ]
