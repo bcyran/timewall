@@ -40,7 +40,7 @@ assert_cmd = "2.0.11"
 assert_fs = "1.0.10"
 lazy_static = "1.4.0"
 predicates = "3.0.3"
-rstest = "0.16.0"
+rstest = "0.17.0"
 
 [build-dependencies]
 clap = { version = "4.1.11", features = ["derive"] }
