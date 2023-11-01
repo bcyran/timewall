@@ -18,7 +18,7 @@ base64 = "0.21.4"
 chrono = "0.4.28"
 clap = { version = "4.1.11", features = ["derive"] }
 clap-verbosity-flag = "2.0.1"
-directories = "4.0.1"
+directories = "5.0.1"
 env_logger = "0.10.0"
 itertools = "0.11.0"
 libheif-rs = "0.15.0"
