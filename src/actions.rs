@@ -1,8 +1,9 @@
+use std::path::PathBuf;
 use std::time::Duration;
 use std::{env, path::Path};
 use std::{str::FromStr, thread};
 
-use anyhow::{bail, Context};
+use anyhow::{anyhow, bail, Context};
 use anyhow::{Ok, Result};
 use chrono::prelude::*;
 use log::debug;
@@ -42,22 +43,11 @@ pub fn set<P: AsRef<Path>>(
     }
 
     let config = Config::find()?;
-    let last_wallpaper = LastWallpaper::find();
-
-    let wall_path = if let Some(given_path) = path {
-        validate_wallpaper_file(&given_path)?;
-        last_wallpaper.save(&given_path);
-        given_path.as_ref().to_path_buf()
-    } else if let Some(last_path) = last_wallpaper.get() {
-        debug!("last used wallpaper at {}", last_path.display());
-        last_path
-    } else {
-        bail!("no image to set given");
-    };
-
-    let wallpaper = WallpaperLoader::new().load(&wall_path);
 
     loop {
+        let wall_path = get_effective_wall_path(path.as_ref())?;
+        let wallpaper = WallpaperLoader::new().load(&wall_path);
+
         let current_image_index = current_image_index(&wallpaper, &config, user_appearance)?;
         let current_image_path = wallpaper
             .images
@@ -77,6 +67,21 @@ pub fn set<P: AsRef<Path>>(
     }
 
     Ok(())
+}
+
+fn get_effective_wall_path<P: AsRef<Path>>(given_path: Option<P>) -> Result<PathBuf> {
+    let last_wallpaper = LastWallpaper::find();
+
+    if let Some(path) = given_path {
+        validate_wallpaper_file(&path)?;
+        last_wallpaper.save(&path);
+        Ok(path.as_ref().to_path_buf())
+    } else if let Some(last_path) = last_wallpaper.get() {
+        debug!("last used wallpaper at {}", last_path.display());
+        Ok(last_path)
+    } else {
+        Err(anyhow!("no image to set given"))
+    }
 }
 
 pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> {
