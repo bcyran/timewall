@@ -109,6 +109,16 @@ pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> 
     Ok(())
 }
 
+pub fn clear(all: bool) -> Result<()> {
+    let mut loader = WallpaperLoader::new();
+    let last_wallpaper = (!all).then(|| LastWallpaper::find().get()).flatten();
+    loader.clear_cache(last_wallpaper);
+    if all {
+        LastWallpaper::find().clear();
+    }
+    Ok(())
+}
+
 fn validate_wallpaper_file<P: AsRef<Path>>(path: P) -> Result<()> {
     let path = path.as_ref();
     if !path.exists() {

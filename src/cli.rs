@@ -51,6 +51,12 @@ pub enum Action {
         #[arg(short, long, value_enum)]
         appearance: Option<Appearance>,
     },
+    /// Clear the wallpaper cache
+    Clear {
+        /// Clear all - do not skip the currently set wallpaper
+        #[arg(short, long, action)]
+        all: bool,
+    },
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]

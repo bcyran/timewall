@@ -36,5 +36,6 @@ fn main() -> Result<()> {
             daemon,
             appearance,
         } => actions::set(file, daemon, appearance),
+        cli::Action::Clear { all } => actions::clear(all),
     }
 }

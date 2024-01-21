@@ -56,6 +56,14 @@ pub const IMAGE_SET_MESSAGE: &str = "Set: ";
 /// Message printed to stdout in dry-run mode to indicate that command is being run.
 pub const COMMAND_RUN_MESSAGE: &str = "Run: ";
 
+/// Get full path to cached wallpaper directory.
+pub fn cached_wallpaper_dir<CP: AsRef<Path>>(cache_dir: CP, wallpaper: &PathBuf) -> PathBuf {
+    cache_dir
+        .as_ref()
+        .join("wallpapers")
+        .join(WALLPAPER_HASHES.get(wallpaper).unwrap())
+}
+
 /// Get full path to cached wallpaper image as a string.
 /// Path is determined based on root cache directory, used wallpaper and name of the image in this
 /// wallpaper.
@@ -64,10 +72,7 @@ pub fn cached_image_path_str<CP: AsRef<Path>>(
     wallpaper: &PathBuf,
     image: &str,
 ) -> String {
-    cache_dir
-        .as_ref()
-        .join("wallpapers")
-        .join(WALLPAPER_HASHES.get(wallpaper).unwrap())
+    cached_wallpaper_dir(cache_dir, wallpaper)
         .join(image)
         .to_str()
         .unwrap()

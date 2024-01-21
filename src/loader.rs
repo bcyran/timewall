@@ -29,6 +29,20 @@ impl WallpaperLoader {
         }
         Wallpaper::load(&cache_dir).expect("malformed wallpaper cache")
     }
+
+    /// Clear the wallpaper loader cache. Optionally skips one wallpaper with a given pahth.
+    pub fn clear_cache<P: AsRef<Path>>(&mut self, skip_wall_path: Option<P>) {
+        let mut entries_to_clear = self.cache.entries.clone();
+
+        if let Some(skip_wall_path) = skip_wall_path {
+            let skip_wall_hash = hash_file(&skip_wall_path).expect("wallpaper hashing failed");
+            entries_to_clear.remove(&skip_wall_hash);
+        }
+
+        for hash in entries_to_clear {
+            self.cache.remove_entry(&hash);
+        }
+    }
 }
 
 fn hash_file<P: AsRef<Path>>(path: P) -> Result<String> {

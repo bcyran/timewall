@@ -13,7 +13,7 @@ use crate::constants::{APP_NAME, APP_QUALIFIER};
 #[derive(Debug)]
 pub struct Cache {
     base_dir: PathBuf,
-    entries: HashSet<String>,
+    pub entries: HashSet<String>,
 }
 
 impl Cache {
@@ -61,6 +61,15 @@ impl Cache {
         } else {
             self.add_entry(key)
         }
+    }
+
+    /// Remove the cache dir for a given key.
+    pub fn remove_entry(&mut self, key: &str) {
+        let entry_path = self.get_entry(key);
+        if entry_path.is_dir() {
+            fs::remove_dir_all(entry_path).expect("couldn't remove cache entry directory");
+        }
+        self.entries.remove(key);
     }
 
     /// Create cache dir for a given key. Panics if the dir already exists.
@@ -127,6 +136,13 @@ impl LastWallpaper {
             None
         }
     }
+
+    /// Remove the link to the last used wallpaper.
+    pub fn clear(&self) {
+        if fs::read_link(&self.link_path).is_ok() {
+            fs::remove_file(&self.link_path).ok();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -185,6 +201,34 @@ mod tests {
 
         assert_eq!(cache.entry(&entry_name), expected_dir.path());
         expected_dir.assert(predicate::path::is_dir());
+
+        cache.remove_entry(&entry_name);
+        expected_dir.assert(predicate::path::missing());
+    }
+
+    #[rstest]
+    fn test_cache_entry_remove_exists(tmp_dir: TempDir) {
+        let entry_name = String::from("some_entry");
+        let expected_dir = tmp_dir.child(&entry_name);
+        expected_dir.create_dir_all().unwrap();
+
+        let mut cache = Cache::in_dir(&tmp_dir);
+
+        expected_dir.assert(predicate::path::is_dir());
+        cache.remove_entry(&entry_name);
+        expected_dir.assert(predicate::path::missing());
+    }
+
+    #[rstest]
+    fn test_cache_entry_remove_not_exists(tmp_dir: TempDir) {
+        let entry_name = String::from("some_entry");
+        let expected_dir = tmp_dir.child(&entry_name);
+
+        let mut cache = Cache::in_dir(&tmp_dir);
+
+        expected_dir.assert(predicate::path::missing());
+        cache.remove_entry(&entry_name);
+        expected_dir.assert(predicate::path::missing());
     }
 
     #[rstest]
@@ -224,5 +268,20 @@ mod tests {
         fs::remove_file(target_path_1).unwrap();
         last_wall.save(&target_path_2);
         assert_eq!(last_wall.get(), Some(target_path_2.to_path_buf()));
+    }
+
+    #[rstest]
+    fn test_last_wallpaper_save_clear(tmp_dir: TempDir) {
+        let target_path = tmp_dir.child("target.heic");
+        let link_path = tmp_dir.child("test_link");
+        target_path.touch().unwrap();
+
+        let last_wall = LastWallpaper::load(&link_path);
+
+        last_wall.save(&target_path);
+        link_path.assert(predicate::path::exists());
+
+        last_wall.clear();
+        link_path.assert(predicate::path::missing());
     }
 }
