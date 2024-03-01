@@ -17,7 +17,7 @@ anyhow = "1.0.75"
 base64 = "0.21.5"
 chrono = "0.4.31"
 clap = { version = "4.1.11", features = ["derive"] }
-clap-verbosity-flag = "2.1.1"
+clap-verbosity-flag = "2.2.0"
 directories = "5.0.1"
 env_logger = "0.10.0"
 itertools = "0.11.0"
@@ -44,5 +44,5 @@ rstest = "0.17.0"
 
 [build-dependencies]
 clap = { version = "4.1.11", features = ["derive"] }
-clap-verbosity-flag = "2.1.1"
+clap-verbosity-flag = "2.2.0"
 clap_complete = "4.4.9"
