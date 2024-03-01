@@ -21,7 +21,7 @@ pub fn validate_file<P: AsRef<Path>>(path: P) -> Result<()> {
 }
 
 /// Extract XMP metadata bytes from HEIF image.
-pub fn get_xmp_metadata(heif_ctx: &HeifContext) -> Result<Box<[u8]>> {
+pub fn get_xmp_metadata(heif_ctx: &HeifContext) -> Result<Vec<u8>> {
     let primary_image_handle = heif_ctx.primary_image_handle()?;
 
     let mut metadata_ids: [ItemId; 1] = [0];
@@ -35,7 +35,7 @@ pub fn get_xmp_metadata(heif_ctx: &HeifContext) -> Result<Box<[u8]>> {
     let xmp_metadata = primary_image_handle.metadata(xmp_metadata_id)?;
 
     debug!("XMP metadata read");
-    Ok(xmp_metadata.into_boxed_slice())
+    Ok(xmp_metadata)
 }
 
 /// Get all available top level image handles from HEIF.
