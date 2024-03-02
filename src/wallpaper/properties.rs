@@ -104,14 +104,12 @@ impl Properties {
     /// Create an instance from apple desktop metadata.
     pub fn from_apple_desktop(apple_desktop: &AppleDesktop) -> Result<Self> {
         let properties = match apple_desktop {
-            AppleDesktop::H24(value) => {
-                Properties::H24(PropertiesH24::from_base64(value.as_bytes())?)
-            }
+            AppleDesktop::H24(value) => Self::H24(PropertiesH24::from_base64(value.as_bytes())?),
             AppleDesktop::Solar(value) => {
-                Properties::Solar(PropertiesSolar::from_base64(value.as_bytes())?)
+                Self::Solar(PropertiesSolar::from_base64(value.as_bytes())?)
             }
             AppleDesktop::Apr(value) => {
-                Properties::Appearance(PropertiesAppearance::from_base64(value.as_bytes())?)
+                Self::Appearance(PropertiesAppearance::from_base64(value.as_bytes())?)
             }
         };
         Ok(properties)
@@ -137,9 +135,9 @@ impl Properties {
     /// Save the properties as a XML file.
     pub fn to_xml_file<P: AsRef<Path>>(&self, dest_path: P) -> Result<()> {
         match self {
-            Properties::H24(props) => props.to_xml_file(dest_path),
-            Properties::Solar(props) => props.to_xml_file(dest_path),
-            Properties::Appearance(props) => props.to_xml_file(dest_path),
+            Self::H24(props) => props.to_xml_file(dest_path),
+            Self::Solar(props) => props.to_xml_file(dest_path),
+            Self::Appearance(props) => props.to_xml_file(dest_path),
         }
     }
 
@@ -148,9 +146,9 @@ impl Properties {
         // We can't just count time / solar items because they can repeat the same image
         // for different times!
         let max_index = match self {
-            Properties::H24(props) => props.time_info.iter().map(|item| item.index).max(),
-            Properties::Solar(props) => props.solar_info.iter().map(|item| item.index).max(),
-            Properties::Appearance(..) => Some(1),
+            Self::H24(props) => props.time_info.iter().map(|item| item.index).max(),
+            Self::Solar(props) => props.solar_info.iter().map(|item| item.index).max(),
+            Self::Appearance(..) => Some(1),
         };
         max_index.unwrap() + 1
     }
@@ -160,21 +158,21 @@ impl Properties {
     /// For instance: the same image in the morning and afternoon.
     pub fn num_frames(&self) -> usize {
         match self {
-            Properties::H24(props) => props.time_info.len(),
-            Properties::Solar(props) => props.solar_info.len(),
-            Properties::Appearance(..) => 2,
+            Self::H24(props) => props.time_info.len(),
+            Self::Solar(props) => props.solar_info.len(),
+            Self::Appearance(..) => 2,
         }
     }
 
     /// Get appearance properties if present.
-    pub fn appearance(&self) -> Option<&PropertiesAppearance> {
+    pub const fn appearance(&self) -> Option<&PropertiesAppearance> {
         match self {
-            Properties::Appearance(ref appearance) => Some(appearance),
-            Properties::H24(PropertiesH24 {
+            Self::Appearance(ref appearance) => Some(appearance),
+            Self::H24(PropertiesH24 {
                 appearance: maybe_appearance,
                 ..
-            }) => maybe_appearance.as_ref(),
-            Properties::Solar(PropertiesSolar {
+            })
+            | Self::Solar(PropertiesSolar {
                 appearance: maybe_appearance,
                 ..
             }) => maybe_appearance.as_ref(),

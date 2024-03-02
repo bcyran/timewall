@@ -1,17 +1,17 @@
-use anyhow::Result;
-
 use crate::{cli::Appearance, wallpaper::properties::PropertiesAppearance};
 
-pub fn current_image_index_appearance(
+#[allow(clippy::cast_sign_loss)]
+pub const fn current_image_index_appearance(
     properties: &PropertiesAppearance,
     user_appearance: Option<Appearance>,
-) -> Result<usize> {
+) -> usize {
     match user_appearance {
-        Some(Appearance::Light) | None => Ok(properties.light as usize),
-        Some(Appearance::Dark) => Ok(properties.dark as usize),
+        Some(Appearance::Light) | None => properties.light as usize,
+        Some(Appearance::Dark) => properties.dark as usize,
     }
 }
 
+#[allow(clippy::cast_sign_loss)]
 pub fn get_image_index_order_appearance(properties: &PropertiesAppearance) -> Vec<usize> {
     vec![properties.light as usize, properties.dark as usize]
 }
@@ -40,7 +40,7 @@ mod tests {
         #[case] expected_index: usize,
     ) {
         let result = current_image_index_appearance(&properties, user_appearance);
-        assert_eq!(result.unwrap(), expected_index);
+        assert_eq!(result, expected_index);
     }
 
     #[rstest]

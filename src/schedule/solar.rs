@@ -42,11 +42,10 @@ fn current_item_solar_from_sun_pos<'i>(
 ) -> Result<&'i SolarItem> {
     let (min_alt_item, max_alt_item) = get_minmax_alt_items(solar_items)?;
     let sorted_items = sort_solar_items(solar_items);
-    let current_phase_items = match is_rising(sun_pos.azimuth, hemisphere) {
-        // If sun is rising, get items from the lowest altitude to the highest altitude
-        true => get_items_between(&sorted_items, min_alt_item, max_alt_item),
-        // If sun is setting, get items from the highest altitude to the lowest altitude
-        false => get_items_between(&sorted_items, max_alt_item, min_alt_item),
+    let current_phase_items = if is_rising(sun_pos.azimuth, hemisphere) {
+        get_items_between(&sorted_items, min_alt_item, max_alt_item)
+    } else {
+        get_items_between(&sorted_items, max_alt_item, min_alt_item)
     };
     let current_item = current_phase_items
         .iter()
@@ -66,6 +65,7 @@ fn get_minmax_alt_items(solar_items: &[SolarItem]) -> Result<(&SolarItem, &Solar
 
 /// Get all items between 'first' and 'last', inclusive.
 /// Items are cycled so we can wrap around the end and start from the beginning again.
+#[allow(clippy::unused_peekable)]
 fn get_items_between<'i>(
     solar_items: &[&'i SolarItem],
     first: &SolarItem,
@@ -78,7 +78,7 @@ fn get_items_between<'i>(
         .peekable();
     let mut items_between = starting_from_first
         .peeking_take_while(|item| ***item != *last)
-        .cloned()
+        .copied()
         .collect_vec();
     items_between.push(*starting_from_first.next().unwrap());
     items_between

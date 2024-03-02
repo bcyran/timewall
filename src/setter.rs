@@ -51,9 +51,10 @@ impl WallpaperSetter for DefaultSetter {
             .status()
             .with_context(|| "failed to run custom command")?;
 
-        match command_status.success() {
-            true => Ok(()),
-            false => Err(anyhow!("custom command process failed")),
+        if command_status.success() {
+            Ok(())
+        } else {
+            Err(anyhow!("custom command process failed"))
         }
     }
 }

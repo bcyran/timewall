@@ -34,7 +34,7 @@ pub fn unpack<IP: AsRef<Path>, OP: AsRef<Path>>(source: IP, destination: OP) -> 
 }
 
 pub fn set<P: AsRef<Path>>(
-    path: Option<P>,
+    path: &Option<P>,
     daemon: bool,
     user_appearance: Option<Appearance>,
 ) -> Result<()> {
@@ -145,15 +145,17 @@ fn current_image_index(
     let now = get_now_time();
     match wallpaper.properties {
         ref any_properties if user_appearance.is_some() => match any_properties.appearance() {
-            Some(appearance_props) => {
-                current_image_index_appearance(appearance_props, user_appearance)
-            }
+            Some(appearance_props) => Ok(current_image_index_appearance(
+                appearance_props,
+                user_appearance,
+            )),
             None => bail!("wallpaper missing appearance metadata"),
         },
-        Properties::Appearance(ref appearance_props) => {
-            current_image_index_appearance(appearance_props, user_appearance)
-        }
-        Properties::H24(ref props) => current_image_index_h24(&props.time_info, &now.time()),
+        Properties::Appearance(ref appearance_props) => Ok(current_image_index_appearance(
+            appearance_props,
+            user_appearance,
+        )),
+        Properties::H24(ref props) => current_image_index_h24(&props.time_info, now.time()),
         Properties::Solar(ref props) => {
             current_image_index_solar(&props.solar_info, &now, &config.location)
         }

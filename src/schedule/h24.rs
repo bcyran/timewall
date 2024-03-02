@@ -9,23 +9,23 @@ use super::time::time_to_day_fraction;
 use crate::wallpaper::properties::TimeItem;
 
 /// Get the image index from item which should be displayed at the given time.
-pub fn current_image_index_h24(time_items: &[TimeItem], time: &NaiveTime) -> Result<usize> {
+pub fn current_image_index_h24(time_items: &[TimeItem], time: NaiveTime) -> Result<usize> {
     Ok(current_item_h24(time_items, time)?.index)
 }
 
 /// Get the time item which should be displayed at the given time.
-fn current_item_h24<'i>(time_items: &'i [TimeItem], time: &NaiveTime) -> Result<&'i TimeItem> {
+fn current_item_h24(time_items: &[TimeItem], time: NaiveTime) -> Result<&TimeItem> {
     let current_time_fraction = not_nan!(time_to_day_fraction(time));
     time_items
         .iter()
-        .min_by_key(|item| times_distance(&item.time, &current_time_fraction))
+        .min_by_key(|item| times_distance(item.time, current_time_fraction))
         .ok_or_else(|| anyhow!("no time items to choose from"))
 }
 
 /// Calculate distance between two times expressed as day fraction between 0 and 1.
 /// This distance includes "wrapping" around the clock.
 /// E.g. distance between 21:00 (0.875) and 3:00 (0.125) is 6 hours (0.25).
-fn times_distance(a: &NotNan<f64>, b: &NotNan<f64>) -> NotNan<f64> {
+fn times_distance(a: NotNan<f64>, b: NotNan<f64>) -> NotNan<f64> {
     let first_distance = not_nan!((a - b).abs());
     let second_distance = not_nan!(1.0) - first_distance;
     min(first_distance, second_distance)
@@ -95,7 +95,7 @@ mod tests {
         #[case] time: NaiveTime,
         #[case] expected_index: usize,
     ) {
-        let result = current_image_index_h24(&time_items_1, &time);
+        let result = current_image_index_h24(&time_items_1, time);
         assert_eq!(result.unwrap(), expected_index);
     }
 
@@ -108,7 +108,7 @@ mod tests {
         #[case] time: NaiveTime,
         #[case] expected_index: usize,
     ) {
-        let result = current_image_index_h24(&time_items_2, &time);
+        let result = current_image_index_h24(&time_items_2, time);
         assert_eq!(result.unwrap(), expected_index);
     }
 

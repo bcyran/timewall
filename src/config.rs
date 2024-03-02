@@ -35,19 +35,19 @@ impl Config {
                 None => bail!("couldn't determine user's home directory"),
             }
         };
-        Config::load_or_create(config_dir.join(CONFIG_FILE_NAME))
+        Self::load_or_create(config_dir.join(CONFIG_FILE_NAME))
     }
 
     fn load_or_create<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref();
         if path.exists() {
-            Config::load(path)
+            Self::load(path)
         } else {
             let config_dir = path.parent().unwrap();
             if !config_dir.exists() {
                 fs::create_dir_all(config_dir).context("couldn't create config directory")?;
             }
-            let config = Config::default();
+            let config = Self::default();
             config
                 .write(path)
                 .with_context(|| "couldn't write the configuration file")?;
@@ -61,7 +61,7 @@ impl Config {
         let path = path.as_ref();
         let config_str =
             fs::read_to_string(path).with_context(|| "couldn't read the configuration file")?;
-        let config: Config =
+        let config: Self =
             toml::from_str(&config_str).with_context(|| "couldn't parse the configuation file")?;
         Ok(config)
     }
@@ -80,7 +80,7 @@ impl Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Config {
+        Self {
             location: Coords {
                 lat: 51.11,
                 lon: 17.02,

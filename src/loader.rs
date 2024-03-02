@@ -13,7 +13,7 @@ pub struct WallpaperLoader {
 
 impl WallpaperLoader {
     pub fn new() -> Self {
-        WallpaperLoader {
+        Self {
             cache: Cache::find("wallpapers"),
         }
     }

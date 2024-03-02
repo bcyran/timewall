@@ -26,13 +26,13 @@ pub struct ImageInfo {
 }
 
 impl ImageInfo {
-    pub fn from_image<P: AsRef<Path>>(image_path: P) -> Result<ImageInfo> {
+    pub fn from_image<P: AsRef<Path>>(image_path: P) -> Result<Self> {
         let image_path = image_path.as_ref();
         let heif_ctx = HeifContext::read_from_file(image_path.to_str().unwrap())?;
         let primary_handle = heif_ctx.primary_image_handle()?;
         let metadata = get_apple_desktop_metadata_from_heif(&heif_ctx)?;
 
-        Ok(ImageInfo {
+        Ok(Self {
             file: image_path.canonicalize()?,
             size: fs::metadata(image_path)?.len(),
             width: primary_handle.width(),
@@ -42,7 +42,7 @@ impl ImageInfo {
         })
     }
 
-    pub fn schedule_type(&self) -> &str {
+    pub const fn schedule_type(&self) -> &str {
         match self.properties {
             Properties::H24(..) => "time",
             Properties::Solar(..) => "solar",
@@ -68,11 +68,11 @@ impl Display for ImageInfo {
                 writeln!(f, "Schedule:")?;
                 fmt_schedule_solar(f, props)?;
             }
-            _ => (),
+            Properties::Appearance(_) => (),
         };
         if let Some(appearance_props) = self.properties.appearance() {
             writeln!(f, "Appearance:")?;
-            fmt_schedule_appearance(f, appearance_props)?
+            fmt_schedule_appearance(f, appearance_props)?;
         }
 
         Ok(())

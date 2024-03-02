@@ -38,7 +38,7 @@ impl Wallpaper {
             images.push(image_path);
         }
 
-        Ok(Wallpaper { images, properties })
+        Ok(Self { images, properties })
     }
 }
 

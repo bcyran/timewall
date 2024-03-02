@@ -9,7 +9,7 @@ use xml::{
 
 use crate::heif;
 
-/// AppleDesktop XMP metadata attribute.
+/// `AppleDesktop` XMP metadata attribute.
 #[derive(PartialEq, Eq, Debug)]
 pub enum AppleDesktop {
     /// H24 variant - time based wallpaper.
@@ -22,18 +22,18 @@ pub enum AppleDesktop {
 
 impl AppleDesktop {
     /// Extract attribute from HEIF image.
-    pub fn from_heif(heif_ctx: &HeifContext) -> Result<AppleDesktop> {
+    pub fn from_heif(heif_ctx: &HeifContext) -> Result<Self> {
         get_apple_desktop_metadata_from_heif(heif_ctx)
     }
 }
 
-/// Extract apple_desktop attribute from HEIF image.
+/// Extract `apple_desktop` attribute from HEIF image.
 pub fn get_apple_desktop_metadata_from_heif(heif_ctx: &HeifContext) -> Result<AppleDesktop> {
     let xmp_metadata = heif::get_xmp_metadata(heif_ctx).context("couldn't read XMP metadata")?;
     get_apple_desktop_metadata_from_xmp(&xmp_metadata)
 }
 
-/// Extract apple_desktop attribute from XMP metadata bytes
+/// Extract `apple_desktop` attribute from XMP metadata bytes
 pub fn get_apple_desktop_metadata_from_xmp(xmp_metadata: &[u8]) -> Result<AppleDesktop> {
     let mut xmp_reader = EventReader::new(xmp_metadata);
     let rdf_description = get_rdf_description_element(&mut xmp_reader)?;

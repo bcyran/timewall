@@ -30,7 +30,7 @@ impl Cache {
                 None => panic!("couldn't determine user's home directory"),
             }
         };
-        Cache::in_dir(cache_dir.join(name))
+        Self::in_dir(cache_dir.join(name))
     }
 
     /// Load cache from a given directory. Create it if it doesn't exist.
@@ -48,7 +48,7 @@ impl Cache {
             .flat_map(|e| e.file_name().into_string())
             .collect();
 
-        Cache {
+        Self {
             base_dir: path.to_path_buf(),
             entries: entry_dirs,
         }
@@ -102,7 +102,7 @@ impl LastWallpaper {
                 None => panic!("couldn't determine user's home directory"),
             }
         };
-        LastWallpaper::load(cache_dir.join("last_wall"))
+        Self::load(cache_dir.join("last_wall"))
     }
 
     /// Load instance from given link path.
@@ -114,7 +114,7 @@ impl LastWallpaper {
             fs::create_dir_all(parent_dir).expect("couldn't create cache directory");
         }
 
-        LastWallpaper {
+        Self {
             link_path: link_path.to_path_buf(),
         }
     }
