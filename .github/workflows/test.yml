@@ -49,12 +49,14 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - run: |
+      - name: Install libheif
+        run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libheif-dev libheif1
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - name: Install just
+        uses: extractions/setup-just@v1
+      - name: Run tests
+        run: just test
 
   fmt:
     name: Rustfmt
@@ -66,11 +68,12 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - name: Install rustfmt
+        run: rustup component add rustfmt
+      - name: Install just
+        uses: extractions/setup-just@v1
+      - name: Run rustfmt
+        run: just check-format
 
   clippy:
     name: Clippy
@@ -92,11 +95,12 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - run: rustup component add clippy
-      - uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
+      - name: Install clippy
+        run: rustup component add clippy
+      - name: Install just
+        uses: extractions/setup-just@v1
+      - name: Run clippy
+        run: just lint
 
   coverage:
     name: Coverage
@@ -119,11 +123,14 @@ jobs:
         run: rustup update stable
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
-      - run: |
+      - name: Install libheif
+        run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libheif-dev libheif1
+      - name: Install just
+        uses: extractions/setup-just@v1
       - name: Generate code coverage
-        run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+        run: just coverage
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
