@@ -108,14 +108,14 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache cargo registry
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cargo/registry
           key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
       - name: Cache cargo build
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
@@ -128,11 +128,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libheif-dev libheif1
       - name: Install just
-        uses: extractions/setup-just@v1
+        uses: extractions/setup-just@v2
       - name: Generate code coverage
         run: just coverage
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: lcov.info
           fail_ci_if_error: true
