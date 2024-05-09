@@ -36,7 +36,7 @@ wallpape-rs = "2.0.0"
 xml-rs = "0.8.20"
 
 [dev-dependencies]
-assert_cmd = "2.0.13"
+assert_cmd = "2.0.14"
 assert_fs = "1.1.1"
 lazy_static = "1.4.0"
 predicates = "3.1.0"
