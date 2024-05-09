@@ -22,7 +22,7 @@ directories = "5.0.1"
 env_logger = "0.10.2"
 itertools = "0.11.0"
 libheif-rs = "0.15.0"
-log = "0.4.20"
+log = "0.4.21"
 num_cpus = "1.16.0"
 ordered-float = { version = "4.2.0", features = ["serde"] }
 plist = "1.5.1"
