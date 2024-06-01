@@ -14,7 +14,7 @@ build = "build.rs"
 
 [dependencies]
 anyhow = "1.0.86"
-base64 = "0.21.5"
+base64 = "0.22.1"
 chrono = "0.4.38"
 clap = { version = "4.1.11", features = ["derive"] }
 clap-verbosity-flag = "2.2.0"
