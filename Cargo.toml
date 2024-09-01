@@ -28,7 +28,7 @@ ordered-float = { version = "4.2.2", features = ["serde"] }
 plist = "1.5.1"
 png = "0.17.13"
 seahash = "4.1.0"
-serde = { version = "1.0.156", features = ["derive"] }
+serde = { version = "1.0.209", features = ["derive"] }
 sun = "0.2.0"
 threadpool = "1.8.1"
 toml = "0.8.14"
