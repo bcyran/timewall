@@ -33,7 +33,7 @@ sun = "0.2.0"
 threadpool = "1.8.1"
 toml = "0.8.14"
 wallpape-rs = "2.0.0"
-xml-rs = "0.8.20"
+xml-rs = "0.8.21"
 
 [dev-dependencies]
 assert_cmd = "2.0.14"
