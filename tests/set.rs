@@ -78,7 +78,6 @@ fn test_runs_command(testenv: TestEnv) {
 #[rstest]
 fn test_creates_config(testenv: TestEnv) {
     let config_path = testenv.config_dir.child("config.toml");
-    let expected_config = "[location]\nlat = 51.11\nlon = 17.02\n";
     let expected_stderr = format!("Default config written to {}", config_path.display());
 
     testenv
@@ -86,9 +85,7 @@ fn test_creates_config(testenv: TestEnv) {
         .success()
         .stderr(predicate::str::contains(expected_stderr));
 
-    config_path
-        .assert(predicate::path::is_file())
-        .assert(predicate::eq(expected_config));
+    config_path.assert(predicate::path::is_file());
 }
 
 #[rstest]

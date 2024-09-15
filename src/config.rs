@@ -1,5 +1,3 @@
-use std::fs::File;
-use std::io::Write;
 use std::{
     env, fs,
     path::{Path, PathBuf},
@@ -13,6 +11,20 @@ use crate::constants::{APP_NAME, APP_QUALIFIER};
 use crate::geo::Coords;
 
 const CONFIG_FILE_NAME: &str = "config.toml";
+
+const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
+# Configuration file for timewall
+
+# Set your geographical location coordinates here
+[location]
+lat = 51.11
+lon = 17.02
+
+# Uncomment and adjust the following section to use a custom wallpaper setter command.
+# The example uses `swww`: https://github.com/LGFae/swww.
+# [setter]
+# command = ['swww', 'img', '%f']
+";
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Setter {
@@ -44,11 +56,10 @@ impl Config {
 
     fn load_or_create<P: AsRef<Path>>(path: P) -> Result<Self> {
         let path = path.as_ref();
-        if path.exists() {
-            Self::load(path)
-        } else {
-            Self::create_default(path)
+        if !path.exists() {
+            Self::create_default(path)?;
         }
+        Self::load(path)
     }
 
     fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
@@ -60,27 +71,19 @@ impl Config {
         Ok(config)
     }
 
-    fn create_default<P: AsRef<Path>>(path: P) -> Result<Self> {
+    fn create_default<P: AsRef<Path>>(path: P) -> Result<()> {
         let path = path.as_ref();
         let config_dir = path.parent().unwrap();
         if !config_dir.exists() {
             fs::create_dir_all(config_dir).context("couldn't create config directory")?;
         }
 
-        let config = Self::default();
-        config
-            .write(path)
-            .with_context(|| "couldn't write the configuration file")?;
+        fs::write(path, DEFAULT_CONFIG_FILE_CONTENT).with_context(|| {
+            format!("couldn't write default configuration to {}", path.display())
+        })?;
 
         eprintln!("Default config written to {}.", path.display());
         eprintln!("You should probably adjust it to your needs!");
-        Ok(config)
-    }
-
-    fn write<P: AsRef<Path>>(&self, path: P) -> Result<()> {
-        let path = path.as_ref();
-        let mut config_file = File::create(path)?;
-        config_file.write_all(toml::to_string_pretty(self)?.as_bytes())?;
         Ok(())
     }
 
