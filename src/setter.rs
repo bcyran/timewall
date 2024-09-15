@@ -7,6 +7,8 @@ use itertools::Itertools;
 use log::debug;
 use wallpape_rs as wallpaper;
 
+use crate::config::Config;
+
 /// Set wallpaper to the image pointed by a given path. Use custom command if provided.
 pub fn set_wallpaper<P: AsRef<Path>>(path: P, custom_command: Option<&Vec<String>>) -> Result<()> {
     let setter = get_setter();
@@ -34,8 +36,19 @@ struct DefaultSetter;
 impl WallpaperSetter for DefaultSetter {
     fn set_wallpaper(&self, path: &Path) -> Result<()> {
         let abs_path = path.canonicalize()?;
-        wallpaper::set_from_path(abs_path.to_str().unwrap())
-            .map_err(|e| anyhow!("could not set wallpaper: {}", e))
+
+        wallpaper::set_from_path(abs_path.to_str().unwrap()).map_err(|err| {
+            anyhow!(format!(
+                concat!(
+                    "Automated wallpaper setting failed: {}\n",
+                    "This is most likely caused by an unsupported DE or WM.\n",
+                    "Please configure a custom wallpaper setting command in the config file.\n",
+                    "You can find it at {}"
+                ),
+                err,
+                Config::find_path().unwrap().display()
+            ))
+        })
     }
 
     fn set_wallpaper_custom_command(&self, path: &Path, command_str: &[String]) -> Result<()> {

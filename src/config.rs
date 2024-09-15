@@ -27,6 +27,10 @@ pub struct Config {
 
 impl Config {
     pub fn find() -> Result<Self> {
+        Self::load_or_create(Self::find_path()?)
+    }
+
+    pub fn find_path() -> Result<PathBuf> {
         let config_dir = if let Result::Ok(path_str) = env::var("TIMEWALL_CONFIG_DIR") {
             PathBuf::from(path_str)
         } else {
@@ -35,7 +39,7 @@ impl Config {
                 None => bail!("couldn't determine user's home directory"),
             }
         };
-        Self::load_or_create(config_dir.join(CONFIG_FILE_NAME))
+        Ok(config_dir.join(CONFIG_FILE_NAME))
     }
 
     fn load_or_create<P: AsRef<Path>>(path: P) -> Result<Self> {
