@@ -47,17 +47,7 @@ impl Config {
         if path.exists() {
             Self::load(path)
         } else {
-            let config_dir = path.parent().unwrap();
-            if !config_dir.exists() {
-                fs::create_dir_all(config_dir).context("couldn't create config directory")?;
-            }
-            let config = Self::default();
-            config
-                .write(path)
-                .with_context(|| "couldn't write the configuration file")?;
-            eprintln!("Default config written to {}.", path.display());
-            eprintln!("You should probably adjust it to your needs!");
-            Ok(config)
+            Self::create_default(path)
         }
     }
 
@@ -67,6 +57,23 @@ impl Config {
             fs::read_to_string(path).with_context(|| "couldn't read the configuration file")?;
         let config: Self =
             toml::from_str(&config_str).with_context(|| "couldn't parse the configuation file")?;
+        Ok(config)
+    }
+
+    fn create_default<P: AsRef<Path>>(path: P) -> Result<Self> {
+        let path = path.as_ref();
+        let config_dir = path.parent().unwrap();
+        if !config_dir.exists() {
+            fs::create_dir_all(config_dir).context("couldn't create config directory")?;
+        }
+
+        let config = Self::default();
+        config
+            .write(path)
+            .with_context(|| "couldn't write the configuration file")?;
+
+        eprintln!("Default config written to {}.", path.display());
+        eprintln!("You should probably adjust it to your needs!");
         Ok(config)
     }
 
