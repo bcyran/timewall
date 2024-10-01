@@ -26,7 +26,7 @@ log = "0.4.22"
 num_cpus = "1.16.0"
 ordered-float = { version = "4.2.2", features = ["serde"] }
 plist = "1.5.1"
-png = "0.17.13"
+png = "0.17.14"
 seahash = "4.1.0"
 serde = { version = "1.0.209", features = ["derive"] }
 sun = "0.2.0"
