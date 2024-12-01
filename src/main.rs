@@ -35,7 +35,7 @@ fn main() -> Result<()> {
             file,
             daemon,
             appearance,
-        } => actions::set(&file, daemon, appearance),
+        } => actions::set(file.as_ref(), daemon, appearance),
         cli::Action::Clear { all } => actions::clear(all),
     }
 }

@@ -146,7 +146,7 @@ mod tests {
 
         let result = get_apple_desktop_metadata_from_xmp(xmp.as_bytes());
 
-        assert!(result.is_err())
+        assert!(result.is_err());
     }
 
     #[test]
@@ -155,7 +155,7 @@ mod tests {
 
         let result = get_apple_desktop_metadata_from_xmp(xmp.as_bytes());
 
-        assert!(result.is_err())
+        assert!(result.is_err());
     }
 
     #[test]
@@ -170,6 +170,6 @@ mod tests {
 
         let result = get_apple_desktop_metadata_from_xmp(xmp);
 
-        assert!(result.is_err())
+        assert!(result.is_err());
     }
 }

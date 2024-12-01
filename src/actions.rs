@@ -34,7 +34,7 @@ pub fn unpack<IP: AsRef<Path>, OP: AsRef<Path>>(source: IP, destination: OP) -> 
 }
 
 pub fn set<P: AsRef<Path>>(
-    path: &Option<P>,
+    path: Option<&P>,
     daemon: bool,
     user_appearance: Option<Appearance>,
 ) -> Result<()> {
