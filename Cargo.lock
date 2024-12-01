@@ -1278,9 +1278,9 @@ checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
 
 [[package]]
 name = "sun"
-version = "0.2.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dfc29238f46800dc0e29dbc0b3cab5e745dd40560220f759e30d298740781b59"
+checksum = "9ee651f4a9b6f29759b0636638c8140836bcdc28ed2c5f332b71c5911a439433"
 
 [[package]]
 name = "syn"
