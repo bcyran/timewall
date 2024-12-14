@@ -43,17 +43,10 @@ cargo install timewall
 ```
 
 ## Usage
-### Initial configuration
-If you intend to use sun position based wallpapers, you need to provide `timewall` with your approximate location.
-To do this, create a config file `$XDG_CONFIG_HOME/timewall/config.toml` (probably `~/.config/timewall/config.toml` if you're not sure).
-This file will be also written when you first run `timewall set`.
 
-Put the following contents in the file, while changing `lat` (latitude) and `lon` (longitude) values to your needs:
-```toml
-[location]
-lat = 51.11
-lon = 17.02
-```
+> [!IMPORTANT]
+> If you intend to use sun position based wallpapers, you need to configure your geographical location.
+> See [Configuration](#configuration).
 
 ### Setting the wallpaper
 #### One-time mode
@@ -125,14 +118,30 @@ timewall info path/to/wallpaper.heif
 ```
 
 ### Configuration
+`timewall` uses a config file at `$XDG_CONFIG_HOME/timewall/config.toml` (usually `~/.config/timewall/config.toml`).
+A default config will be written when you first run `timewall set`.
+
+#### Geographical location
+Using sun position based wallpapers requires your approximate geographical location.
+This is configured as follows:
+```toml
+[location]
+lat = 51.11
+lon = 17.02
+```
+Adjust the values `lat` (latitude) and `lon` (longitude) to your needs.
+
 #### Custom wallpaper setting command
 If the default wallpaper setting doesn't work in your case for some reason, or you just want to customize it, you can specify custom command to use.
-For instance, to set the wallpaper using `feh`, you could add the following to your `~/.config/timewall/config.toml`:
+For instance, to set the wallpaper using `feh`, you could add the following to your config file:
 ```toml
 [setter]
 command = ['feh', '--bg-fill', '%f']
 ```
 `%f` is a placeholder which will be replaced with full absolute path to the image, which should be set as a wallpaper.
+
+> [!NOTE]
+> The command is NOT passed through shell.
 
 #### Daemon mode wallpaper update interval
 ```toml
