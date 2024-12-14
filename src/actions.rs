@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::time::Duration;
+use std::usize;
 use std::{env, path::Path};
 use std::{str::FromStr, thread};
 
@@ -44,22 +45,29 @@ pub fn set<P: AsRef<Path>>(
 
     let config = Config::find()?;
 
+    let mut previous_image_index: Option<usize> = None;
     loop {
         let wall_path = get_effective_wall_path(path.as_ref())?;
         let wallpaper = WallpaperLoader::new().load(&wall_path);
 
         let current_image_index = current_image_index(&wallpaper, &config, user_appearance)?;
-        let current_image_path = wallpaper
-            .images
-            .get(current_image_index)
-            .with_context(|| "missing image specified by metadata")?;
+        if previous_image_index == Some(current_image_index) {
+            debug!("current image is the same as the previous one, skipping update");
+        } else {
+            previous_image_index.replace(current_image_index);
 
-        debug!("setting wallpaper to {}", current_image_path.display());
-        set_wallpaper(current_image_path, config.setter_command())?;
+            let current_image_path = wallpaper
+                .images
+                .get(current_image_index)
+                .with_context(|| "missing image specified by metadata")?;
 
-        if !daemon {
-            eprintln!("Wallpaper set!");
-            break;
+            debug!("setting wallpaper to {}", current_image_path.display());
+            set_wallpaper(current_image_path, config.setter_command())?;
+
+            if !daemon {
+                eprintln!("Wallpaper set!");
+                break;
+            }
         }
 
         debug!("sleeping for {UPDATE_INTERVAL_MINUTES} minutes");
