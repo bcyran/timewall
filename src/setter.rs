@@ -60,15 +60,18 @@ impl WallpaperSetter for DefaultSetter {
         process_command.args(command);
         debug!("running custom command: {process_command:?}");
 
-        let command_status = process_command
-            .status()
+        let process_output = process_command
+            .output()
             .with_context(|| "failed to run custom command")?;
-
-        if command_status.success() {
-            Ok(())
-        } else {
-            Err(anyhow!("custom command process failed"))
+        let process_status = process_output.status;
+        if !process_status.success() {
+            let stderr = String::from_utf8_lossy(&process_output.stderr);
+            return Err(anyhow!(
+                "custom command process failed with {process_status}, stderr: {stderr}",
+            ));
         }
+
+        Ok(())
     }
 }
 
