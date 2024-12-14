@@ -134,6 +134,12 @@ command = ['feh', '--bg-fill', '%f']
 ```
 `%f` is a placeholder which will be replaced with full absolute path to the image, which should be set as a wallpaper.
 
+#### Daemon mode wallpaper update interval
+```toml
+[daemon]
+update_interval_seconds = 600
+```
+
 ## Where to find the dynamic wallpapers
 - Original MacOS dynamic wallpapers.
   If you have access to a computer running MacOS, you can just copy the dynamic wallpapers.
