@@ -48,6 +48,10 @@ pub fn set<P: AsRef<Path>>(
         let wall_path = get_effective_wall_path(path.as_ref())?;
         let wallpaper = WallpaperLoader::new().load(&wall_path);
 
+        if matches!(wallpaper.properties, Properties::Solar(_)) && user_appearance.is_none() {
+            config.validate_for_solar()?;
+        };
+
         let current_image_index = current_image_index(&wallpaper, &config, user_appearance)?;
         if previous_image_index == Some(current_image_index) {
             debug!("current image is the same as the previous one, skipping update");
@@ -164,7 +168,7 @@ fn current_image_index(
         )),
         Properties::H24(ref props) => current_image_index_h24(&props.time_info, now.time()),
         Properties::Solar(ref props) => {
-            current_image_index_solar(&props.solar_info, &now, &config.location)
+            current_image_index_solar(&props.solar_info, &now, config.try_get_location()?)
         }
     }
 }

@@ -1,6 +1,8 @@
 mod common;
 
-use common::{cached_wallpaper_dir, testenv, TestEnv, EXAMPLE_SUN, EXAMPLE_TIME};
+use common::{
+    cached_wallpaper_dir, testenv, TestEnv, CONFIG_WITH_LOCATION, EXAMPLE_SUN, EXAMPLE_TIME,
+};
 use predicates::prelude::*;
 use rstest::rstest;
 
@@ -9,6 +11,7 @@ fn test_clear(testenv: TestEnv) {
     let expected_first_wall_cache_dir = cached_wallpaper_dir(&testenv.cache_dir, &EXAMPLE_SUN);
     let expected_second_wall_cache_dir = cached_wallpaper_dir(&testenv.cache_dir, &EXAMPLE_TIME);
 
+    let testenv = testenv.with_config(CONFIG_WITH_LOCATION);
     testenv
         .run(&["set", EXAMPLE_SUN.to_str().unwrap()])
         .success();

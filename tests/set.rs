@@ -5,8 +5,9 @@ use std::path::PathBuf;
 use assert_fs::prelude::*;
 use chrono::{DateTime, Local};
 use common::{
-    cached_image_path_str, testenv, TestEnv, COMMAND_RUN_MESSAGE, DATETIME_DAY, DATETIME_NIGHT,
-    EXAMPLE_SUN, EXAMPLE_TIME, IMAGE_DAY, IMAGE_NIGHT, IMAGE_SET_MESSAGE, WALLPAPER_HASHES,
+    cached_image_path_str, testenv, TestEnv, COMMAND_RUN_MESSAGE, CONFIG_WITH_COMMAND,
+    CONFIG_WITH_LOCATION, DATETIME_DAY, DATETIME_NIGHT, EXAMPLE_SUN, EXAMPLE_TIME, IMAGE_DAY,
+    IMAGE_NIGHT, IMAGE_SET_MESSAGE, WALLPAPER_HASHES,
 };
 use predicates::prelude::*;
 use rstest::rstest;
@@ -14,18 +15,37 @@ use rstest::rstest;
 #[rstest]
 #[case(*DATETIME_DAY, IMAGE_DAY)]
 #[case(*DATETIME_NIGHT, IMAGE_NIGHT)]
-fn test_sets_correct_image(
+fn test_sets_correct_image_time(
     testenv: TestEnv,
-    #[values(EXAMPLE_SUN.to_path_buf(), EXAMPLE_TIME.to_path_buf())] wall_path: PathBuf,
     #[case] datetime: DateTime<Local>,
     #[case] expected_image: &str,
 ) {
     let expected_image_path_str =
-        cached_image_path_str(&testenv.cache_dir, &wall_path, expected_image);
+        cached_image_path_str(&testenv.cache_dir, &EXAMPLE_TIME, expected_image);
 
     testenv
         .with_time(datetime)
-        .run(&["set", wall_path.to_str().unwrap()])
+        .run(&["set", EXAMPLE_TIME.to_str().unwrap()])
+        .success()
+        .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
+        .stdout(predicate::str::contains(expected_image_path_str));
+}
+
+#[rstest]
+#[case(*DATETIME_DAY, IMAGE_DAY)]
+#[case(*DATETIME_NIGHT, IMAGE_NIGHT)]
+fn test_sets_correct_image_solar(
+    testenv: TestEnv,
+    #[case] datetime: DateTime<Local>,
+    #[case] expected_image: &str,
+) {
+    let expected_image_path_str =
+        cached_image_path_str(&testenv.cache_dir, &EXAMPLE_SUN, expected_image);
+
+    testenv
+        .with_config(CONFIG_WITH_LOCATION)
+        .with_time(datetime)
+        .run(&["set", EXAMPLE_SUN.to_str().unwrap()])
         .success()
         .stdout(predicate::str::contains(IMAGE_SET_MESSAGE).count(1))
         .stdout(predicate::str::contains(expected_image_path_str));
@@ -59,15 +79,13 @@ fn test_sets_correct_image_appearance(
 
 #[rstest]
 fn test_runs_command(testenv: TestEnv) {
-    let wall_path = EXAMPLE_SUN.to_path_buf();
-    let config =
-        "[location]\nlat = 51.11\nlon = 17.02\n[setter]\ncommand = ['feh', '--bg-fill', '%f']";
+    let wall_path = EXAMPLE_TIME.to_path_buf();
     let expected_image_path_str =
         cached_image_path_str(&testenv.cache_dir, &wall_path, IMAGE_NIGHT);
     let expected_command_str = format!("feh --bg-fill {expected_image_path_str}");
 
     testenv
-        .with_config(&config)
+        .with_config(CONFIG_WITH_COMMAND)
         .with_time(*DATETIME_NIGHT)
         .run(&["set", wall_path.to_str().unwrap()])
         .success()
@@ -81,7 +99,7 @@ fn test_creates_config(testenv: TestEnv) {
     let expected_stderr = format!("Default config written to {}", config_path.display());
 
     testenv
-        .run(&["set", EXAMPLE_SUN.to_str().unwrap()])
+        .run(&["set", EXAMPLE_TIME.to_str().unwrap()])
         .success()
         .stderr(predicate::str::contains(expected_stderr));
 
@@ -90,7 +108,7 @@ fn test_creates_config(testenv: TestEnv) {
 
 #[rstest]
 fn test_saves_last_wallpaper(testenv: TestEnv) {
-    let wall_path = EXAMPLE_SUN.to_path_buf();
+    let wall_path = EXAMPLE_TIME.to_path_buf();
     let expected_image_path_str =
         cached_image_path_str(&testenv.cache_dir, &wall_path, IMAGE_NIGHT);
 
@@ -109,7 +127,7 @@ fn test_saves_last_wallpaper(testenv: TestEnv) {
 
 #[rstest]
 fn test_caches_wallpaper(testenv: TestEnv) {
-    let wall_path = EXAMPLE_SUN.to_path_buf();
+    let wall_path = EXAMPLE_TIME.to_path_buf();
 
     testenv.run(&["set", wall_path.to_str().unwrap()]).success();
 

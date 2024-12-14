@@ -56,6 +56,17 @@ pub const IMAGE_SET_MESSAGE: &str = "Set: ";
 /// Message printed to stdout in dry-run mode to indicate that command is being run.
 pub const COMMAND_RUN_MESSAGE: &str = "Run: ";
 
+pub const CONFIG_WITH_LOCATION: &str = r"
+[location]
+lat = 52.2297
+lon = 21.0122
+";
+
+pub const CONFIG_WITH_COMMAND: &str = r"
+[setter]
+command = ['feh', '--bg-fill', '%f']
+";
+
 /// Get full path to cached wallpaper directory.
 pub fn cached_wallpaper_dir<CP: AsRef<Path>>(cache_dir: CP, wallpaper: &PathBuf) -> PathBuf {
     cache_dir

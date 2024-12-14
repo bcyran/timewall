@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{bail, Context, Ok, Result};
+use anyhow::{anyhow, bail, Context, Ok, Result};
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 
@@ -16,9 +16,9 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 # Configuration file for timewall
 
 # Set your geographical location coordinates here
-[location]
-lat = 51.11
-lon = 17.02
+# [location]
+# lat = 51.11
+# lon = 17.02
 
 # Uncomment and adjust the following section to use a custom wallpaper setter command.
 # The example uses `swww`: https://github.com/LGFae/swww.
@@ -51,7 +51,7 @@ impl Default for Daemon {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     pub daemon: Option<Daemon>,
-    pub location: Coords,
+    pub location: Option<Coords>,
     pub setter: Option<Setter>,
 }
 
@@ -59,10 +59,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             daemon: Some(Daemon::default()),
-            location: Coords {
-                lat: 51.11,
-                lon: 17.02,
-            },
+            location: None,
             setter: None,
         }
     }
@@ -124,5 +121,22 @@ impl Config {
 
     pub fn update_interval_seconds(&self) -> u64 {
         self.daemon.unwrap_or_default().update_interval_seconds
+    }
+
+    pub fn try_get_location(&self) -> Result<&Coords> {
+        self.location
+            .as_ref()
+            .ok_or_else(|| anyhow!("location not set in the configuration"))
+    }
+
+    pub fn validate_for_solar(&self) -> Result<()> {
+        if self.location.is_none() {
+            let config_path = Self::find_path()?;
+            bail!(
+                "using wallpapers with solar schedule requires setting your location in the configuration file at {}",
+                config_path.display()
+            );
+        }
+        Ok(())
     }
 }
