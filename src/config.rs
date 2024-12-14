@@ -24,6 +24,10 @@ lon = 17.02
 # The example uses `swww`: https://github.com/LGFae/swww.
 # [setter]
 # command = ['swww', 'img', '%f']
+
+# Change how often the wallpaper is updated in daemon mode
+# [daemon]
+# update_interval_seconds = 300
 ";
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -31,10 +35,37 @@ pub struct Setter {
     pub command: Vec<String>,
 }
 
+#[derive(Deserialize, Serialize, Clone, Copy, Debug)]
+pub struct Daemon {
+    pub update_interval_seconds: u64,
+}
+
+impl Default for Daemon {
+    fn default() -> Self {
+        Self {
+            update_interval_seconds: 5 * 60,
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
+    pub daemon: Option<Daemon>,
     pub location: Coords,
     pub setter: Option<Setter>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            daemon: Some(Daemon::default()),
+            location: Coords {
+                lat: 51.11,
+                lon: 17.02,
+            },
+            setter: None,
+        }
+    }
 }
 
 impl Config {
@@ -90,16 +121,8 @@ impl Config {
     pub fn setter_command(&self) -> Option<&Vec<String>> {
         self.setter.as_ref().map(|s| &s.command)
     }
-}
 
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            location: Coords {
-                lat: 51.11,
-                lon: 17.02,
-            },
-            setter: None,
-        }
+    pub fn update_interval_seconds(&self) -> u64 {
+        self.daemon.unwrap_or_default().update_interval_seconds
     }
 }

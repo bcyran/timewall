@@ -10,7 +10,6 @@ use log::debug;
 
 use crate::cli::Appearance;
 use crate::config::Config;
-use crate::constants::UPDATE_INTERVAL_MINUTES;
 use crate::heif;
 use crate::info::ImageInfo;
 use crate::loader::WallpaperLoader;
@@ -69,8 +68,9 @@ pub fn set<P: AsRef<Path>>(
             }
         }
 
-        debug!("sleeping for {UPDATE_INTERVAL_MINUTES} minutes");
-        thread::sleep(Duration::from_secs(UPDATE_INTERVAL_MINUTES * 60));
+        let update_interval_seconds = config.update_interval_seconds();
+        debug!("sleeping for {update_interval_seconds} seconds");
+        thread::sleep(Duration::from_secs(update_interval_seconds));
     }
 
     Ok(())
