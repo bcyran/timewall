@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 use std::time::Duration;
-use std::usize;
 use std::{env, path::Path};
 use std::{str::FromStr, thread};
 
