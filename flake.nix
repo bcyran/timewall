@@ -35,5 +35,10 @@
         ];
       };
     });
+
+    packages = forEachSystem (pkgs: rec {
+      timewall = pkgs.callPackage ./package.nix {};
+      default = timewall;
+    });
   };
 }
