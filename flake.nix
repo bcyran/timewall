@@ -38,6 +38,10 @@
       };
     });
 
+    overlays.default = final: prev: {
+      timewall = final.callPackage ./nix/package.nix {inherit rev;};
+    };
+
     packages = forEachSystem (pkgs: rec {
       timewall = pkgs.callPackage ./nix/package.nix {inherit rev;};
       default = timewall;
