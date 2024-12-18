@@ -3,12 +3,14 @@
   rustPlatform,
   installShellFiles,
   libheif,
+  rev ? "dirty",
 }: let
   cargoToml = builtins.fromTOML (builtins.readFile ../Cargo.toml);
+  cargoVersion = cargoToml.package.version;
 in
   rustPlatform.buildRustPackage rec {
-    inherit (cargoToml.package) version;
     pname = "timewall";
+    version = "${cargoVersion}-${rev}";
 
     src = lib.fileset.toSource {
       root = ../.;
@@ -44,7 +46,7 @@ in
     meta = {
       description = "Apple dynamic HEIF wallpapers on GNU/Linux";
       homepage = "https://github.com/bcyran/timewall";
-      changelog = "https://github.com/bcyran/timewall/releases/tag/${version}";
+      changelog = "https://github.com/bcyran/timewall/releases/tag/${cargoVersion}";
       license = lib.licenses.mit;
       mainProgram = "timewall";
       maintainers = with lib.maintainers; [bcyran];

@@ -8,6 +8,7 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     rust-overlay,
     ...
@@ -21,6 +22,7 @@
             rust-overlay.overlays.default
           ];
         }));
+    rev = self.shortRev or self.dirtyShortRev or "dirty";
   in {
     devShells = forEachSystem (pkgs: {
       default = pkgs.mkShell {
@@ -37,7 +39,7 @@
     });
 
     packages = forEachSystem (pkgs: rec {
-      timewall = pkgs.callPackage ./nix/package.nix {};
+      timewall = pkgs.callPackage ./nix/package.nix {inherit rev;};
       default = timewall;
     });
   };
