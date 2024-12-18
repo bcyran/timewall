@@ -37,7 +37,7 @@
     });
 
     packages = forEachSystem (pkgs: rec {
-      timewall = pkgs.callPackage ./package.nix {};
+      timewall = pkgs.callPackage ./nix/package.nix {};
       default = timewall;
     });
   };
