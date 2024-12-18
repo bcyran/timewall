@@ -46,5 +46,10 @@
       timewall = pkgs.callPackage ./nix/package.nix {inherit rev;};
       default = timewall;
     });
+
+    homeManagerModules = rec {
+      timewall = import ./nix/hm-module.nix self;
+      default = timewall;
+    };
   };
 }
