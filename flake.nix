@@ -51,5 +51,7 @@
       timewall = import ./nix/hm-module.nix self;
       default = timewall;
     };
+
+    formatter = forEachSystem (pkgs: pkgs.alejandra);
   };
 }
