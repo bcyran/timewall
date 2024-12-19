@@ -67,7 +67,7 @@ environment.systemPackages = [
 
 #### Home Manager
 ```nix
-home.services.timewall = {
+services.timewall = {
   enable = true;
   wallpaperPath = ./wallpaper.jpg; # optional, can be set at runtime
   config = {} # optional, see the configuration section
