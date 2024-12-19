@@ -42,6 +42,38 @@ The binary named `timewall` has to be placed in directory in your `$PATH`, e.g. 
 cargo install timewall
 ```
 
+### Nix
+This repository contains a flake exposing a Nix package, `nixpkgs` overlay and a Home Manager module.
+Add `timewall` input to your `flake.nix`:
+```nix
+inputs.timewall.url = "github:bcyran/timewall";
+```
+#### Package
+```nix
+environment.systemPackages = [
+  inputs.timewall.packages.${pkgs.system}.timewall
+];
+```
+
+#### Overlay
+```nix
+nixpkgs.overlays = [
+  inputs.timewall.overlays.default
+]
+environment.systemPackages = [
+  pkgs.timewall
+];
+```
+
+#### Home Manager
+```nix
+home.services.timewall = {
+  enable = true;
+  wallpaperPath = ./wallpaper.jpg; # optional, can be set at runtime
+  config = {} # optional, see the configuration section
+}
+```
+
 ## Usage
 
 > [!IMPORTANT]
