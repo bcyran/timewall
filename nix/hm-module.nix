@@ -110,7 +110,7 @@ in {
             else ""
           )
         ];
-        Restat = "on-failure";
+        Restart = "on-failure";
       };
       Install.WantedBy = [cfg.systemdTarget];
     };
