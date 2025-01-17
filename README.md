@@ -69,7 +69,7 @@ environment.systemPackages = [
 ```nix
 services.timewall = {
   enable = true;
-  wallpaperPath = ./wallpaper.jpg; # optional, can be set at runtime
+  wallpaperPath = ./wallpaper.heif; # optional, can be set at runtime
   config = {} # optional, see the configuration section
 }
 ```
