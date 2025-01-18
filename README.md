@@ -190,8 +190,6 @@ update_interval_seconds = 600
   A lot of user-created wallpapers.
   Unfortunately, many of them are of mediocre quality.
   Only a handful makes use of the sun position schedule (which is the best part of the whole concept to me), and those which do, usually do it poorly.
-- [dynwalls.com](http://dynwalls.com/).
-  Some free, high quality walls.
 - [Jetson Creative](https://www.jetsoncreative.com/mojave).
   Three free wallpapers and some bundles you can buy.
 - [mczachurski/wallpaper](https://github.com/mczachurski/wallpapper).
