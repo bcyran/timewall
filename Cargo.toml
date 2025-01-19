@@ -14,12 +14,14 @@ build = "build.rs"
 
 [dependencies]
 anyhow = "1.0.93"
+async-io = "2.4.0"
 base64 = "0.22.1"
 chrono = "0.4.39"
 clap = { version = "4.5.23", features = ["derive"] }
 clap-verbosity-flag = "2.2.2"
 directories = "5.0.1"
 env_logger = "0.11.5"
+futures-lite = "2.6.0"
 itertools = "0.13.0"
 libheif-rs = "0.15.0"
 log = "0.4.22"
@@ -34,6 +36,7 @@ threadpool = "1.8.1"
 toml = "0.8.19"
 wallpape-rs = "2.0.0"
 xml-rs = "0.8.24"
+zbus = "5.3.0"
 
 [dev-dependencies]
 assert_cmd = "2.0.14"
