@@ -1,19 +1,26 @@
-use std::env;
 use std::path::Path;
 use std::process::Command;
+use std::time::Duration;
+use std::{env, thread};
 
 use anyhow::{anyhow, Context, Result};
 use itertools::Itertools;
+use libc::{kill, SIGKILL};
 use log::debug;
 use wallpape_rs as wallpaper;
 
+use crate::cache::LastPid;
 use crate::config::Config;
 
 /// Set wallpaper to the image pointed by a given path. Use custom command if provided.
-pub fn set_wallpaper<P: AsRef<Path>>(path: P, custom_command: Option<&Vec<String>>) -> Result<()> {
+pub fn set_wallpaper<P: AsRef<Path>>(
+    path: P,
+    custom_command: Option<&Vec<String>>,
+    delay: u64,
+) -> Result<()> {
     let setter = get_setter();
     if let Some(command) = custom_command {
-        setter.set_wallpaper_custom_command(path.as_ref(), command)
+        setter.set_wallpaper_custom_command(path.as_ref(), command, delay)
     } else {
         setter.set_wallpaper(path.as_ref())
     }
@@ -26,13 +33,24 @@ fn get_setter() -> Box<dyn WallpaperSetter> {
     }
 }
 
+pub fn cleanup() {
+    let setter = get_setter();
+    setter.cleanup();
+}
+
 trait WallpaperSetter {
     fn set_wallpaper(&self, path: &Path) -> Result<()>;
-    fn set_wallpaper_custom_command(&self, path: &Path, custom_command: &[String]) -> Result<()>;
+    fn set_wallpaper_custom_command(
+        &self,
+        path: &Path,
+        custom_command: &[String],
+        delay: u64,
+    ) -> Result<()>;
+    fn cleanup(&self);
 }
 
 /// Real, actual wallpaper setter.
-struct DefaultSetter;
+struct DefaultSetter {}
 impl WallpaperSetter for DefaultSetter {
     fn set_wallpaper(&self, path: &Path) -> Result<()> {
         let abs_path = path.canonicalize()?;
@@ -51,7 +69,12 @@ impl WallpaperSetter for DefaultSetter {
         })
     }
 
-    fn set_wallpaper_custom_command(&self, path: &Path, command_str: &[String]) -> Result<()> {
+    fn set_wallpaper_custom_command(
+        &self,
+        path: &Path,
+        command_str: &[String],
+        delay: u64,
+    ) -> Result<()> {
         let path_str = path.to_str().unwrap();
         let expended_command = expand_command(command_str, path_str);
         let mut command = expended_command.iter();
@@ -60,18 +83,44 @@ impl WallpaperSetter for DefaultSetter {
         process_command.args(command);
         debug!("running custom command: {process_command:?}");
 
-        let process_output = process_command
-            .output()
+        let wallpaper_process = process_command
+            .spawn()
             .with_context(|| "failed to run custom command")?;
-        let process_status = process_output.status;
-        if !process_status.success() {
-            let stderr = String::from_utf8_lossy(&process_output.stderr);
-            return Err(anyhow!(
-                "custom command process failed with {process_status}, stderr: {stderr}",
-            ));
+
+        let last_pid_cache = LastPid::find();
+
+        thread::sleep(Duration::from_millis(delay));
+        if let Some(last_pid) = LastPid::get(&last_pid_cache) {
+            debug!("terminating previous process with PID: {:?}", last_pid);
+            unsafe {
+                #[allow(clippy::cast_possible_wrap)]
+                if kill(last_pid as i32, SIGKILL) != 0 {
+                    eprintln!("failed to kill process: {last_pid}");
+                } else {
+                    println!("process killed: {last_pid}");
+                }
+            }
         }
 
+        LastPid::set(&last_pid_cache, wallpaper_process.id());
+
         Ok(())
+    }
+
+    fn cleanup(&self) {
+        let last_pid_cache = LastPid::find();
+        if let Some(last_pid) = LastPid::get(&last_pid_cache) {
+            debug!("terminating previous process with PID: {:?}", last_pid);
+            unsafe {
+                #[allow(clippy::cast_possible_wrap)]
+                if kill(last_pid as i32, SIGKILL) != 0 {
+                    eprintln!("failed to kill process: {last_pid}");
+                } else {
+                    println!("process killed: {last_pid}");
+                }
+            }
+        }
+        LastPid::clear(&last_pid_cache);
     }
 }
 
@@ -84,11 +133,18 @@ impl WallpaperSetter for DryRunSetter {
         Ok(())
     }
 
-    fn set_wallpaper_custom_command(&self, path: &Path, command_str: &[String]) -> Result<()> {
+    fn set_wallpaper_custom_command(
+        &self,
+        path: &Path,
+        command_str: &[String],
+        _delay: u64,
+    ) -> Result<()> {
         let expanded_command = expand_command(command_str, path.to_str().unwrap());
         println!("Run: {}", expanded_command.join(" "));
         Ok(())
     }
+
+    fn cleanup(&self) {}
 }
 
 /// Replace '%f' in command with file path.
