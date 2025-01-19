@@ -50,6 +50,9 @@ pub enum Action {
         /// Use light or dark variant
         #[arg(short, long, value_enum)]
         appearance: Option<Appearance>,
+        /// Delay between wallpaper changes in milliseconds
+        #[arg(long, default_value_t = 500)]
+        delay: u64,
     },
     /// Clear the wallpaper cache
     Clear {

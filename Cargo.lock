@@ -1352,6 +1352,7 @@ dependencies = [
  "env_logger",
  "itertools",
  "lazy_static",
+ "libc",
  "libheif-rs",
  "log",
  "num_cpus",

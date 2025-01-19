@@ -17,7 +17,7 @@ use crate::schedule::{
     current_image_index_h24, current_image_index_solar, get_image_index_order_appearance,
     get_image_index_order_h24, get_image_index_order_solar,
 };
-use crate::setter::set_wallpaper;
+use crate::setter::{cleanup, set_wallpaper};
 use crate::wallpaper::{self, properties::Properties, Wallpaper};
 use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
 
@@ -36,6 +36,7 @@ pub fn set<P: AsRef<Path>>(
     path: Option<&P>,
     daemon: bool,
     user_appearance: Option<Appearance>,
+    delay: u64,
 ) -> Result<()> {
     if daemon && user_appearance.is_some() {
         bail!("appearance can't be used in daemon mode!")
@@ -64,7 +65,7 @@ pub fn set<P: AsRef<Path>>(
                 .with_context(|| "missing image specified by metadata")?;
 
             debug!("setting wallpaper to {}", current_image_path.display());
-            set_wallpaper(current_image_path, config.setter_command())?;
+            set_wallpaper(current_image_path, config.setter_command(), delay)?;
 
             if !daemon {
                 eprintln!("Wallpaper set!");
@@ -108,14 +109,14 @@ pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> 
     loop {
         for image_index in &image_order {
             let image_path = wallpaper.images.get(*image_index).unwrap();
-            set_wallpaper(image_path, config.setter_command())?;
-            thread::sleep(Duration::from_millis(delay));
+            set_wallpaper(image_path, config.setter_command(), delay)?;
         }
 
         if !repeat {
             break;
         }
     }
+    cleanup();
 
     Ok(())
 }
