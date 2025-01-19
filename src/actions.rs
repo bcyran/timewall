@@ -3,13 +3,15 @@ use std::time::Duration;
 use std::{env, path::Path};
 use std::{str::FromStr, thread};
 
+use anyhow::Result;
 use anyhow::{anyhow, bail, Context};
-use anyhow::{Ok, Result};
 use chrono::prelude::*;
 use log::debug;
 
 use crate::cli::Appearance;
 use crate::config::Config;
+use crate::geo::Coords;
+use crate::geoclue;
 use crate::heif;
 use crate::info::ImageInfo;
 use crate::loader::WallpaperLoader;
@@ -20,6 +22,8 @@ use crate::schedule::{
 use crate::setter::set_wallpaper;
 use crate::wallpaper::{self, properties::Properties, Wallpaper};
 use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
+
+const GEOCLUE_TIMEOUT: Duration = Duration::from_secs(1);
 
 pub fn info<P: AsRef<Path>>(path: P) -> Result<()> {
     validate_wallpaper_file(&path)?;
@@ -47,10 +51,6 @@ pub fn set<P: AsRef<Path>>(
     loop {
         let wall_path = get_effective_wall_path(path.as_ref())?;
         let wallpaper = WallpaperLoader::new().load(&wall_path);
-
-        if matches!(wallpaper.properties, Properties::Solar(_)) && user_appearance.is_none() {
-            config.validate_for_solar()?;
-        };
 
         let current_image_index = current_image_index(&wallpaper, &config, user_appearance)?;
         if previous_image_index == Some(current_image_index) {
@@ -167,7 +167,29 @@ fn current_image_index(
         )),
         Properties::H24(ref props) => current_image_index_h24(&props.time_info, now.time()),
         Properties::Solar(ref props) => {
-            current_image_index_solar(&props.solar_info, &now, config.try_get_location()?)
+            current_image_index_solar(&props.solar_info, &now, &try_get_location(config)?)
         }
     }
+}
+
+fn try_get_location(config: &Config) -> Result<Coords> {
+    let maybe_location = match (config.geoclue_enabled(), config.geoclue_preferred()) {
+        (true, true) => {
+            geoclue::get_location(GEOCLUE_TIMEOUT).or_else(|_| config.try_get_location())
+        }
+        (true, false) => config
+            .try_get_location()
+            .or_else(|_| geoclue::get_location(GEOCLUE_TIMEOUT)),
+        (false, _) => config.try_get_location(),
+    };
+
+    maybe_location.with_context(|| {
+        format!(
+            concat!(
+                "Using wallpapers with solar schedule requires your approximate location information. ",
+                "Please enable geoclue2 or provide the location manually in the configuration file at {}."
+            ),
+            Config::find_path().unwrap().display()
+        )
+    })
 }

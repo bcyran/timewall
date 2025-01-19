@@ -15,6 +15,11 @@ const CONFIG_FILE_NAME: &str = "config.toml";
 const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 # Configuration file for timewall
 
+# Dynamic location service
+# [geoclue]
+# enable = true
+# prefer = false
+
 # Set your geographical location coordinates here
 # [location]
 # lat = 51.11
@@ -48,9 +53,37 @@ impl Default for Daemon {
     }
 }
 
+#[derive(Deserialize, Serialize, Clone, Copy, Debug)]
+pub struct Geoclue {
+    #[serde(default = "Geoclue::enable_default_value")]
+    pub enable: bool,
+    #[serde(default = "Geoclue::prefer_default_value")]
+    pub prefer: bool,
+}
+
+impl Geoclue {
+    const fn enable_default_value() -> bool {
+        true
+    }
+
+    const fn prefer_default_value() -> bool {
+        false
+    }
+}
+
+impl Default for Geoclue {
+    fn default() -> Self {
+        Self {
+            enable: Self::enable_default_value(),
+            prefer: Self::prefer_default_value(),
+        }
+    }
+}
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     pub daemon: Option<Daemon>,
+    pub geoclue: Option<Geoclue>,
     pub location: Option<Coords>,
     pub setter: Option<Setter>,
 }
@@ -59,6 +92,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             daemon: Some(Daemon::default()),
+            geoclue: Some(Geoclue::default()),
             location: None,
             setter: None,
         }
@@ -123,20 +157,16 @@ impl Config {
         self.daemon.unwrap_or_default().update_interval_seconds
     }
 
-    pub fn try_get_location(&self) -> Result<&Coords> {
-        self.location
-            .as_ref()
-            .ok_or_else(|| anyhow!("location not set in the configuration"))
+    pub fn geoclue_enabled(&self) -> bool {
+        self.geoclue.unwrap_or_default().enable
     }
 
-    pub fn validate_for_solar(&self) -> Result<()> {
-        if self.location.is_none() {
-            let config_path = Self::find_path()?;
-            bail!(
-                "using wallpapers with solar schedule requires setting your location in the configuration file at {}",
-                config_path.display()
-            );
-        }
-        Ok(())
+    pub fn geoclue_preferred(&self) -> bool {
+        self.geoclue.unwrap_or_default().prefer
+    }
+
+    pub fn try_get_location(&self) -> Result<Coords> {
+        self.location
+            .ok_or_else(|| anyhow!("location not set in the configuration"))
     }
 }

@@ -5,7 +5,7 @@ pub enum Hemisphere {
     Southern,
 }
 
-#[derive(Deserialize, Serialize, PartialEq, Debug)]
+#[derive(Deserialize, Serialize, PartialEq, Debug, Clone, Copy)]
 pub struct Coords {
     pub lat: f64,
     pub lon: f64,

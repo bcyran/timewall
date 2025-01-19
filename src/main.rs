@@ -6,6 +6,7 @@ mod cli;
 mod config;
 mod constants;
 mod geo;
+mod geoclue;
 mod heif;
 mod info;
 mod loader;
