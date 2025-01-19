@@ -145,6 +145,67 @@ impl LastWallpaper {
     }
 }
 
+/// Abstraction over a symlink to the last used PID.
+pub struct LastPid {
+    pid_path: PathBuf,
+}
+
+impl LastPid {
+    /// Find user's cache directory and load instance from there.
+    pub fn find() -> Self {
+        let cache_dir = if let Result::Ok(path_str) = env::var("TIMEWALL_CACHE_DIR") {
+            PathBuf::from(path_str)
+        } else {
+            match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
+                Some(app_dirs) => app_dirs.cache_dir().to_path_buf(),
+                None => panic!("couldn't determine user's home directory"),
+            }
+        };
+        Self::load(cache_dir.join("last_pid"))
+    }
+
+    /// Load instance from given path.
+    fn load<P: AsRef<Path>>(pid_path: P) -> Self {
+        let pid_path = pid_path.as_ref();
+        let parent_dir = pid_path.parent().unwrap();
+
+        if !parent_dir.exists() {
+            fs::create_dir_all(parent_dir).expect("couldn't create cache directory");
+        }
+
+        Self {
+            pid_path: pid_path.to_path_buf(),
+        }
+    }
+
+    /// Set last pid.
+    pub fn set(&self, pid: u32) {
+        fs::remove_file(&self.pid_path).ok();
+        fs::write(&self.pid_path, pid.to_string()).unwrap();
+    }
+
+    /// Get path to the last used pid, if it exists.
+    pub fn get(&self) -> Option<u32> {
+        if self.pid_path.exists() {
+            Some(
+                fs::read_to_string(&self.pid_path)
+                    .unwrap()
+                    .parse::<u32>()
+                    .unwrap(),
+            )
+        } else {
+            None
+        }
+    }
+
+    /// Remove the link to the last used pid.
+    pub fn clear(&self) {
+        if fs::read_link(&self.pid_path).is_ok() {
+            fs::remove_file(&self.pid_path).ok();
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert_fs::prelude::*;
