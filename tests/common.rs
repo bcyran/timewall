@@ -57,6 +57,9 @@ pub const IMAGE_SET_MESSAGE: &str = "Set: ";
 pub const COMMAND_RUN_MESSAGE: &str = "Run: ";
 
 pub const CONFIG_WITH_LOCATION: &str = r"
+[geoclue]
+enable = false
+
 [location]
 lat = 52.2297
 lon = 21.0122
