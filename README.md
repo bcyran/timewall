@@ -77,7 +77,8 @@ services.timewall = {
 ## Usage
 
 > [!IMPORTANT]
-> If you intend to use sun position based wallpapers, you need to configure your geographical location.
+> If you intend to use sun position based wallpapers, `timewall` will need your approximate location.
+> Please make sure GeoClue 2 service is available or manually configure your location.
 > See [Configuration](#configuration).
 
 ### Setting the wallpaper
@@ -153,15 +154,28 @@ timewall info path/to/wallpaper.heif
 `timewall` uses a config file at `$XDG_CONFIG_HOME/timewall/config.toml` (usually `~/.config/timewall/config.toml`).
 A default config will be written when you first run `timewall set`.
 
-#### Geographical location
+#### Automatic location
 Using sun position based wallpapers requires your approximate geographical location.
-This is configured as follows:
+By default, the GeoClue 2 service is used to automatically determine your location, unless you configure it manually (see the next section).
+You can disable GeoClue by setting `geoclue.enable` to `false`.
+
+The `geoclue.prefer` setting specifies whether GeoClue should be prioritized over manual location when both are available.
+This can be useful if you prefer using automatic detection but want to fall back to manual configuration rather than encountering an error if GeoClue is unavailable (e.g. due to no internet connection).
+```toml
+[geoclue]
+enable = true
+prefer = false
+```
+
+#### Manual location
+Geographical location can be set manually in the `location` section.
+By default, it is prioritized over automatic location from GeoClue.
 ```toml
 [location]
 lat = 51.11
 lon = 17.02
 ```
-Adjust the values `lat` (latitude) and `lon` (longitude) to your needs.
+`lat` and `lon` options define the latitude and longitude respectively.
 
 #### Custom wallpaper setting command
 If the default wallpaper setting doesn't work in your case for some reason, or you just want to customize it, you can specify custom command to use.
