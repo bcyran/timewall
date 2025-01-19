@@ -35,6 +35,19 @@ in {
       };
 
       config = {
+        geoclue = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Enable GeoClue 2 for automatic location detection.";
+          };
+          prefer = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Prefer GeoClue 2 over manual location configuration.";
+          };
+        };
+
         location = {
           lat = lib.mkOption {
             type = with lib.types; nullOr (either float int);
@@ -82,7 +95,10 @@ in {
     home.packages = [cfg.package];
 
     xdg.configFile."timewall/config.toml".source = configFormat.generate "config.toml" (
-      lib.optionalAttrs (cfg.config.location.lat != null && cfg.config.location.lon != null) {
+      {
+        inherit (cfg.config) geoclue;
+      }
+      // lib.optionalAttrs (cfg.config.location.lat != null && cfg.config.location.lon != null) {
         inherit (cfg.config) location;
       }
       // lib.optionalAttrs (cfg.config.setter.command != null) {
