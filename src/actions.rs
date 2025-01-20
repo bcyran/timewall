@@ -174,20 +174,38 @@ fn current_image_index(
 
 fn try_get_location(config: &Config) -> Result<Coords> {
     let maybe_location = match (config.geoclue_enabled(), config.geoclue_preferred()) {
-        (true, true) => {
-            geoclue::get_location(GEOCLUE_TIMEOUT).or_else(|_| config.try_get_location())
-        }
-        (true, false) => config
+        (true, true) => match geoclue::get_location(GEOCLUE_TIMEOUT) {
+            geoclue_ok @ Ok(_) => geoclue_ok,
+            Err(e) => {
+                debug!("GeoClue failed, falling back to config location: {}", e);
+                match config.try_get_location() {
+                    config_ok @ Ok(_) => config_ok,
+                    Err(_) => Err(e).context("failed to get location from GeoClue and config"),
+                }
+            }
+        },
+        (true, false) => match config.try_get_location() {
+            config_ok @ Ok(_) => config_ok,
+            Err(e) => {
+                debug!("Config location failed, falling back to GeoClue: {}", e);
+                match geoclue::get_location(GEOCLUE_TIMEOUT) {
+                    goeclue_ok @ Ok(_) => goeclue_ok,
+                    geoclue_err @ Err(_) => {
+                        geoclue_err.context("failed to get location from config and GeoClue")
+                    }
+                }
+            }
+        },
+        (false, _) => config
             .try_get_location()
-            .or_else(|_| geoclue::get_location(GEOCLUE_TIMEOUT)),
-        (false, _) => config.try_get_location(),
+            .context("GeoClue is disabled and failed to get location from config"),
     };
 
     maybe_location.with_context(|| {
         format!(
             concat!(
                 "Using wallpapers with solar schedule requires your approximate location information. ",
-                "Please enable geoclue2 or provide the location manually in the configuration file at {}."
+                "Please enable GeoClue 2 or provide the location manually in the configuration file at {}."
             ),
             Config::find_path().unwrap().display()
         )
