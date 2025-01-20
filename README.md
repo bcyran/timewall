@@ -167,6 +167,24 @@ enable = true
 prefer = false
 ```
 
+> [!IMPORTANT]
+> You might need to grant `timewall` access to location data in GeoClue configuration.
+>
+> `/etc/geoclue/geoclue.conf`:
+> ```conf
+> [timewall]
+> allowed=true
+> system=false
+> users=
+> ```
+> On NixOS:
+> ```nix
+> services.geoclue2.appConfig.timewall = {
+>   isAllowed = true;
+>   isSystem = false;
+> }
+> ```
+
 #### Manual location
 Geographical location can be set manually in the `location` section.
 By default, it is prioritized over automatic location from GeoClue.
