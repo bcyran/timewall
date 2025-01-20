@@ -53,11 +53,11 @@ async fn get_location_async() -> anyhow::Result<Coords> {
         .context("couldn't connect to dbus")?;
     let manager = GeoClueManagerProxy::new(&connection)
         .await
-        .context("couldn't create geoclue manager")?;
+        .context("couldn't create GeoClue manager")?;
     let client = manager
         .get_client()
         .await
-        .context("couldn't get geoclue client")?;
+        .context("couldn't get CeoClue client")?;
 
     client.set_desktop_id("timewall").await?;
     let mut location_updated = client.receive_location_updated().await?;
