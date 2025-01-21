@@ -116,9 +116,8 @@ pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> 
             break;
         }
     }
-    cleanup();
 
-    Ok(())
+    cleanup()
 }
 
 pub fn clear(all: bool) {
