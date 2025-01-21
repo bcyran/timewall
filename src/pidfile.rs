@@ -66,3 +66,54 @@ impl SetterPidFile {
         fs::remove_file(&self.pidfile_path).expect("cound't remove setter pidfile");
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use assert_fs::prelude::*;
+    use assert_fs::TempDir;
+    use predicates::prelude::*;
+    use rstest::*;
+
+    #[fixture]
+    fn tmp_dir() -> TempDir {
+        assert_fs::TempDir::new().unwrap()
+    }
+
+    #[rstest]
+    fn test_setter_pidfile_load_not_exists(tmp_dir: TempDir) {
+        let fake_runtime_dir = tmp_dir.child("fake_runtime_dir");
+        let pidfile_path = fake_runtime_dir.child("last_setter.pid");
+
+        SetterPidFile::load(&pidfile_path);
+
+        fake_runtime_dir.assert(predicate::path::exists());
+    }
+
+    #[rstest]
+    fn test_setter_pidfile_save_read(tmp_dir: TempDir) {
+        let pidfile_path = tmp_dir.child("test.pid");
+
+        let pidfile = SetterPidFile::load(&pidfile_path);
+        pidfile_path.assert(predicate::path::missing());
+        assert_eq!(pidfile.read(), None);
+
+        pidfile.save(1234);
+        assert_eq!(pidfile.read(), Some(1234));
+
+        pidfile.save(420);
+        assert_eq!(pidfile.read(), Some(420));
+    }
+
+    #[rstest]
+    fn test_setter_pidfile_clear(tmp_dir: TempDir) {
+        let pidfile_path = tmp_dir.child("test.pid");
+
+        let last_pid = SetterPidFile::load(&pidfile_path);
+        last_pid.save(1234);
+        assert_eq!(last_pid.read(), Some(1234));
+
+        last_pid.clear();
+        assert_eq!(last_pid.read(), None);
+    }
+}
