@@ -1,3 +1,6 @@
+use nix::errno::Errno;
+use nix::sys::signal::Signal;
+use nix::{sys::signal::kill, unistd::Pid};
 use std::path::Path;
 use std::process::Command;
 use std::time::Duration;
@@ -5,7 +8,6 @@ use std::{env, thread};
 
 use anyhow::{anyhow, Context, Result};
 use itertools::Itertools;
-use libc::{kill, SIGKILL};
 use log::debug;
 use wallpape_rs as wallpaper;
 
@@ -29,15 +31,15 @@ fn get_setter() -> Box<dyn WallpaperSetter> {
     }
 }
 
-pub fn cleanup() {
+pub fn cleanup() -> Result<()> {
     let setter = get_setter();
-    setter.cleanup();
+    setter.cleanup()
 }
 
 trait WallpaperSetter {
     fn set_wallpaper(&self, path: &Path) -> Result<()>;
     fn set_wallpaper_custom_command(&self, path: &Path, setter_config: &Setter) -> Result<()>;
-    fn cleanup(&self);
+    fn cleanup(&self) -> Result<()>;
 }
 
 /// Real, actual wallpaper setter.
@@ -77,15 +79,8 @@ impl WallpaperSetter for DefaultSetter {
 
         let pidfile = SetterPidFile::find();
         if let Some(last_pid) = pidfile.read() {
-            debug!("terminating previous process with PID: {:?}", last_pid);
-            unsafe {
-                #[allow(clippy::cast_possible_wrap)]
-                if kill(last_pid as i32, SIGKILL) != 0 {
-                    eprintln!("failed to kill process: {last_pid}");
-                } else {
-                    println!("process killed: {last_pid}");
-                }
-            }
+            terminate_process_if_exists(last_pid)
+                .context("failed to terminate previous setter process")?;
         }
 
         pidfile.save(wallpaper_process.id());
@@ -93,20 +88,14 @@ impl WallpaperSetter for DefaultSetter {
         Ok(())
     }
 
-    fn cleanup(&self) {
+    fn cleanup(&self) -> Result<()> {
         let pidfile = SetterPidFile::find();
         if let Some(last_pid) = pidfile.read() {
-            debug!("terminating previous process with PID: {:?}", last_pid);
-            unsafe {
-                #[allow(clippy::cast_possible_wrap)]
-                if kill(last_pid as i32, SIGKILL) != 0 {
-                    eprintln!("failed to kill process: {last_pid}");
-                } else {
-                    println!("process killed: {last_pid}");
-                }
-            }
+            terminate_process_if_exists(last_pid).context("failed to cleanup setter process")?;
         }
         pidfile.clear();
+
+        Ok(())
     }
 }
 
@@ -125,7 +114,9 @@ impl WallpaperSetter for DryRunSetter {
         Ok(())
     }
 
-    fn cleanup(&self) {}
+    fn cleanup(&self) -> Result<()> {
+        Ok(())
+    }
 }
 
 /// Replace '%f' in command with file path.
@@ -134,4 +125,14 @@ fn expand_command(command_str: &[String], path_str: &str) -> Vec<String> {
         .iter()
         .map(|item| item.replace("%f", path_str))
         .collect_vec()
+}
+
+fn terminate_process_if_exists(pid: u32) -> Result<()> {
+    debug!("Sending SIGTERM to process: {pid}");
+    #[allow(clippy::cast_possible_wrap, reason = "std uses u32 because of windows")]
+    let pid = Pid::from_raw(pid as i32);
+    match kill(pid, Signal::SIGTERM) {
+        Ok(()) | Err(Errno::ESRCH) => Ok(()),
+        Err(errno) => Err(anyhow!("Failed to SIGTERM process: {pid}, errno: {errno}")),
+    }
 }
