@@ -10,17 +10,13 @@ use log::debug;
 use wallpape_rs as wallpaper;
 
 use crate::cache::LastPid;
-use crate::config::Config;
+use crate::config::{Config, Setter};
 
 /// Set wallpaper to the image pointed by a given path. Use custom command if provided.
-pub fn set_wallpaper<P: AsRef<Path>>(
-    path: P,
-    custom_command: Option<&Vec<String>>,
-    delay: u64,
-) -> Result<()> {
+pub fn set_wallpaper<P: AsRef<Path>>(path: P, maybe_setter_config: Option<&Setter>) -> Result<()> {
     let setter = get_setter();
-    if let Some(command) = custom_command {
-        setter.set_wallpaper_custom_command(path.as_ref(), command, delay)
+    if let Some(setter_config) = maybe_setter_config {
+        setter.set_wallpaper_custom_command(path.as_ref(), setter_config)
     } else {
         setter.set_wallpaper(path.as_ref())
     }
@@ -40,12 +36,7 @@ pub fn cleanup() {
 
 trait WallpaperSetter {
     fn set_wallpaper(&self, path: &Path) -> Result<()>;
-    fn set_wallpaper_custom_command(
-        &self,
-        path: &Path,
-        custom_command: &[String],
-        delay: u64,
-    ) -> Result<()>;
+    fn set_wallpaper_custom_command(&self, path: &Path, setter_config: &Setter) -> Result<()>;
     fn cleanup(&self);
 }
 
@@ -69,14 +60,9 @@ impl WallpaperSetter for DefaultSetter {
         })
     }
 
-    fn set_wallpaper_custom_command(
-        &self,
-        path: &Path,
-        command_str: &[String],
-        delay: u64,
-    ) -> Result<()> {
+    fn set_wallpaper_custom_command(&self, path: &Path, setter_config: &Setter) -> Result<()> {
         let path_str = path.to_str().unwrap();
-        let expended_command = expand_command(command_str, path_str);
+        let expended_command = expand_command(&setter_config.command, path_str);
         let mut command = expended_command.iter();
 
         let mut process_command = Command::new(command.next().unwrap());
@@ -89,7 +75,7 @@ impl WallpaperSetter for DefaultSetter {
 
         let last_pid_cache = LastPid::find();
 
-        thread::sleep(Duration::from_millis(delay));
+        thread::sleep(Duration::from_millis(setter_config.overlap));
         if let Some(last_pid) = LastPid::get(&last_pid_cache) {
             debug!("terminating previous process with PID: {:?}", last_pid);
             unsafe {
@@ -133,13 +119,8 @@ impl WallpaperSetter for DryRunSetter {
         Ok(())
     }
 
-    fn set_wallpaper_custom_command(
-        &self,
-        path: &Path,
-        command_str: &[String],
-        _delay: u64,
-    ) -> Result<()> {
-        let expanded_command = expand_command(command_str, path.to_str().unwrap());
+    fn set_wallpaper_custom_command(&self, path: &Path, setter_config: &Setter) -> Result<()> {
+        let expanded_command = expand_command(&setter_config.command, path.to_str().unwrap());
         println!("Run: {}", expanded_command.join(" "));
         Ok(())
     }

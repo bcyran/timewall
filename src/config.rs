@@ -29,6 +29,7 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 # The example uses `swww`: https://github.com/LGFae/swww.
 # [setter]
 # command = ['swww', 'img', '%f']
+# overlap = 0
 
 # Change how often the wallpaper is updated in daemon mode
 # [daemon]
@@ -38,6 +39,8 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Setter {
     pub command: Vec<String>,
+    #[serde(default)]
+    pub overlap: u64,
 }
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug)]
@@ -147,10 +150,6 @@ impl Config {
         eprintln!("Default config written to {}.", path.display());
         eprintln!("You should probably adjust it to your needs!");
         Ok(())
-    }
-
-    pub fn setter_command(&self) -> Option<&Vec<String>> {
-        self.setter.as_ref().map(|s| &s.command)
     }
 
     pub fn update_interval_seconds(&self) -> u64 {
