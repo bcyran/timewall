@@ -40,7 +40,6 @@ pub fn set<P: AsRef<Path>>(
     path: Option<&P>,
     daemon: bool,
     user_appearance: Option<Appearance>,
-    delay: u64,
 ) -> Result<()> {
     if daemon && user_appearance.is_some() {
         bail!("appearance can't be used in daemon mode!")
@@ -65,7 +64,7 @@ pub fn set<P: AsRef<Path>>(
                 .with_context(|| "missing image specified by metadata")?;
 
             debug!("setting wallpaper to {}", current_image_path.display());
-            set_wallpaper(current_image_path, config.setter_command(), delay)?;
+            set_wallpaper(current_image_path, config.setter.as_ref())?;
 
             if !daemon {
                 eprintln!("Wallpaper set!");
@@ -109,7 +108,8 @@ pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> 
     loop {
         for image_index in &image_order {
             let image_path = wallpaper.images.get(*image_index).unwrap();
-            set_wallpaper(image_path, config.setter_command(), delay)?;
+            set_wallpaper(image_path, config.setter.as_ref())?;
+            thread::sleep(Duration::from_millis(delay));
         }
 
         if !repeat {
