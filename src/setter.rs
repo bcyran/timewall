@@ -9,8 +9,8 @@ use libc::{kill, SIGKILL};
 use log::debug;
 use wallpape_rs as wallpaper;
 
-use crate::cache::LastPid;
 use crate::config::{Config, Setter};
+use crate::pidfile::SetterPidFile;
 
 /// Set wallpaper to the image pointed by a given path. Use custom command if provided.
 pub fn set_wallpaper<P: AsRef<Path>>(path: P, maybe_setter_config: Option<&Setter>) -> Result<()> {
@@ -73,10 +73,10 @@ impl WallpaperSetter for DefaultSetter {
             .spawn()
             .with_context(|| "failed to run custom command")?;
 
-        let last_pid_cache = LastPid::find();
-
         thread::sleep(Duration::from_millis(setter_config.overlap));
-        if let Some(last_pid) = LastPid::get(&last_pid_cache) {
+
+        let pidfile = SetterPidFile::find();
+        if let Some(last_pid) = pidfile.read() {
             debug!("terminating previous process with PID: {:?}", last_pid);
             unsafe {
                 #[allow(clippy::cast_possible_wrap)]
@@ -88,14 +88,14 @@ impl WallpaperSetter for DefaultSetter {
             }
         }
 
-        LastPid::set(&last_pid_cache, wallpaper_process.id());
+        pidfile.save(wallpaper_process.id());
 
         Ok(())
     }
 
     fn cleanup(&self) {
-        let last_pid_cache = LastPid::find();
-        if let Some(last_pid) = LastPid::get(&last_pid_cache) {
+        let pidfile = SetterPidFile::find();
+        if let Some(last_pid) = pidfile.read() {
             debug!("terminating previous process with PID: {:?}", last_pid);
             unsafe {
                 #[allow(clippy::cast_possible_wrap)]
@@ -106,7 +106,7 @@ impl WallpaperSetter for DefaultSetter {
                 }
             }
         }
-        LastPid::clear(&last_pid_cache);
+        pidfile.clear();
     }
 }
 

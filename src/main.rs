@@ -10,6 +10,7 @@ mod geoclue;
 mod heif;
 mod info;
 mod loader;
+mod pidfile;
 mod schedule;
 mod setter;
 mod wallpaper;
