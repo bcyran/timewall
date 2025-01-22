@@ -24,6 +24,15 @@ pub fn set_wallpaper<P: AsRef<Path>>(path: P, maybe_setter_config: Option<&Sette
     }
 }
 
+/// Unset wallpaper, if any.
+///
+/// This will only work if tme wallpaper is set using a custom, long-running command.
+/// Usetting will terminate the process.
+pub fn unset_wallpaper() -> Result<bool> {
+    let setter = get_setter();
+    setter.cleanup()
+}
+
 fn get_setter() -> Box<dyn WallpaperSetter> {
     match env::var("TIMEWALL_DRY_RUN") {
         Err(_) => Box::new(DefaultSetter {}),
@@ -31,15 +40,10 @@ fn get_setter() -> Box<dyn WallpaperSetter> {
     }
 }
 
-pub fn cleanup() -> Result<()> {
-    let setter = get_setter();
-    setter.cleanup()
-}
-
 trait WallpaperSetter {
     fn set_wallpaper(&self, path: &Path) -> Result<()>;
     fn set_wallpaper_custom_command(&self, path: &Path, setter_config: &Setter) -> Result<()>;
-    fn cleanup(&self) -> Result<()>;
+    fn cleanup(&self) -> Result<bool>;
 }
 
 /// Real, actual wallpaper setter.
@@ -78,26 +82,22 @@ impl WallpaperSetter for DefaultSetter {
             .with_context(|| "failed to run custom command")?;
 
         thread::sleep(Duration::from_millis(setter_config.overlap));
-
-        let pidfile = SetterPidFile::find();
-        if let Some(last_pid) = pidfile.read() {
-            terminate_process_if_exists(last_pid)
-                .context("failed to terminate previous setter process")?;
-        }
-
-        pidfile.save(wallpaper_process.id());
+        self.cleanup()?;
+        SetterPidFile::find().save(wallpaper_process.id());
 
         Ok(())
     }
 
-    fn cleanup(&self) -> Result<()> {
+    fn cleanup(&self) -> Result<bool> {
         let pidfile = SetterPidFile::find();
         if let Some(last_pid) = pidfile.read() {
-            terminate_process_if_exists(last_pid).context("failed to cleanup setter process")?;
+            let did_terminate = terminate_process_if_exists(last_pid)
+                .context("failed to cleanup setter process")?;
+            pidfile.clear();
+            Ok(did_terminate)
+        } else {
+            Ok(false)
         }
-        pidfile.clear();
-
-        Ok(())
     }
 }
 
@@ -116,8 +116,8 @@ impl WallpaperSetter for DryRunSetter {
         Ok(())
     }
 
-    fn cleanup(&self) -> Result<()> {
-        Ok(())
+    fn cleanup(&self) -> Result<bool> {
+        Ok(false)
     }
 }
 
@@ -137,12 +137,13 @@ fn expand_command(command_str: &[String], path_str: &str) -> Vec<String> {
         .collect_vec()
 }
 
-fn terminate_process_if_exists(pid: u32) -> Result<()> {
+fn terminate_process_if_exists(pid: u32) -> Result<bool> {
     debug!("Sending SIGTERM to process: {pid}");
     #[allow(clippy::cast_possible_wrap, reason = "std uses u32 because of windows")]
     let pid = Pid::from_raw(pid as i32);
     match kill(pid, Signal::SIGTERM) {
-        Ok(()) | Err(Errno::ESRCH) => Ok(()),
+        Ok(()) => Ok(true),
+        Err(Errno::ESRCH) => Ok(false),
         Err(errno) => Err(anyhow!("Failed to SIGTERM process: {pid}, errno: {errno}")),
     }
 }

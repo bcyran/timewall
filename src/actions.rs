@@ -19,7 +19,7 @@ use crate::schedule::{
     current_image_index_h24, current_image_index_solar, get_image_index_order_appearance,
     get_image_index_order_h24, get_image_index_order_solar,
 };
-use crate::setter::{cleanup, set_wallpaper};
+use crate::setter::{set_wallpaper, unset_wallpaper};
 use crate::wallpaper::{self, properties::Properties, Wallpaper};
 use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
 
@@ -80,6 +80,16 @@ pub fn set<P: AsRef<Path>>(
     Ok(())
 }
 
+pub fn unset() -> Result<()> {
+    let did_unset = unset_wallpaper()?;
+    if did_unset {
+        eprintln!("Wallpaper unset!");
+    } else {
+        eprintln!("No setter process found. Can't unset.");
+    }
+    Ok(())
+}
+
 fn get_effective_wall_path<P: AsRef<Path>>(given_path: Option<P>) -> Result<PathBuf> {
     let last_wallpaper = LastWallpaper::find();
 
@@ -117,7 +127,8 @@ pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> 
         }
     }
 
-    cleanup()
+    unset_wallpaper()?;
+    Ok(())
 }
 
 pub fn clear(all: bool) {

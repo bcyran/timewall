@@ -38,6 +38,7 @@ fn main() -> Result<()> {
             daemon,
             appearance,
         } => actions::set(file.as_ref(), daemon, appearance),
+        cli::Action::Unset => actions::unset(),
         cli::Action::Clear { all } => {
             actions::clear(all);
             Ok(())
