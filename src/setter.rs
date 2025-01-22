@@ -2,7 +2,7 @@ use nix::errno::Errno;
 use nix::sys::signal::Signal;
 use nix::{sys::signal::kill, unistd::Pid};
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use std::time::Duration;
 use std::{env, thread};
 
@@ -72,6 +72,8 @@ impl WallpaperSetter for DefaultSetter {
         debug!("running custom command: {process_command:?}");
 
         let wallpaper_process = process_command
+            .stdout(make_output_handle(setter_config.quiet))
+            .stderr(make_output_handle(setter_config.quiet))
             .spawn()
             .with_context(|| "failed to run custom command")?;
 
@@ -116,6 +118,14 @@ impl WallpaperSetter for DryRunSetter {
 
     fn cleanup(&self) -> Result<()> {
         Ok(())
+    }
+}
+
+fn make_output_handle(quiet: bool) -> Stdio {
+    if quiet {
+        Stdio::null()
+    } else {
+        Stdio::inherit()
     }
 }
 

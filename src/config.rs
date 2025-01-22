@@ -30,6 +30,7 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 # [setter]
 # command = ['swww', 'img', '%f']
 # overlap = 0
+# quiet = true
 
 # Change how often the wallpaper is updated in daemon mode
 # [daemon]
@@ -39,8 +40,20 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Setter {
     pub command: Vec<String>,
-    #[serde(default)]
+    #[serde(default = "Setter::overlap_default_value")]
     pub overlap: u64,
+    #[serde(default = "Setter::quiet_default_value")]
+    pub quiet: bool,
+}
+
+impl Setter {
+    const fn overlap_default_value() -> u64 {
+        0
+    }
+
+    const fn quiet_default_value() -> bool {
+        true
+    }
 }
 
 #[derive(Deserialize, Serialize, Clone, Copy, Debug)]
