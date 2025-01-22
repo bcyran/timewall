@@ -71,6 +71,20 @@ in {
             '';
             example = ["sww" "img" "%f"];
           };
+          overlap = lib.mkOption {
+            type = lib.types.int;
+            default = 0;
+            description = ''
+              Time overlap in milliseconds between spawning a new setter command and
+              terminating the previous one. This is useful for long running setters that
+              don't terminate immediately after setting the wallpaper.
+            '';
+          };
+          quiet = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Whether to suppress the setter command output.";
+          };
         };
 
         daemon = {
