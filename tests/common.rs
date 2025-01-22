@@ -100,6 +100,7 @@ pub struct TestEnv {
     pub cwd: TempDir,
     pub config_dir: ChildPath,
     pub cache_dir: ChildPath,
+    pub runtime_dir: ChildPath,
     datetime: Option<DateTime<Local>>,
 }
 
@@ -109,6 +110,7 @@ impl TestEnv {
             cwd: assert_fs::TempDir::new().unwrap(),
             config_dir: assert_fs::TempDir::new().unwrap().child("config"),
             cache_dir: assert_fs::TempDir::new().unwrap().child("cache"),
+            runtime_dir: assert_fs::TempDir::new().unwrap().child("runtime"),
             datetime: None,
         }
     }
@@ -136,6 +138,7 @@ impl TestEnv {
             .env("TIMEWALL_DRY_RUN", "true")
             .env("TIMEWALL_CONFIG_DIR", &self.config_dir.path())
             .env("TIMEWALL_CACHE_DIR", &self.cache_dir.path())
+            .env("TIMEWALL_RUNTIME_DIR", &self.runtime_dir.path())
             .args(args);
         if let Some(datetime) = self.datetime {
             command.env("TIMEWALL_OVERRIDE_TIME", datetime.to_rfc3339());
