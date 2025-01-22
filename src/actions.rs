@@ -1,7 +1,8 @@
 use std::path::PathBuf;
+use std::str::FromStr;
+use std::sync::mpsc::Receiver;
 use std::time::Duration;
 use std::{env, path::Path};
-use std::{str::FromStr, thread};
 
 use anyhow::Result;
 use anyhow::{anyhow, bail, Context};
@@ -20,6 +21,7 @@ use crate::schedule::{
     get_image_index_order_h24, get_image_index_order_solar,
 };
 use crate::setter::{set_wallpaper, unset_wallpaper};
+use crate::signals::interruptible_sleep;
 use crate::wallpaper::{self, properties::Properties, Wallpaper};
 use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
 
@@ -40,6 +42,7 @@ pub fn set<P: AsRef<Path>>(
     path: Option<&P>,
     daemon: bool,
     user_appearance: Option<Appearance>,
+    termination_rx: &Receiver<bool>,
 ) -> Result<()> {
     if daemon && user_appearance.is_some() {
         bail!("appearance can't be used in daemon mode!")
@@ -74,7 +77,10 @@ pub fn set<P: AsRef<Path>>(
 
         let update_interval_seconds = config.update_interval_seconds();
         debug!("sleeping for {update_interval_seconds} seconds");
-        thread::sleep(Duration::from_secs(update_interval_seconds));
+        if interruptible_sleep(Duration::from_secs(update_interval_seconds), termination_rx)? {
+            unset_wallpaper()?;
+            break;
+        }
     }
 
     Ok(())
@@ -105,7 +111,12 @@ fn get_effective_wall_path<P: AsRef<Path>>(given_path: Option<P>) -> Result<Path
     }
 }
 
-pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> {
+pub fn preview<P: AsRef<Path>>(
+    path: P,
+    delay: u64,
+    repeat: bool,
+    termination_rx: &Receiver<bool>,
+) -> Result<()> {
     let config = Config::find()?;
     validate_wallpaper_file(&path)?;
     let wallpaper = WallpaperLoader::new().load(&path);
@@ -115,11 +126,17 @@ pub fn preview<P: AsRef<Path>>(path: P, delay: u64, repeat: bool) -> Result<()> 
         Properties::Appearance(ref props) => get_image_index_order_appearance(props),
     };
 
-    loop {
+    let mut should_terminate = false;
+    while !should_terminate {
         for image_index in &image_order {
+            if should_terminate {
+                break;
+            }
+
             let image_path = wallpaper.images.get(*image_index).unwrap();
             set_wallpaper(image_path, config.setter.as_ref())?;
-            thread::sleep(Duration::from_millis(delay));
+
+            should_terminate = interruptible_sleep(Duration::from_millis(delay), termination_rx)?;
         }
 
         if !repeat {
