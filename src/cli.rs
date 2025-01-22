@@ -51,6 +51,11 @@ pub enum Action {
         #[arg(short, long, value_enum)]
         appearance: Option<Appearance>,
     },
+    /// Try to unset the wallpaper
+    ///
+    /// This will only work if the wallpaper is set using a custom, long-running command.
+    /// In this case, unsetting will terminate the process. Otherwise it will do nothing.
+    Unset,
     /// Clear the wallpaper cache
     Clear {
         /// Clear all - do not skip the currently set wallpaper
