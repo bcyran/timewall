@@ -13,12 +13,20 @@ mod loader;
 mod pidfile;
 mod schedule;
 mod setter;
+mod signals;
 mod wallpaper;
 
 use anyhow::Result;
 use clap::Parser;
+use signal_hook::{
+    consts::signal::{SIGINT, SIGQUIT, SIGTERM},
+    iterator::Signals,
+};
+use signals::start_signal_handler;
 
 fn main() -> Result<()> {
+    let termination_rx = start_signal_handler(Signals::new([SIGINT, SIGTERM, SIGQUIT])?);
+
     let args = cli::Args::parse();
 
     env_logger::Builder::new()
@@ -31,13 +39,13 @@ fn main() -> Result<()> {
             file,
             delay,
             repeat,
-        } => actions::preview(file, delay, repeat),
+        } => actions::preview(file, delay, repeat, &termination_rx),
         cli::Action::Unpack { file, output } => actions::unpack(file, output),
         cli::Action::Set {
             file,
             daemon,
             appearance,
-        } => actions::set(file.as_ref(), daemon, appearance),
+        } => actions::set(file.as_ref(), daemon, appearance, &termination_rx),
         cli::Action::Unset => actions::unset(),
         cli::Action::Clear { all } => {
             actions::clear(all);
