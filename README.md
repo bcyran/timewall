@@ -201,11 +201,20 @@ For instance, to set the wallpaper using `feh`, you could add the following to y
 ```toml
 [setter]
 command = ['feh', '--bg-fill', '%f']
+quiet = true
+overlap = 0
 ```
 `%f` is a placeholder which will be replaced with full absolute path to the image, which should be set as a wallpaper.
 
 > [!NOTE]
 > The command is NOT passed through shell.
+
+By default, the command's `stdout` and `stderr` outputs are suppressed.
+You can change this behavior by setting `setter.quiet` to `false`.
+
+The `setter.overlap` option defines the time (in milliseconds) between spawning a new command process and terminating the old one.
+This is useful for setter commands that continue running after setting the wallpaper (e.g.: `swaybg`).
+The overlap period allows the new process to load and set the wallpaper, ensuring a smooth transition.
 
 #### Daemon mode wallpaper update interval
 ```toml
