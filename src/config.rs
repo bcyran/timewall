@@ -19,6 +19,7 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 # [geoclue]
 # enable = true
 # prefer = false
+# timeout = 1000
 
 # Set your geographical location coordinates here
 # [location]
@@ -75,6 +76,8 @@ pub struct Geoclue {
     pub enable: bool,
     #[serde(default = "Geoclue::prefer_default_value")]
     pub prefer: bool,
+    #[serde(default = "Geoclue::timeout_default_value")]
+    pub timeout: u64,
 }
 
 impl Geoclue {
@@ -85,6 +88,10 @@ impl Geoclue {
     const fn prefer_default_value() -> bool {
         false
     }
+
+    const fn timeout_default_value() -> u64 {
+        1000
+    }
 }
 
 impl Default for Geoclue {
@@ -92,6 +99,7 @@ impl Default for Geoclue {
         Self {
             enable: Self::enable_default_value(),
             prefer: Self::prefer_default_value(),
+            timeout: Self::timeout_default_value(),
         }
     }
 }
@@ -175,6 +183,10 @@ impl Config {
 
     pub fn geoclue_preferred(&self) -> bool {
         self.geoclue.unwrap_or_default().prefer
+    }
+
+    pub fn geoclue_timeout(&self) -> u64 {
+        self.geoclue.unwrap_or_default().timeout
     }
 
     pub fn try_get_location(&self) -> Result<Coords> {

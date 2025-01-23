@@ -46,6 +46,15 @@ in {
             default = false;
             description = "Prefer GeoClue 2 over manual location configuration.";
           };
+          timeout = lib.mkOption {
+            type = lib.types.int;
+            default = null;
+            description = ''
+              Time in milliseconds to wait for GeoClue 2 to return a location.
+              After this time `timewall` will fallback to manual location configuration
+              or fail, depending on the `prefer` option.
+            '';
+          };
         };
 
         location = {

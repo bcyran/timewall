@@ -25,8 +25,6 @@ use crate::signals::interruptible_sleep;
 use crate::wallpaper::{self, properties::Properties, Wallpaper};
 use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
 
-const GEOCLUE_TIMEOUT: Duration = Duration::from_secs(1);
-
 pub fn info<P: AsRef<Path>>(path: P) -> Result<()> {
     validate_wallpaper_file(&path)?;
     print!("{}", ImageInfo::from_image(&path)?);
@@ -201,8 +199,10 @@ fn current_image_index(
 }
 
 fn try_get_location(config: &Config) -> Result<Coords> {
+    let geoclue_timeout = Duration::from_millis(config.geoclue_timeout());
+
     let maybe_location = match (config.geoclue_enabled(), config.geoclue_preferred()) {
-        (true, true) => match geoclue::get_location(GEOCLUE_TIMEOUT) {
+        (true, true) => match geoclue::get_location(geoclue_timeout) {
             geoclue_ok @ Ok(_) => geoclue_ok,
             Err(e) => {
                 debug!("GeoClue failed, falling back to config location: {}", e);
@@ -216,7 +216,7 @@ fn try_get_location(config: &Config) -> Result<Coords> {
             config_ok @ Ok(_) => config_ok,
             Err(e) => {
                 debug!("Config location failed, falling back to GeoClue: {}", e);
-                match geoclue::get_location(GEOCLUE_TIMEOUT) {
+                match geoclue::get_location(geoclue_timeout) {
                     goeclue_ok @ Ok(_) => goeclue_ok,
                     geoclue_err @ Err(_) => {
                         geoclue_err.context("failed to get location from config and GeoClue")
