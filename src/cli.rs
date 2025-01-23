@@ -27,7 +27,7 @@ pub enum Action {
         /// Path to HEIF wallpaper file
         file: PathBuf,
         /// Delay between wallpaper changes in milliseconds
-        #[arg(short, long, default_value_t = 500)]
+        #[arg(short, long, default_value_t = 2000)]
         delay: u64,
         /// Repeat the preview in a loop until killed
         #[arg(short, long, action)]
