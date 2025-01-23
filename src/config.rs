@@ -104,23 +104,14 @@ impl Default for Geoclue {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Default)]
 pub struct Config {
-    pub daemon: Option<Daemon>,
-    pub geoclue: Option<Geoclue>,
+    #[serde(default)]
+    pub daemon: Daemon,
+    #[serde(default)]
+    pub geoclue: Geoclue,
     pub location: Option<Coords>,
     pub setter: Option<Setter>,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            daemon: Some(Daemon::default()),
-            geoclue: Some(Geoclue::default()),
-            location: None,
-            setter: None,
-        }
-    }
 }
 
 impl Config {
@@ -171,22 +162,6 @@ impl Config {
         eprintln!("Default config written to {}.", path.display());
         eprintln!("You should probably adjust it to your needs!");
         Ok(())
-    }
-
-    pub fn update_interval_seconds(&self) -> u64 {
-        self.daemon.unwrap_or_default().update_interval_seconds
-    }
-
-    pub fn geoclue_enabled(&self) -> bool {
-        self.geoclue.unwrap_or_default().enable
-    }
-
-    pub fn geoclue_preferred(&self) -> bool {
-        self.geoclue.unwrap_or_default().prefer
-    }
-
-    pub fn geoclue_timeout(&self) -> u64 {
-        self.geoclue.unwrap_or_default().timeout
     }
 
     pub fn try_get_location(&self) -> Result<Coords> {

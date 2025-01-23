@@ -73,7 +73,7 @@ pub fn set<P: AsRef<Path>>(
             }
         }
 
-        let update_interval_seconds = config.update_interval_seconds();
+        let update_interval_seconds = config.daemon.update_interval_seconds;
         debug!("sleeping for {update_interval_seconds} seconds");
         if interruptible_sleep(Duration::from_secs(update_interval_seconds), termination_rx)? {
             unset_wallpaper()?;
@@ -199,9 +199,9 @@ fn current_image_index(
 }
 
 fn try_get_location(config: &Config) -> Result<Coords> {
-    let geoclue_timeout = Duration::from_millis(config.geoclue_timeout());
+    let geoclue_timeout = Duration::from_millis(config.geoclue.timeout);
 
-    let maybe_location = match (config.geoclue_enabled(), config.geoclue_preferred()) {
+    let maybe_location = match (config.geoclue.enable, config.geoclue.prefer) {
         (true, true) => match geoclue::get_location(geoclue_timeout) {
             geoclue_ok @ Ok(_) => geoclue_ok,
             Err(e) => {
