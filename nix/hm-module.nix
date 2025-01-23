@@ -98,8 +98,8 @@ in {
 
         daemon = {
           update_interval_seconds = lib.mkOption {
-            type = with lib.types; nullOr int;
-            default = null;
+            type = lib.types.int;
+            default = 600;
             description = "Interval between wallpaper updates in seconds.";
           };
         };
@@ -119,6 +119,7 @@ in {
 
     xdg.configFile."timewall/config.toml".source = configFormat.generate "config.toml" (
       {
+        inherit (cfg.config) daemon;
         inherit (cfg.config) geoclue;
       }
       // lib.optionalAttrs (cfg.config.location.lat != null && cfg.config.location.lon != null) {
@@ -126,9 +127,6 @@ in {
       }
       // lib.optionalAttrs (cfg.config.setter.command != null) {
         inherit (cfg.config) setter;
-      }
-      // lib.optionalAttrs (cfg.config.daemon.update_interval_seconds != null) {
-        inherit (cfg.config) daemon;
       }
     );
 
