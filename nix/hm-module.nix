@@ -48,7 +48,7 @@ in {
           };
           timeout = lib.mkOption {
             type = lib.types.int;
-            default = null;
+            default = 1000;
             description = ''
               Time in milliseconds to wait for GeoClue 2 to return a location.
               After this time `timewall` will fallback to manual location configuration
