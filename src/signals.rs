@@ -6,15 +6,15 @@ use std::{
     thread,
 };
 
-pub fn start_signal_handler(mut signals: Signals) -> Receiver<bool> {
+pub fn start_signal_handler(mut signals: Signals) -> Receiver<()> {
     let signals_handle = signals.handle();
 
-    let (termination_tx, termination_rx) = channel::<bool>();
+    let (termination_tx, termination_rx) = channel::<()>();
 
     thread::spawn(move || {
         for signal in signals.forever() {
             debug!("Received signal: {}", signal);
-            termination_tx.send(true).unwrap();
+            termination_tx.send(()).unwrap();
             signals_handle.close();
         }
     });
@@ -24,10 +24,10 @@ pub fn start_signal_handler(mut signals: Signals) -> Receiver<bool> {
 
 pub fn interruptible_sleep(
     duration: std::time::Duration,
-    interrupt_rx: &Receiver<bool>,
+    interrupt_rx: &Receiver<()>,
 ) -> Result<bool> {
     match interrupt_rx.recv_timeout(duration) {
-        Ok(_) => Ok(true),
+        Ok(()) => Ok(true),
         Err(RecvTimeoutError::Timeout) => Ok(false),
         Err(err @ RecvTimeoutError::Disconnected) => Err(anyhow!(err)),
     }

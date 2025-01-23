@@ -40,7 +40,7 @@ pub fn set<P: AsRef<Path>>(
     path: Option<&P>,
     daemon: bool,
     user_appearance: Option<Appearance>,
-    termination_rx: &Receiver<bool>,
+    termination_rx: &Receiver<()>,
 ) -> Result<()> {
     if daemon && user_appearance.is_some() {
         bail!("appearance can't be used in daemon mode!")
@@ -113,7 +113,7 @@ pub fn preview<P: AsRef<Path>>(
     path: P,
     delay: u64,
     repeat: bool,
-    termination_rx: &Receiver<bool>,
+    termination_rx: &Receiver<()>,
 ) -> Result<()> {
     let config = Config::find()?;
     validate_wallpaper_file(&path)?;
