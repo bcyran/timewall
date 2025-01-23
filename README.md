@@ -161,10 +161,14 @@ You can disable GeoClue by setting `geoclue.enable` to `false`.
 
 The `geoclue.prefer` setting specifies whether GeoClue should be prioritized over manual location when both are available.
 This can be useful if you prefer using automatic detection but want to fall back to manual configuration rather than encountering an error if GeoClue is unavailable (e.g. due to no internet connection).
+
+The `geoclue.timeout` option specifies the maximum time (in milliseconds) that `timewall` will wait to obtain a location from GeoClue.
+If this time period elapses, `timewall` will either fall back to manual location or fail, depending on the value of `geoclue.prefer`.
 ```toml
 [geoclue]
 enable = true
 prefer = false
+timeout = 1000
 ```
 
 > [!IMPORTANT]
