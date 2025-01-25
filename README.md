@@ -18,6 +18,7 @@ Apple dynamic HEIF wallpapers on GNU/Linux.
 Features:
 - Support for original HEIF/HEIC dynamic wallpaper files used in MacOS.
 - Support for all schedule types: sun position based, time based, dark/light mode.
+- Automatic location using GeoClue 2 service.
 - Set wallpaper once and continuously (daemon mode).
 - Preview wallpaper changes.
 - Display wallpaper metadata.
