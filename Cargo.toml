@@ -22,7 +22,7 @@ clap-verbosity-flag = "2.2.2"
 directories = "5.0.1"
 env_logger = "0.11.5"
 futures-lite = "2.6.0"
-itertools = "0.13.0"
+itertools = "0.14.0"
 libheif-rs = "0.15.0"
 log = "0.4.22"
 nix = { version = "0.29.0", default-features = false, features = ["signal"] }
