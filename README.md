@@ -160,6 +160,9 @@ Using sun position based wallpapers requires your approximate geographical locat
 By default, the GeoClue 2 service is used to automatically determine your location, unless you configure it manually (see the next section).
 You can disable GeoClue by setting `geoclue.enable` to `false`.
 
+If GeoClue is enabled but cannot retrieve the location, such as when in offline mode, `timewall` will automatically use the last known location by default.
+To disable this fallback behavior, set `geoclue.cache_fallback` to `false`.
+
 The `geoclue.prefer` setting specifies whether GeoClue should be prioritized over manual location when both are available.
 This can be useful if you prefer using automatic detection but want to fall back to manual configuration rather than encountering an error if GeoClue is unavailable (e.g. due to no internet connection).
 
@@ -168,6 +171,7 @@ If this time period elapses, `timewall` will either fall back to manual location
 ```toml
 [geoclue]
 enable = true
+cache_fallback = true
 prefer = false
 timeout = 1000
 ```
