@@ -18,6 +18,7 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 # Dynamic location service
 # [geoclue]
 # enable = true
+# cache_fallback = true
 # prefer = false
 # timeout = 1000
 
@@ -74,6 +75,8 @@ impl Default for Daemon {
 pub struct Geoclue {
     #[serde(default = "Geoclue::enable_default_value")]
     pub enable: bool,
+    #[serde(default = "Geoclue::cache_fallback_default_value")]
+    pub cache_fallback: bool,
     #[serde(default = "Geoclue::prefer_default_value")]
     pub prefer: bool,
     #[serde(default = "Geoclue::timeout_default_value")]
@@ -82,6 +85,10 @@ pub struct Geoclue {
 
 impl Geoclue {
     const fn enable_default_value() -> bool {
+        true
+    }
+
+    const fn cache_fallback_default_value() -> bool {
         true
     }
 
@@ -99,6 +106,7 @@ impl Default for Geoclue {
         Self {
             enable: Self::enable_default_value(),
             prefer: Self::prefer_default_value(),
+            cache_fallback: Self::cache_fallback_default_value(),
             timeout: Self::timeout_default_value(),
         }
     }

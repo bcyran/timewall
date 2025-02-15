@@ -9,8 +9,9 @@ use anyhow::{anyhow, bail, Context};
 use chrono::prelude::*;
 use log::debug;
 
+use crate::cache::{CachedCall, CachedCallRetval};
 use crate::cli::Appearance;
-use crate::config::Config;
+use crate::config::{Config, Geoclue};
 use crate::geo::Coords;
 use crate::geoclue;
 use crate::heif;
@@ -199,10 +200,8 @@ fn current_image_index(
 }
 
 fn try_get_location(config: &Config) -> Result<Coords> {
-    let geoclue_timeout = Duration::from_millis(config.geoclue.timeout);
-
     let maybe_location = match (config.geoclue.enable, config.geoclue.prefer) {
-        (true, true) => match geoclue::get_location(geoclue_timeout) {
+        (true, true) => match try_get_geoclue_location(&config.geoclue) {
             geoclue_ok @ Ok(_) => geoclue_ok,
             Err(e) => {
                 debug!("GeoClue failed, falling back to config location: {}", e);
@@ -216,7 +215,7 @@ fn try_get_location(config: &Config) -> Result<Coords> {
             config_ok @ Ok(_) => config_ok,
             Err(e) => {
                 debug!("Config location failed, falling back to GeoClue: {}", e);
-                match geoclue::get_location(geoclue_timeout) {
+                match try_get_geoclue_location(&config.geoclue) {
                     goeclue_ok @ Ok(_) => goeclue_ok,
                     geoclue_err @ Err(_) => {
                         geoclue_err.context("failed to get location from config and GeoClue")
@@ -238,4 +237,23 @@ fn try_get_location(config: &Config) -> Result<Coords> {
             Config::find_path().unwrap().display()
         )
     })
+}
+
+fn try_get_geoclue_location(geoclue_config: &Geoclue) -> Result<Coords> {
+    let geoclue_timeout = Duration::from_millis(geoclue_config.timeout);
+    let get_location = || geoclue::get_location(geoclue_timeout);
+
+    if geoclue_config.cache_fallback {
+        let cache = CachedCall::find("location");
+        let location = cache.call_with_fallback(get_location)?;
+        match location {
+            CachedCallRetval::Fresh(value) => Ok(value),
+            CachedCallRetval::Cached(value) => {
+                debug!("GeoClue failed but cached value present: {value:?}, falling back",);
+                Ok(value)
+            }
+        }
+    } else {
+        get_location()
+    }
 }
