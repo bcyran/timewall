@@ -41,6 +41,14 @@ in {
             default = true;
             description = "Enable GeoClue 2 for automatic location detection.";
           };
+          cache_fallback = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Whether to fallback to the last known location if GeoClue 2 fails to return
+              a location.
+            '';
+          };
           prefer = lib.mkOption {
             type = lib.types.bool;
             default = false;
