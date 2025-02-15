@@ -32,6 +32,7 @@ plist = "1.7.0"
 png = "0.17.14"
 seahash = "4.1.0"
 serde = { version = "1.0.215", features = ["derive"] }
+serde_json = "1.0.138"
 signal-hook = "0.3.17"
 sun = "0.3.1"
 threadpool = "1.8.1"
