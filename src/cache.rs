@@ -4,7 +4,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use anyhow::{Context, Result};
 use directories::ProjectDirs;
+use log::debug;
+use serde::{de::DeserializeOwned, Serialize};
 
 use crate::constants::{APP_NAME, APP_QUALIFIER};
 
@@ -140,13 +143,85 @@ fn get_cache_dir() -> PathBuf {
     }
 }
 
+/// Return value of a cached call.
+#[derive(PartialEq, Eq, Debug)]
+pub enum CachedCallRetval<T>
+where
+    T: Serialize + DeserializeOwned,
+{
+    /// The call was successful and the returned value is fresh.
+    Fresh(T),
+    /// The call failed and cached value is returned.
+    Cached(T),
+}
+
+/// Abstraction over a cached call to a function.
+pub struct CachedCall {
+    cache_file_path: PathBuf,
+}
+
+impl CachedCall {
+    pub fn find(name: &str) -> Self {
+        Self::load(get_cache_dir().join(format!("{name}.json")))
+    }
+
+    fn load<P: AsRef<Path>>(path: P) -> Self {
+        let path = path.as_ref();
+        let parent_dir = path.parent().unwrap();
+
+        if !parent_dir.exists() {
+            fs::create_dir_all(parent_dir).expect("couldn't create cache directory");
+        }
+
+        Self {
+            cache_file_path: path.to_path_buf(),
+        }
+    }
+
+    /// Call the given function and cache the result in a file.
+    ///
+    /// If the call fails, return the cached result if it exists.
+    pub fn call_with_fallback<F, R>(&self, func: F) -> Result<CachedCallRetval<R>>
+    where
+        F: FnOnce() -> Result<R>,
+        R: Serialize + DeserializeOwned,
+    {
+        let call_result = func();
+
+        match call_result {
+            Ok(retval) => {
+                let retval_serialized =
+                    serde_json::to_string(&retval).context("failed to serialize value")?;
+                fs::write(&self.cache_file_path, retval_serialized)
+                    .context("failed to write to cache file")?;
+
+                Ok(CachedCallRetval::Fresh(retval))
+            }
+            Err(e) if self.cache_file_path.exists() => {
+                debug!("CachedCall function error: {e}, falling back to cache");
+
+                let cached_retval_serialized = fs::read_to_string(&self.cache_file_path)
+                    .context("failed to read the cached value file")?;
+                let cached_retval = serde_json::from_str(&cached_retval_serialized)
+                    .context("failed to deserialize cached value")?;
+
+                Ok(CachedCallRetval::Cached(cached_retval))
+            }
+            Err(e) => Err(e).context("failed to call the function and no cache found"),
+        }
+    }
+}
+
 /// Abstraction over a symlink to the last used PID.
 #[cfg(test)]
 mod tests {
+    use anyhow::anyhow;
+    use anyhow::Ok;
     use assert_fs::prelude::*;
     use assert_fs::TempDir;
     use predicates::prelude::*;
     use rstest::*;
+    use serde::Deserialize;
 
     use super::*;
 
@@ -279,5 +354,55 @@ mod tests {
 
         last_wall.clear();
         link_path.assert(predicate::path::missing());
+    }
+
+    #[derive(Deserialize, Serialize, PartialEq, Eq, Debug, Clone, Copy)]
+    pub struct TestStruct {
+        pub a: i32,
+        pub b: i32,
+    }
+
+    const TEST_STRUCT_1: TestStruct = TestStruct { a: 1, b: 2 };
+    const TEST_STRUCT_2: TestStruct = TestStruct { a: 3, b: 4 };
+
+    fn test_fun_err() -> Result<TestStruct> {
+        Err(anyhow!("error"))
+    }
+
+    #[rstest]
+    fn test_cached_call_ok(tmp_dir: TempDir) -> Result<()> {
+        let cache_file = tmp_dir.child("cached_call_test");
+        let cached_call = CachedCall::load(&cache_file);
+
+        let result = cached_call.call_with_fallback(|| Ok(TEST_STRUCT_1))?;
+        assert_eq!(result, CachedCallRetval::Fresh(TEST_STRUCT_1));
+
+        let result = cached_call.call_with_fallback(|| Ok(TEST_STRUCT_2))?;
+        assert_eq!(result, CachedCallRetval::Fresh(TEST_STRUCT_2));
+
+        Ok(())
+    }
+
+    #[rstest]
+    fn test_cached_call_err(tmp_dir: TempDir) {
+        let cache_file = tmp_dir.child("cached_call_test");
+        let cached_call = CachedCall::load(&cache_file);
+
+        let result = cached_call.call_with_fallback(test_fun_err);
+        assert!(result.is_err());
+    }
+
+    #[rstest]
+    fn test_cached_call_fallback(tmp_dir: TempDir) -> Result<()> {
+        let cache_file = tmp_dir.child("cached_call_test");
+        let cached_call = CachedCall::load(&cache_file);
+
+        let result = cached_call.call_with_fallback(|| Ok(TEST_STRUCT_1))?;
+        assert_eq!(result, CachedCallRetval::Fresh(TEST_STRUCT_1));
+
+        let result = cached_call.call_with_fallback(test_fun_err)?;
+        assert_eq!(result, CachedCallRetval::Cached(TEST_STRUCT_1));
+
+        Ok(())
     }
 }
