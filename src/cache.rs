@@ -22,15 +22,7 @@ impl Cache {
     /// E.g. `Cache::find("wallpapers")` will create 'wallpapers' directory in timewall
     /// directory in user's main cache directory.
     pub fn find(name: &str) -> Self {
-        let cache_dir = if let Result::Ok(path_str) = env::var("TIMEWALL_CACHE_DIR") {
-            PathBuf::from(path_str)
-        } else {
-            match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
-                Some(app_dirs) => app_dirs.cache_dir().to_path_buf(),
-                None => panic!("couldn't determine user's home directory"),
-            }
-        };
-        Self::in_dir(cache_dir.join(name))
+        Self::in_dir(get_cache_dir().join(name))
     }
 
     /// Load cache from a given directory. Create it if it doesn't exist.
@@ -94,15 +86,7 @@ pub struct LastWallpaper {
 impl LastWallpaper {
     /// Find user's cache directory and load instance from there.
     pub fn find() -> Self {
-        let cache_dir = if let Result::Ok(path_str) = env::var("TIMEWALL_CACHE_DIR") {
-            PathBuf::from(path_str)
-        } else {
-            match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
-                Some(app_dirs) => app_dirs.cache_dir().to_path_buf(),
-                None => panic!("couldn't determine user's home directory"),
-            }
-        };
-        Self::load(cache_dir.join("last_wall"))
+        Self::load(get_cache_dir().join("last_wall"))
     }
 
     /// Load instance from given link path.
@@ -141,6 +125,17 @@ impl LastWallpaper {
     pub fn clear(&self) {
         if fs::read_link(&self.link_path).is_ok() {
             fs::remove_file(&self.link_path).ok();
+        }
+    }
+}
+
+fn get_cache_dir() -> PathBuf {
+    if let Result::Ok(path_str) = env::var("TIMEWALL_CACHE_DIR") {
+        PathBuf::from(path_str)
+    } else {
+        match ProjectDirs::from(APP_QUALIFIER, "", APP_NAME) {
+            Some(app_dirs) => app_dirs.cache_dir().to_path_buf(),
+            None => panic!("couldn't determine user's home directory"),
         }
     }
 }
