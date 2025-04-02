@@ -29,6 +29,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Install libheif
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libheif-dev libheif1
       - uses: actions-rs/cargo@v1
         with:
           command: check
@@ -99,6 +103,10 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+      - name: Install libheif
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libheif-dev libheif1
       - name: Install clippy
         run: rustup component add clippy
       - name: Install just

@@ -2,7 +2,8 @@ use std::{fs::File, io::Read, path::Path};
 
 use anyhow::{anyhow, bail, Context, Ok, Result};
 use libheif_rs::{
-    check_file_type, ColorSpace, FileTypeResult, HeifContext, HeifError, Image, ItemId, RgbChroma,
+    check_file_type, ColorSpace, FileTypeResult, HeifContext, HeifError, Image, ItemId, LibHeif,
+    RgbChroma,
 };
 use log::debug;
 
@@ -25,7 +26,7 @@ pub fn get_xmp_metadata(heif_ctx: &HeifContext) -> Result<Vec<u8>> {
     let primary_image_handle = heif_ctx.primary_image_handle()?;
 
     let mut metadata_ids: [ItemId; 1] = [0];
-    let metdata_blocks_number = primary_image_handle.metadata_block_ids("mime", &mut metadata_ids);
+    let metdata_blocks_number = primary_image_handle.metadata_block_ids(&mut metadata_ids, b"mime");
     if metdata_blocks_number != 1 {
         bail!("unexpected XMP blocks number: {metdata_blocks_number}");
     }
@@ -40,6 +41,7 @@ pub fn get_xmp_metadata(heif_ctx: &HeifContext) -> Result<Vec<u8>> {
 
 /// Get all available top level image handles from HEIF.
 pub fn get_images(heif_ctx: &HeifContext) -> Result<Vec<Image>> {
+    let lib_heif = LibHeif::new();
     let number_of_images = heif_ctx.number_of_top_level_images();
     debug!("found {number_of_images} images");
     let mut image_ids = vec![0 as ItemId; number_of_images];
@@ -49,7 +51,7 @@ pub fn get_images(heif_ctx: &HeifContext) -> Result<Vec<Image>> {
         .map(|image_id| heif_ctx.image_handle(*image_id))
         .collect::<Result<Vec<_>, HeifError>>()?
         .iter()
-        .map(|image_handle| image_handle.decode(ColorSpace::Rgb(RgbChroma::Rgb), false))
+        .map(|image_handle| lib_heif.decode(image_handle, ColorSpace::Rgb(RgbChroma::Rgb), None))
         .collect::<Result<Vec<_>, HeifError>>()
         .context("couldn't extract some images from HEIF")
 }

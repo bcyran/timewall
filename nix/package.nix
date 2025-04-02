@@ -2,6 +2,7 @@
   lib,
   rustPlatform,
   installShellFiles,
+  pkg-config,
   libheif,
   rev ? "dirty",
 }: let
@@ -26,7 +27,11 @@ in
 
     cargoLock.lockFile = ../Cargo.lock;
 
-    nativeBuildInputs = [installShellFiles];
+    nativeBuildInputs = [
+      installShellFiles
+      pkg-config
+      rustPlatform.bindgenHook
+    ];
 
     buildInputs = [libheif];
 

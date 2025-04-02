@@ -35,6 +35,11 @@
         buildInputs = with pkgs; [
           libheif
         ];
+
+        nativeBuildInputs = with pkgs; [
+          pkg-config
+          rustPlatform.bindgenHook
+        ];
       };
     });
 

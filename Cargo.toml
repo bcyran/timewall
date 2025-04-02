@@ -23,7 +23,8 @@ directories = "5.0.1"
 env_logger = "0.11.5"
 futures-lite = "2.6.0"
 itertools = "0.14.0"
-libheif-rs = "0.15.0"
+# Newest version compatible with libheif 1.17 available in ubuntu-latest (24.04) image we use in CI
+libheif-rs = "=1.0.2"
 log = "0.4.25"
 nix = { version = "0.29.0", default-features = false, features = ["signal"] }
 num_cpus = "1.16.0"
