@@ -60,7 +60,7 @@ fn get_rdf_description_element(reader: &mut EventReader<&[u8]>) -> Result<XmlEve
                 return Ok(element);
             }
             XmlEvent::EndDocument => break,
-            _ => continue,
+            _ => (),
         }
     }
     Err(anyhow!("missing rdf:Description element"))
@@ -87,7 +87,7 @@ fn get_apple_desktop_attribute(attributes: &[OwnedAttribute]) -> Result<AppleDes
                     _ => Err(anyhow!("invalid apple_desktop attribute")),
                 };
             }
-            _ => continue,
+            _ => (),
         }
     }
     Err(anyhow!("missing apple_desktop attribute"))

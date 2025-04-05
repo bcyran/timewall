@@ -69,7 +69,7 @@ impl Display for ImageInfo {
                 fmt_schedule_solar(f, props)?;
             }
             Properties::Appearance(_) => (),
-        };
+        }
         if let Some(appearance_props) = self.properties.appearance() {
             writeln!(f, "Appearance:")?;
             fmt_schedule_appearance(f, appearance_props)?;
