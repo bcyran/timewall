@@ -14,12 +14,27 @@
     ...
   }: let
     supportedSystems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
+
+    # libheif 1.19.7 is not in nixpkgs-unstable yet
+    libheif-overlay = final: prev: {
+      libheif = prev.libheif.overrideAttrs (_self: _super: rec {
+        version = "1.19.7";
+        src = final.fetchFromGitHub {
+          owner = "strukturag";
+          repo = "libheif";
+          rev = "v${version}";
+          hash = "sha256-FXq6AOq1tUM05++fkzowApbLnlgeS5ZJ+UmypHrF11g=";
+        };
+      });
+    };
+
     forEachSystem = f:
       nixpkgs.lib.genAttrs supportedSystems (system:
         f (import nixpkgs {
           inherit system;
           overlays = [
             rust-overlay.overlays.default
+            libheif-overlay
           ];
         }));
     rev = self.shortRev or self.dirtyShortRev or "dirty";
