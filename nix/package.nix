@@ -30,7 +30,6 @@ in
     nativeBuildInputs = [
       installShellFiles
       pkg-config
-      rustPlatform.bindgenHook
     ];
 
     buildInputs = [libheif];

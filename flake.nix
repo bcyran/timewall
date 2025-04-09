@@ -53,7 +53,6 @@
 
         nativeBuildInputs = with pkgs; [
           pkg-config
-          rustPlatform.bindgenHook
         ];
       };
     });
