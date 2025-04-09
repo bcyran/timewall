@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   build-release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         target:
@@ -43,8 +43,9 @@ jobs:
       - name: Install prerequisites
         shell: bash
         run: |
-          sudo apt-get -y update
-          sudo apt-get install -y libheif-dev libheif1
+          sudo add-apt-repository -y ppa:strukturag/libheif
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libheif-dev=1.19.7-1~ppa1~ubuntu24.04 libheif1=1.19.7-1~ppa1~ubuntu24.04 libsharpyuv-dev
 
       - name: Install rust toolchain
         uses: actions-rs/toolchain@v1

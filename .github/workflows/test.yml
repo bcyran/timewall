@@ -11,7 +11,7 @@ on:
 jobs:
   check:
     name: Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Cache cargo registry
@@ -31,15 +31,16 @@ jobs:
           override: true
       - name: Install libheif
         run: |
+          sudo add-apt-repository -y ppa:strukturag/libheif
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libheif-dev libheif1
+          sudo apt-get install -y --no-install-recommends libheif-dev=1.19.7-1~ppa1~ubuntu24.04 libheif1=1.19.7-1~ppa1~ubuntu24.04 libsharpyuv-dev
       - uses: actions-rs/cargo@v1
         with:
           command: check
 
   test:
     name: Test Suite
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Cache cargo registry
@@ -59,8 +60,9 @@ jobs:
           override: true
       - name: Install libheif
         run: |
+          sudo add-apt-repository -y ppa:strukturag/libheif
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libheif-dev libheif1
+          sudo apt-get install -y --no-install-recommends libheif-dev=1.19.7-1~ppa1~ubuntu24.04 libheif1=1.19.7-1~ppa1~ubuntu24.04 libsharpyuv-dev
       - name: Install just
         uses: extractions/setup-just@v1
       - name: Run tests
@@ -68,7 +70,7 @@ jobs:
 
   fmt:
     name: Rustfmt
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
@@ -85,7 +87,7 @@ jobs:
 
   clippy:
     name: Clippy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Cache cargo registry
@@ -105,8 +107,9 @@ jobs:
           override: true
       - name: Install libheif
         run: |
+          sudo add-apt-repository -y ppa:strukturag/libheif
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libheif-dev libheif1
+          sudo apt-get install -y --no-install-recommends libheif-dev=1.19.7-1~ppa1~ubuntu24.04 libheif1=1.19.7-1~ppa1~ubuntu24.04 libsharpyuv-dev
       - name: Install clippy
         run: rustup component add clippy
       - name: Install just
@@ -116,7 +119,7 @@ jobs:
 
   coverage:
     name: Coverage
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CARGO_TERM_COLOR: always
     steps:
@@ -137,8 +140,9 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Install libheif
         run: |
+          sudo add-apt-repository -y ppa:strukturag/libheif
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libheif-dev libheif1
+          sudo apt-get install -y --no-install-recommends libheif-dev=1.19.7-1~ppa1~ubuntu24.04 libheif1=1.19.7-1~ppa1~ubuntu24.04 libsharpyuv-dev
       - name: Install just
         uses: extractions/setup-just@v2
       - name: Generate code coverage
