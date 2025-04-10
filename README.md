@@ -31,17 +31,8 @@ Features:
 [![Packaging status](https://repology.org/badge/vertical-allrepos/timewall.svg)](https://repology.org/project/timewall/versions)
 
 ### Prerequisites
-`timewall` depends on [`libheif`](https://github.com/strukturag/libheif) for HEIF support, make sure you have it installed.
+`timewall` depends on [`libheif`](https://github.com/strukturag/libheif) >= 1.19.7 for HEIF support, make sure you have it installed.
 If you're building it from source you may also need `libheif-dev`, depending on your distribution.
-
-> [!WARNING]
-> With `libheif` >= 1.19.0 you will likely experience errors.
-> ```
-> Error: InvalidInput(SecurityLimitExceeded) Invalid input: Security limit exceeded: ipma box wants to define properties for 1160 items, but the security limit has been set to 1000 items
-> ```
-> As a temporary workaround you can downgrade `libheif` to 1.18.x.
-> Arch users can use [`libheif-highmem`](https://aur.archlinux.org/packages/libheif-highmem) AUR package.
-> See [this issue](https://github.com/bcyran/timewall/issues/156#issuecomment-2776420782) for details.
 
 ### Binary
 You can download tarball containing the latest prebuilt binary and shell completions from the [releases page](https://github.com/bcyran/timewall/releases).
