@@ -5,9 +5,9 @@ use std::{
 };
 
 use anyhow::Result;
-use libheif_rs::HeifContext;
 
 use crate::{
+    heif,
     schedule::{sort_solar_items, sort_time_items, time::day_fraction_to_time},
     wallpaper::{
         metadata::get_apple_desktop_metadata_from_heif,
@@ -28,7 +28,7 @@ pub struct ImageInfo {
 impl ImageInfo {
     pub fn from_image<P: AsRef<Path>>(image_path: P) -> Result<Self> {
         let image_path = image_path.as_ref();
-        let heif_ctx = HeifContext::read_from_file(image_path.to_str().unwrap())?;
+        let heif_ctx = heif::from_file(image_path)?;
         let primary_handle = heif_ctx.primary_image_handle()?;
         let metadata = get_apple_desktop_metadata_from_heif(&heif_ctx)?;
 

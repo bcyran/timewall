@@ -23,7 +23,7 @@ directories = "5.0.1"
 env_logger = "0.11.5"
 futures-lite = "2.6.0"
 itertools = "0.14.0"
-libheif-rs = { version = "2.1.0", default-features = false, features = ["v1_19"] }
+libheif-rs = { version = "2.2.0", default-features = false, features = ["v1_19"] }
 log = "0.4.25"
 nix = { version = "0.29.0", default-features = false, features = ["signal"] }
 num_cpus = "1.16.0"

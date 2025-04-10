@@ -52,7 +52,7 @@ pub fn unpack<IP: AsRef<Path>, DP: AsRef<Path>>(wall_path: IP, dest_dir_path: DP
         return Err(anyhow!("{} is not a directory", dest_dir_path.display()));
     }
 
-    let heif_ctx = HeifContext::read_from_file(image_path.to_str().unwrap())?;
+    let heif_ctx = heif::from_file(wall_path)?;
     heif::unpack_images(&heif_ctx, dest_dir_path)?;
     unpack_properties(&heif_ctx, dest_dir_path.join(PROPERTIES_NAME))?;
 

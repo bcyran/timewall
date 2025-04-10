@@ -1071,9 +1071,9 @@ checksum = "c19937216e9d3aa9956d9bb8dfc0b0c8beb6058fc4f7a4dc4d850edf86a237d6"
 
 [[package]]
 name = "libheif-rs"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "079181274813c28bad223a323e860d6919afa7680be9614d5e9dbf7d5c234ccc"
+checksum = "e6983874bba8c3f28525e908758a3988849fdc3fdc98c692bc884aa078aa190e"
 dependencies = [
  "cfg-if",
  "enumn",
