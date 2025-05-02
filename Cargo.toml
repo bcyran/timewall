@@ -27,7 +27,7 @@ libheif-rs = { version = "2.2.0", default-features = false, features = ["v1_19"]
 log = "0.4.25"
 nix = { version = "0.29.0", default-features = false, features = ["signal"] }
 num_cpus = "1.16.0"
-ordered-float = { version = "4.6.0", features = ["serde"] }
+ordered-float = { version = "5.0.0", features = ["serde"] }
 plist = "1.7.1"
 png = "0.17.16"
 seahash = "4.1.0"
