@@ -79,7 +79,7 @@ fn get_apple_desktop_attribute(attributes: &[OwnedAttribute]) -> Result<AppleDes
                     },
                 value,
             } if prefix == "apple_desktop" => {
-                debug!("apple_desktop:{} attribute found", local_name);
+                debug!("apple_desktop:{local_name} attribute found");
                 return match local_name.as_str() {
                     "solar" => Ok(AppleDesktop::Solar(value.to_owned())),
                     "h24" => Ok(AppleDesktop::H24(value.to_owned())),
