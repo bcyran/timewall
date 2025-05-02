@@ -204,7 +204,7 @@ fn try_get_location(config: &Config) -> Result<Coords> {
         (true, true) => match try_get_geoclue_location(&config.geoclue) {
             geoclue_ok @ Ok(_) => geoclue_ok,
             Err(e) => {
-                debug!("GeoClue failed, falling back to config location: {}", e);
+                debug!("GeoClue failed, falling back to config location: {e}");
                 match config.try_get_location() {
                     config_ok @ Ok(_) => config_ok,
                     Err(_) => Err(e).context("failed to get location from GeoClue and config"),
@@ -214,7 +214,7 @@ fn try_get_location(config: &Config) -> Result<Coords> {
         (true, false) => match config.try_get_location() {
             config_ok @ Ok(_) => config_ok,
             Err(e) => {
-                debug!("Config location failed, falling back to GeoClue: {}", e);
+                debug!("Config location failed, falling back to GeoClue: {e}");
                 match try_get_geoclue_location(&config.geoclue) {
                     goeclue_ok @ Ok(_) => goeclue_ok,
                     geoclue_err @ Err(_) => {

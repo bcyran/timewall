@@ -20,7 +20,7 @@ pub fn current_image_index_solar(
         azimuth: sun_pos.azimuth.to_degrees(),
         altitude: sun_pos.altitude.to_degrees(),
     };
-    debug!("sun position: {:?}", sun_pos_degrees);
+    debug!("sun position: {sun_pos_degrees:?}");
     current_image_index_from_sun_pos(solar_items, &sun_pos_degrees, &coords.hemisphere())
 }
 

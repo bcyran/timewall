@@ -77,7 +77,7 @@ async fn get_location_async() -> anyhow::Result<Coords> {
         lon: location.longitude().await?,
     };
 
-    log::debug!("Got location from GeoClue: {:?}", coords);
+    log::debug!("Got location from GeoClue: {coords:?}");
 
     Ok(coords)
 }

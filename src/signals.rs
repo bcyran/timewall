@@ -13,7 +13,7 @@ pub fn start_signal_handler(mut signals: Signals) -> Receiver<()> {
 
     thread::spawn(move || {
         for signal in signals.forever() {
-            debug!("Received signal: {}", signal);
+            debug!("Received signal: {signal}");
             termination_tx.send(()).unwrap();
             signals_handle.close();
         }
