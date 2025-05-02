@@ -45,7 +45,7 @@ jobs:
         run: |
           sudo add-apt-repository -y ppa:strukturag/libheif
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libheif-dev=1.19.7-1~ppa1~ubuntu24.04 libheif1=1.19.7-1~ppa1~ubuntu24.04 libsharpyuv-dev
+          sudo apt-get install -y --no-install-recommends libheif-dev libheif1 libsharpyuv-dev
 
       - name: Install rust toolchain
         uses: actions-rs/toolchain@v1
