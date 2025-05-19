@@ -222,6 +222,8 @@ If you want to use shell features like environment variable expansion or command
 command = ['bash', '-c', 'command_1 %f && command_2 %f']
 ```
 
+See also: [Wallpaper setting commands](#wallpaper-setting-commands).
+
 By default, the command's `stdout` and `stderr` outputs are suppressed.
 You can change this behavior by setting `setter.quiet` to `false`.
 
@@ -248,6 +250,35 @@ update_interval_seconds = 600
   Three free wallpapers and some bundles you can buy.
 - [mczachurski/wallpaper](https://github.com/mczachurski/wallpapper).
   Two high quality custom made walls.
+
+## Wallpaper setting commands
+This section contains useful commands for setting the wallpaper image in various desktop environments.
+`%f` is a placeholder for the image path.
+
+### Gnome
+```shell
+# Light mode wallpaper
+gsettings set org.gnome.desktop.background picture-uri file://%f
+
+# Dark mode wallpaper
+gsettings set org.gnome.desktop.background picture-uri-dark file://%f
+
+# Lockscreen background
+gsettings set org.gnome.desktop.screensaver picture-uri file://%f
+
+```
+
+### KDE Plasma
+```shell
+# Wallpaper
+plasma-apply-wallpaperimage %f
+
+# Lockscreen background
+kwriteconfig6 --file kscreenlockerrc --group Greeter --group Wallpaper --group org.kde.image --group General --key Image %f
+
+```
+`kwriteconfig6` assumes Plasma 6, use `kwriteconfig5` for Plasma 5.
+
 
 ## Resources / credits
 The following resources helped me in `timewall` development:
