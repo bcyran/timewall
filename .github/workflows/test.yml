@@ -24,11 +24,8 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - name: Install Rust
+        run: rustup update stable
       - name: Install libheif
         run: |
           sudo add-apt-repository -y ppa:strukturag/libheif
@@ -53,11 +50,8 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - name: Install Rust
+        run: rustup update stable
       - name: Install libheif
         run: |
           sudo add-apt-repository -y ppa:strukturag/libheif
@@ -73,11 +67,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - name: Install Rust
+        run: rustup update stable
       - name: Install rustfmt
         run: rustup component add rustfmt
       - name: Install just
@@ -100,11 +91,8 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - name: Install Rust
+        run: rustup update stable
       - name: Install libheif
         run: |
           sudo add-apt-repository -y ppa:strukturag/libheif
