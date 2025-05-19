@@ -215,8 +215,12 @@ overlap = 0
 ```
 `%f` is a placeholder which will be replaced with full absolute path to the image, which should be set as a wallpaper.
 
-> [!NOTE]
-> The command is NOT passed through shell.
+The command is NOT passed through shell.
+If you want to use shell features like environment variable expansion or command chaining, you need to call it explicitly:
+```toml
+[setter]
+command = ['bash', '-c', 'command_1 %f && command_2 %f']
+```
 
 By default, the command's `stdout` and `stderr` outputs are suppressed.
 You can change this behavior by setting `setter.quiet` to `false`.
