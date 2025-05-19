@@ -31,9 +31,8 @@ jobs:
           sudo add-apt-repository -y ppa:strukturag/libheif
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libheif-dev libheif1 libsharpyuv-dev
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
+      - name: Run check
+        run: cargo check
 
   test:
     name: Test Suite
