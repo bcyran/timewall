@@ -14,7 +14,7 @@ build = "build.rs"
 
 [dependencies]
 anyhow = "1.0.97"
-async-io = "2.4.0"
+async-io = "2.4.1"
 base64 = "0.22.1"
 chrono = "0.4.39"
 clap = { version = "4.5.23", features = ["derive"] }
