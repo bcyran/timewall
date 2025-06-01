@@ -17,7 +17,7 @@ anyhow = "1.0.97"
 async-io = "2.4.1"
 base64 = "0.22.1"
 chrono = "0.4.41"
-clap = { version = "4.5.23", features = ["derive"] }
+clap = { version = "4.5.39", features = ["derive"] }
 clap-verbosity-flag = "3.0.3"
 directories = "6.0.0"
 env_logger = "0.11.5"
@@ -49,6 +49,6 @@ predicates = "3.1.2"
 rstest = "0.17.0"
 
 [build-dependencies]
-clap = { version = "4.5.23", features = ["derive"] }
+clap = { version = "4.5.39", features = ["derive"] }
 clap-verbosity-flag = "3.0.3"
 clap_complete = "4.5.52"
