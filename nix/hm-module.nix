@@ -141,7 +141,8 @@ in {
     systemd.user.services.timewall = {
       Unit = {
         Description = "Dynamic wallpapers daemon";
-        PartOf = ["graphical-session.target"];
+        PartOf = [cfg.systemdTarget];
+        After = [cfg.systemdTarget];
         X-Restart-Triggers =
           lib.mkIf (cfg.config != {})
           ["${config.xdg.configFile."timewall/config.toml".source}"];
