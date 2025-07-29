@@ -6,7 +6,6 @@ self: {
 }: let
   inherit (pkgs.stdenv.hostPlatform) system;
   cfg = config.services.timewall;
-  package = self.packages.${system}.default;
   configFormat = pkgs.formats.toml {};
 in {
   options = {
@@ -149,7 +148,7 @@ in {
       };
       Service = {
         ExecStart = builtins.concatStringsSep " " [
-          "${lib.getExe package} set --daemon"
+          "${lib.getExe cfg.package} set --daemon"
           (
             if cfg.wallpaperPath != null
             then builtins.toString cfg.wallpaperPath
