@@ -38,7 +38,7 @@ sun = "0.3.1"
 threadpool = "1.8.1"
 toml = "0.8.20"
 wallpape-rs = "2.0.0"
-xml-rs = "0.8.26"
+xml-rs = "1.0.0"
 zbus = "5.10.0"
 
 [dev-dependencies]
