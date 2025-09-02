@@ -28,7 +28,7 @@ log = "0.4.27"
 nix = { version = "0.30.1", default-features = false, features = ["signal"] }
 num_cpus = "1.17.0"
 ordered-float = { version = "5.0.0", features = ["serde"] }
-plist = "1.7.1"
+plist = "1.7.4"
 png = "0.18.0"
 seahash = "4.1.0"
 serde = { version = "1.0.219", features = ["derive"] }
