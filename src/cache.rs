@@ -212,7 +212,6 @@ impl CachedCall {
     }
 }
 
-/// Abstraction over a symlink to the last used PID.
 #[cfg(test)]
 mod tests {
     use anyhow::anyhow;
