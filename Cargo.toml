@@ -13,7 +13,7 @@ license = "MIT"
 build = "build.rs"
 
 [dependencies]
-anyhow = "1.0.99"
+anyhow = "1.0.100"
 async-io = "2.6.0"
 base64 = "0.22.1"
 chrono = "0.4.41"
