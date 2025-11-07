@@ -95,7 +95,7 @@ jobs:
           echo ::set-output name=PKG_ARTIFACT_PATH::${PKG_ARTIFACT_PATH}
 
       - name: Upload the artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.build.outputs.PKG_ARTIFACT_NAME }}
           path: ${{ steps.build.outputs.PKG_ARTIFACT_PATH }}
