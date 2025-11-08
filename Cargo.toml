@@ -18,7 +18,7 @@ async-io = "2.6.0"
 base64 = "0.22.1"
 chrono = "0.4.42"
 clap = { version = "4.5.40", features = ["derive"] }
-clap-verbosity-flag = "3.0.3"
+clap-verbosity-flag = "3.0.4"
 directories = "6.0.0"
 env_logger = "0.11.6"
 futures-lite = "2.6.1"
@@ -50,5 +50,5 @@ rstest = "0.17.0"
 
 [build-dependencies]
 clap = { version = "4.5.40", features = ["derive"] }
-clap-verbosity-flag = "3.0.3"
+clap-verbosity-flag = "3.0.4"
 clap_complete = "4.5.57"
