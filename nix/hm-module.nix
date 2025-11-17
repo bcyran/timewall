@@ -85,7 +85,7 @@ in {
               Command to set the wallpaper. Use "%f" as a placeholder for the file path.
               The command is NOT passed through a shell.
             '';
-            example = ["sww" "img" "%f"];
+            example = ["awww" "img" "%f"];
           };
           overlap = lib.mkOption {
             type = lib.types.int;

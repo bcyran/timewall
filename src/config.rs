@@ -28,9 +28,9 @@ const DEFAULT_CONFIG_FILE_CONTENT: &str = "\
 # lon = 17.02
 
 # Uncomment and adjust the following section to use a custom wallpaper setter command.
-# The example uses `swww`: https://github.com/LGFae/swww.
+# The example uses `awww`: https://codeberg.org/LGFae/awww
 # [setter]
-# command = ['swww', 'img', '%f']
+# command = ['awww', 'img', '%f']
 # overlap = 0
 # quiet = true
 
