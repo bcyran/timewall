@@ -13,7 +13,7 @@ jobs:
     name: Check
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
@@ -38,7 +38,7 @@ jobs:
     name: Test Suite
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
@@ -65,7 +65,7 @@ jobs:
     name: Rustfmt
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install Rust
         run: rustup update stable
       - name: Install rustfmt
@@ -79,7 +79,7 @@ jobs:
     name: Clippy
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
@@ -110,7 +110,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Cache cargo registry
         uses: actions/cache@v4
         with:
