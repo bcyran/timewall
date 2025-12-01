@@ -51,4 +51,4 @@ rstest = "0.17.0"
 [build-dependencies]
 clap = { version = "4.5.53", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"
-clap_complete = "4.5.57"
+clap_complete = "4.5.61"
