@@ -156,7 +156,7 @@ impl Properties {
     /// Get number of frames defined by those properties.
     /// Frames differ from images in that one image can be displayed for more than one frame.
     /// For instance: the same image in the morning and afternoon.
-    pub fn num_frames(&self) -> usize {
+    pub const fn num_frames(&self) -> usize {
         match self {
             Self::H24(props) => props.time_info.len(),
             Self::Solar(props) => props.solar_info.len(),

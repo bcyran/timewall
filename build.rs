@@ -5,10 +5,7 @@ include!("src/cli.rs");
 
 fn main() {
     let var = std::env::var_os("SHELL_COMPLETIONS_DIR").or_else(|| std::env::var_os("OUT_DIR"));
-    let outdir = match var {
-        None => return,
-        Some(outdir) => outdir,
-    };
+    let Some(outdir) = var else { return };
 
     let mut cmd = Args::command();
     for shell in [Shell::Bash, Shell::Fish, Shell::Zsh] {
