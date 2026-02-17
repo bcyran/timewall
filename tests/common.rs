@@ -5,7 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use assert_cmd::{assert::Assert, crate_name, Command};
+use assert_cmd::{assert::Assert, cargo, Command};
 use assert_fs::{
     fixture::ChildPath,
     prelude::{FileWriteStr, PathChild},
@@ -132,7 +132,7 @@ impl TestEnv {
 
     /// Run the command and return `Assert` object.
     pub fn run(&self, args: &[&str]) -> Assert {
-        let mut command = Command::cargo_bin(crate_name!()).unwrap();
+        let mut command = Command::new(cargo::cargo_bin!());
         command
             .current_dir(&self.cwd)
             .env("TIMEWALL_DRY_RUN", "true")
