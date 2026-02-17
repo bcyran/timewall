@@ -9,8 +9,8 @@ use anyhow::{anyhow, bail, Context};
 use chrono::prelude::*;
 use log::debug;
 
+use crate::appearance::{get_system_appearance, Appearance};
 use crate::cache::{CachedCall, CachedCallRetval};
-use crate::cli::Appearance;
 use crate::config::{Config, Geoclue};
 use crate::geo::Coords;
 use crate::geoclue;
@@ -184,18 +184,35 @@ fn current_image_index(
         ref any_properties if user_appearance.is_some() => match any_properties.appearance() {
             Some(appearance_props) => Ok(current_image_index_appearance(
                 appearance_props,
-                user_appearance,
+                user_appearance.unwrap(),
             )),
             None => bail!("wallpaper missing appearance metadata"),
         },
-        Properties::Appearance(ref appearance_props) => Ok(current_image_index_appearance(
-            appearance_props,
-            user_appearance,
-        )),
+        Properties::Appearance(ref appearance_props) => {
+            let appearance = resolve_appearance(user_appearance);
+            Ok(current_image_index_appearance(appearance_props, appearance))
+        }
         Properties::H24(ref props) => current_image_index_h24(&props.time_info, now.time()),
         Properties::Solar(ref props) => {
             current_image_index_solar(&props.solar_info, &now, &try_get_location(config)?)
         }
+    }
+}
+
+fn resolve_appearance(user_appearance: Option<Appearance>) -> Appearance {
+    match user_appearance {
+        Some(appearance) => appearance,
+        None => match get_system_appearance() {
+            Ok(Some(appearance)) => appearance,
+            Ok(None) => {
+                debug!("system has no appearance preference, falling back to light");
+                Appearance::Light
+            }
+            Err(e) => {
+                log::warn!("failed to detect system appearance, falling back to light: {e}");
+                Appearance::Light
+            }
+        },
     }
 }
 

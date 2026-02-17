@@ -1,6 +1,7 @@
 #[macro_use]
 mod macros;
 mod actions;
+mod appearance;
 mod cache;
 mod cli;
 mod config;
@@ -24,6 +25,15 @@ use signal_hook::{
 };
 use signals::start_signal_handler;
 
+impl From<cli::CliAppearance> for appearance::Appearance {
+    fn from(cli: cli::CliAppearance) -> Self {
+        match cli {
+            cli::CliAppearance::Light => Self::Light,
+            cli::CliAppearance::Dark => Self::Dark,
+        }
+    }
+}
+
 fn main() -> Result<()> {
     let termination_rx = start_signal_handler(Signals::new([SIGINT, SIGTERM, SIGQUIT])?);
 
@@ -45,7 +55,12 @@ fn main() -> Result<()> {
             file,
             daemon,
             appearance,
-        } => actions::set(file.as_ref(), daemon, appearance, &termination_rx),
+        } => actions::set(
+            file.as_ref(),
+            daemon,
+            appearance.map(Into::into),
+            &termination_rx,
+        ),
         cli::Action::Unset => actions::unset(),
         cli::Action::Clear { all } => {
             actions::clear(all);

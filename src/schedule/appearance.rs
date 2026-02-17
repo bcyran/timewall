@@ -1,13 +1,13 @@
-use crate::{cli::Appearance, wallpaper::properties::PropertiesAppearance};
+use crate::{appearance::Appearance, wallpaper::properties::PropertiesAppearance};
 
 #[allow(clippy::cast_sign_loss)]
 pub const fn current_image_index_appearance(
     properties: &PropertiesAppearance,
-    user_appearance: Option<Appearance>,
+    appearance: Appearance,
 ) -> usize {
-    match user_appearance {
-        Some(Appearance::Light) | None => properties.light as usize,
-        Some(Appearance::Dark) => properties.dark as usize,
+    match appearance {
+        Appearance::Light => properties.light as usize,
+        Appearance::Dark => properties.dark as usize,
     }
 }
 
@@ -31,15 +31,14 @@ mod tests {
     }
 
     #[rstest]
-    #[case(Some(Appearance::Light), 420)]
-    #[case(Some(Appearance::Dark), 69)]
-    #[case(None, 420)]
+    #[case(Appearance::Light, 420)]
+    #[case(Appearance::Dark, 69)]
     fn test_current_image_appearance(
         properties: PropertiesAppearance,
-        #[case] user_appearance: Option<Appearance>,
+        #[case] appearance: Appearance,
         #[case] expected_index: usize,
     ) {
-        let result = current_image_index_appearance(&properties, user_appearance);
+        let result = current_image_index_appearance(&properties, appearance);
         assert_eq!(result, expected_index);
     }
 

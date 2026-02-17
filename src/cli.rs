@@ -49,7 +49,7 @@ pub enum Action {
         daemon: bool,
         /// Use light or dark variant
         #[arg(short, long, value_enum)]
-        appearance: Option<Appearance>,
+        appearance: Option<CliAppearance>,
     },
     /// Try to unset the wallpaper
     ///
@@ -65,7 +65,7 @@ pub enum Action {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
-pub enum Appearance {
+pub enum CliAppearance {
     Light,
     Dark,
 }
