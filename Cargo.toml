@@ -44,7 +44,6 @@ zbus = "5.12.0"
 [dev-dependencies]
 assert_cmd = "2.1.2"
 assert_fs = "1.1.3"
-lazy_static = "1.5.0"
 predicates = "3.1.3"
 rstest = "0.17.0"
 

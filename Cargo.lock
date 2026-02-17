@@ -1861,7 +1861,6 @@ dependencies = [
  "env_logger",
  "futures-lite",
  "itertools",
- "lazy_static",
  "libheif-rs",
  "log",
  "nix 0.31.1",

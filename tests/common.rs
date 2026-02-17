@@ -12,40 +12,60 @@ use assert_fs::{
     TempDir,
 };
 use chrono::{DateTime, Local, TimeZone};
-use lazy_static::lazy_static;
 use rstest::fixture;
+use std::sync::LazyLock;
 
-lazy_static! {
-    /// Absolute path to example time-based wallpaper.
-    pub static ref EXAMPLE_TIME: PathBuf = PathBuf::from("tests/examples/time.heic")
+/// Absolute path to example time-based wallpaper.
+pub static EXAMPLE_TIME: LazyLock<PathBuf> = LazyLock::new(|| {
+    PathBuf::from("tests/examples/time.heic")
         .canonicalize()
-        .unwrap();
-    /// Absolute path to example sun-based wallpaper.
-    pub static ref EXAMPLE_SUN: PathBuf = PathBuf::from("tests/examples/sun.heic")
+        .unwrap()
+});
+/// Absolute path to example sun-based wallpaper.
+pub static EXAMPLE_SUN: LazyLock<PathBuf> = LazyLock::new(|| {
+    PathBuf::from("tests/examples/sun.heic")
         .canonicalize()
-        .unwrap();
-    /// Absolute path to example unsupported image file.
-    pub static ref EXAMPLE_UNSUPPORTED: PathBuf = PathBuf::from("tests/examples/unsupported.jpg")
+        .unwrap()
+});
+/// Absolute path to example unsupported image file.
+pub static EXAMPLE_UNSUPPORTED: LazyLock<PathBuf> = LazyLock::new(|| {
+    PathBuf::from("tests/examples/unsupported.jpg")
         .canonicalize()
-        .unwrap();
-    /// Absolute path to example time-based properties XML file.
-    pub static ref PROPERTIES_TIME: PathBuf = PathBuf::from("tests/examples/properties_time.xml")
+        .unwrap()
+});
+/// Absolute path to example time-based properties XML file.
+pub static PROPERTIES_TIME: LazyLock<PathBuf> = LazyLock::new(|| {
+    PathBuf::from("tests/examples/properties_time.xml")
         .canonicalize()
-        .unwrap();
-    /// Absolute path to example sun-based properties XML file.
-    pub static ref PROPERTIES_SUN: PathBuf = PathBuf::from("tests/examples/properties_sun.xml")
+        .unwrap()
+});
+/// Absolute path to example sun-based properties XML file.
+pub static PROPERTIES_SUN: LazyLock<PathBuf> = LazyLock::new(|| {
+    PathBuf::from("tests/examples/properties_sun.xml")
         .canonicalize()
-        .unwrap();
-    /// Mapping of examples wallpaper paths to their hashes.
-    pub static ref WALLPAPER_HASHES: HashMap<PathBuf, &'static str> = HashMap::from([
+        .unwrap()
+});
+/// Mapping of examples wallpaper paths to their hashes.
+pub static WALLPAPER_HASHES: LazyLock<HashMap<PathBuf, &'static str>> = LazyLock::new(|| {
+    HashMap::from([
         (EXAMPLE_TIME.to_path_buf(), "dcbcd5f96ccdbdd"),
         (EXAMPLE_SUN.to_path_buf(), "a81fb8b5a1b35168"),
-    ]);
-    /// Datetime that should result in day-time image in example wallpapers.
-    pub static ref DATETIME_DAY: DateTime<Local> = Local.with_ymd_and_hms(2022, 10, 18, 14, 30, 30).single().unwrap();
-    /// Datetime that should result in night-time image in example wallpapers.
-    pub static ref DATETIME_NIGHT: DateTime<Local> = Local.with_ymd_and_hms(2022, 10, 18, 22, 30, 30).single().unwrap();
-}
+    ])
+});
+/// Datetime that should result in day-time image in example wallpapers.
+pub static DATETIME_DAY: LazyLock<DateTime<Local>> = LazyLock::new(|| {
+    Local
+        .with_ymd_and_hms(2022, 10, 18, 14, 30, 30)
+        .single()
+        .unwrap()
+});
+/// Datetime that should result in night-time image in example wallpapers.
+pub static DATETIME_NIGHT: LazyLock<DateTime<Local>> = LazyLock::new(|| {
+    Local
+        .with_ymd_and_hms(2022, 10, 18, 22, 30, 30)
+        .single()
+        .unwrap()
+});
 
 /// Name of the image that should be set for day-time in example wallpapers.
 pub const IMAGE_DAY: &str = "0.png";
