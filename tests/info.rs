@@ -1,3 +1,13 @@
+#![allow(
+    clippy::missing_panics_doc,
+    clippy::must_use_candidate,
+    clippy::return_self_not_must_use,
+    clippy::new_without_default,
+    clippy::missing_const_for_fn,
+    clippy::too_long_first_doc_paragraph,
+    clippy::use_self
+)]
+
 mod common;
 
 use std::path::PathBuf;
@@ -6,7 +16,7 @@ use common::{testenv, TestEnv, EXAMPLE_SUN, EXAMPLE_TIME};
 use predicates::prelude::*;
 use rstest::rstest;
 
-const EXAMPLE_TIME_INFO: &str = r#"
+const EXAMPLE_TIME_INFO: &str = r"
 Size: 88723B
 Resolution: 512x512px
 Schedule type: time
@@ -19,9 +29,9 @@ Frame Image Time
 Appearance:
 Light: 0
 Dark: 1
-"#;
+";
 
-const EXAMPLE_SUN_INFO: &str = r#"
+const EXAMPLE_SUN_INFO: &str = r"
 Size: 91566B
 Resolution: 512x512px
 Schedule type: solar
@@ -34,7 +44,7 @@ Frame Image Azimuth Altitude
 Appearance:
 Light: 0
 Dark: 1
-"#;
+";
 
 #[rstest]
 #[case(EXAMPLE_TIME.to_path_buf(), EXAMPLE_TIME_INFO)]

@@ -302,7 +302,7 @@ mod tests {
     }
 
     #[rstest]
-    #[should_panic]
+    #[should_panic(expected = "couldn't create cache entry directory")]
     fn test_cache_entry_file_conflict(tmp_dir: TempDir) {
         let entry_name = String::from("some_entry");
         tmp_dir.child(&entry_name).touch().unwrap();

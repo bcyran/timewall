@@ -196,7 +196,7 @@ mod tests {
             time_info: vec![
                 TimeItem {
                     index: 0,
-                    time: not_nan!(0.2916666567325592),
+                    time: not_nan!(0.291_666_656_732_559_2),
                 },
                 TimeItem {
                     index: 1,

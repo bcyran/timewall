@@ -47,6 +47,20 @@ assert_fs = "1.1.3"
 predicates = "3.1.3"
 rstest = "0.17.0"
 
+[lints.rust]
+warnings = "deny"
+
+[lints.clippy]
+complexity = { level = "deny", priority = -1 }
+correctness = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }
+perf = { level = "deny", priority = -1 }
+style = { level = "deny", priority = -1 }
+suspicious = { level = "deny", priority = -1 }
+module_name_repetitions = "allow"
+option_if_let_else = "allow"
+
 [build-dependencies]
 clap = { version = "4.5.53", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"

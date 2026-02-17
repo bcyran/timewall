@@ -1,4 +1,13 @@
-#![allow(dead_code)]
+#![allow(
+    dead_code,
+    clippy::missing_panics_doc,
+    clippy::must_use_candidate,
+    clippy::return_self_not_must_use,
+    clippy::new_without_default,
+    clippy::missing_const_for_fn,
+    clippy::too_long_first_doc_paragraph,
+    clippy::use_self
+)]
 
 use std::{
     collections::HashMap,
@@ -156,9 +165,9 @@ impl TestEnv {
         command
             .current_dir(&self.cwd)
             .env("TIMEWALL_DRY_RUN", "true")
-            .env("TIMEWALL_CONFIG_DIR", &self.config_dir.path())
-            .env("TIMEWALL_CACHE_DIR", &self.cache_dir.path())
-            .env("TIMEWALL_RUNTIME_DIR", &self.runtime_dir.path())
+            .env("TIMEWALL_CONFIG_DIR", self.config_dir.path())
+            .env("TIMEWALL_CACHE_DIR", self.cache_dir.path())
+            .env("TIMEWALL_RUNTIME_DIR", self.runtime_dir.path())
             .args(args);
         if let Some(datetime) = self.datetime {
             command.env("TIMEWALL_OVERRIDE_TIME", datetime.to_rfc3339());
