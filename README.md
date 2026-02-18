@@ -21,6 +21,7 @@
 - Supports original HEIF/HEIC dynamic wallpaper files from macOS.
 - Handles all schedule types: sun position, time-based, and dark/light mode.
 - Automatic location detection via GeoClue 2.
+- Automatic system theme detection via D-Bus.
 - Set wallpapers once or continuously (daemon mode).
 - Preview wallpaper transitions.
 - Display wallpaper metadata.
