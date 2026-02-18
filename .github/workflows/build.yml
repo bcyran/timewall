@@ -107,6 +107,10 @@ jobs:
           draft: true
           files: ${{ steps.build.outputs.PKG_ARTIFACT_PATH }}
 
+      - name: Clean build artifacts
+        if: startsWith(github.ref, 'refs/tags/')
+        run: git checkout -- . && git clean -fd
+
       - name: Publish to crates.io
         if: startsWith(github.ref, 'refs/tags/')
         run: cargo publish --locked
