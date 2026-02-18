@@ -2,33 +2,43 @@ use anyhow::{anyhow, Result};
 use log::debug;
 use signal_hook::iterator::Signals;
 use std::{
-    sync::mpsc::{channel, Receiver, RecvTimeoutError},
+    sync::mpsc::{Receiver, RecvTimeoutError, Sender},
     thread,
 };
 
-pub fn start_signal_handler(mut signals: Signals) -> Receiver<()> {
-    let signals_handle = signals.handle();
+use crate::appearance;
 
-    let (termination_tx, termination_rx) = channel::<()>();
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WakeEvent {
+    Terminated,
+    ThemeChanged,
+}
+
+pub fn start_signal_handler(mut signals: Signals, wake_tx: Sender<WakeEvent>) {
+    let signals_handle = signals.handle();
 
     thread::spawn(move || {
         for signal in signals.forever() {
             debug!("Received signal: {signal}");
-            termination_tx.send(()).unwrap();
+            let _ = wake_tx.send(WakeEvent::Terminated);
             signals_handle.close();
         }
     });
+}
 
-    termination_rx
+pub fn start_appearance_change_handler(wake_tx: Sender<WakeEvent>) {
+    appearance::start_appearance_listener(move || {
+        let _ = wake_tx.send(WakeEvent::ThemeChanged);
+    });
 }
 
 pub fn interruptible_sleep(
     duration: std::time::Duration,
-    interrupt_rx: &Receiver<()>,
-) -> Result<bool> {
-    match interrupt_rx.recv_timeout(duration) {
-        Ok(()) => Ok(true),
-        Err(RecvTimeoutError::Timeout) => Ok(false),
+    wake_rx: &Receiver<WakeEvent>,
+) -> Result<Option<WakeEvent>> {
+    match wake_rx.recv_timeout(duration) {
+        Ok(event) => Ok(Some(event)),
+        Err(RecvTimeoutError::Timeout) => Ok(None),
         Err(err @ RecvTimeoutError::Disconnected) => Err(anyhow!(err)),
     }
 }

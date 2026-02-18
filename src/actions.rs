@@ -22,7 +22,7 @@ use crate::schedule::{
     get_image_index_order_h24, get_image_index_order_solar,
 };
 use crate::setter::{set_wallpaper, unset_wallpaper};
-use crate::signals::interruptible_sleep;
+use crate::signals::{interruptible_sleep, WakeEvent};
 use crate::wallpaper::{self, properties::Properties, Wallpaper};
 use crate::{cache::LastWallpaper, schedule::current_image_index_appearance};
 
@@ -41,7 +41,7 @@ pub fn set<P: AsRef<Path>>(
     path: Option<&P>,
     daemon: bool,
     user_appearance: Option<Appearance>,
-    termination_rx: &Receiver<()>,
+    wake_rx: &Receiver<WakeEvent>,
 ) -> Result<()> {
     if daemon && user_appearance.is_some() {
         bail!("appearance can't be used in daemon mode!")
@@ -76,9 +76,15 @@ pub fn set<P: AsRef<Path>>(
 
         let update_interval_seconds = config.daemon.update_interval_seconds;
         debug!("sleeping for {update_interval_seconds} seconds");
-        if interruptible_sleep(Duration::from_secs(update_interval_seconds), termination_rx)? {
-            unset_wallpaper()?;
-            break;
+        match interruptible_sleep(Duration::from_secs(update_interval_seconds), wake_rx)? {
+            Some(WakeEvent::Terminated) => {
+                unset_wallpaper()?;
+                break;
+            }
+            Some(WakeEvent::ThemeChanged) => {
+                debug!("woke up due to theme change, re-evaluating wallpaper");
+            }
+            None => {}
         }
     }
 
@@ -114,7 +120,7 @@ pub fn preview<P: AsRef<Path>>(
     path: P,
     delay: u64,
     repeat: bool,
-    termination_rx: &Receiver<()>,
+    wake_rx: &Receiver<WakeEvent>,
 ) -> Result<()> {
     let config = Config::find()?;
     validate_wallpaper_file(&path)?;
@@ -135,7 +141,10 @@ pub fn preview<P: AsRef<Path>>(
             let image_path = wallpaper.images.get(*image_index).unwrap();
             set_wallpaper(image_path, config.setter.as_ref())?;
 
-            should_terminate = interruptible_sleep(Duration::from_millis(delay), termination_rx)?;
+            should_terminate = matches!(
+                interruptible_sleep(Duration::from_millis(delay), wake_rx)?,
+                Some(WakeEvent::Terminated)
+            );
         }
 
         if !repeat {
