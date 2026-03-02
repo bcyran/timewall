@@ -37,7 +37,7 @@ impl ImageInfo {
             size: fs::metadata(image_path)?.len(),
             width: primary_handle.width(),
             height: primary_handle.height(),
-            images: heif_ctx.number_of_top_level_images(),
+            images: heif_ctx.image_ids().len(),
             properties: Properties::from_apple_desktop(&metadata)?,
         })
     }

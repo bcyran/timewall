@@ -42,10 +42,8 @@ pub fn get_xmp_metadata(heif_ctx: &HeifContext) -> Result<Vec<u8>> {
 /// Get all available top level image handles from HEIF.
 pub fn get_images(heif_ctx: &HeifContext) -> Result<Vec<Image>> {
     let lib_heif = LibHeif::new();
-    let number_of_images = heif_ctx.number_of_top_level_images();
-    debug!("found {number_of_images} images");
-    let mut image_ids = vec![0 as ItemId; number_of_images];
-    heif_ctx.top_level_image_ids(&mut image_ids);
+    let image_ids = heif_ctx.image_ids();
+    debug!("found {} images", image_ids.len());
     image_ids
         .iter()
         .map(|image_id| heif_ctx.image_handle(*image_id))
