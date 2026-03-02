@@ -17,7 +17,7 @@ anyhow = "1.0.100"
 async-io = "2.6.0"
 base64 = "0.22.1"
 chrono = "0.4.44"
-clap = { version = "4.5.53", features = ["derive"] }
+clap = { version = "4.5.60", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"
 directories = "6.0.0"
 env_logger = "0.11.6"
@@ -62,6 +62,6 @@ module_name_repetitions = "allow"
 option_if_let_else = "allow"
 
 [build-dependencies]
-clap = { version = "4.5.53", features = ["derive"] }
+clap = { version = "4.5.60", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"
 clap_complete = "4.5.64"
