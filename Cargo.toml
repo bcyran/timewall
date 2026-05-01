@@ -64,4 +64,4 @@ option_if_let_else = "allow"
 [build-dependencies]
 clap = { version = "4.6.1", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"
-clap_complete = "4.6.0"
+clap_complete = "4.6.3"
