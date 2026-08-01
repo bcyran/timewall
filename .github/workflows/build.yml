@@ -17,7 +17,7 @@ jobs:
     env:
       SHELL_COMPLETIONS_DIR: completions
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Extract crate information
         id: info
