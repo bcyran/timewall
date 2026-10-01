@@ -15,7 +15,7 @@ build = "build.rs"
 [dependencies]
 anyhow = "1.0.102"
 async-io = "2.6.0"
-base64 = "0.22.1"
+base64 = "0.23.1"
 chrono = "0.4.44"
 clap = { version = "4.6.1", features = ["derive"] }
 clap-verbosity-flag = "3.0.4"
